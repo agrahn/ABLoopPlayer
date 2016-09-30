@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<!--
+  ytplayer.html
+
+  YouTube video player with A-B loop, slow motion and bookmarking
+  functionality
+
+  Copyright (C) 2016  Alexander Grahn
+
+  This file is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This file is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="YT player with loop function and slow motion playback">
+  <meta name="author" content="Alexander Grahn">
+  <meta name="date" content="2016/09/26">
+</head>
+
+<!-- jQuery framework -->
+<link href="jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="jquery-ui/external/jquery/jquery.js"></script>
+<script src="jquery-ui/jquery-ui.js"></script>
+
+<!-- Mozilla cookie API -->
+<script src="mozilla-cookies/cookies.js"></script>
+
+<body onload="onLoad()" style="white-space: nowrap; min-width: max-content; display: inline-block;">
+
+<h1 style="font-size: 150%;">YT Player with loop function</h1>
+<p>Firefox recommended.<br>Also try the <a href="vplayer.html">MP4/WebM/Ogg Player</a> for local video files.</p>
+
+<hr>
+YT Video ID: <input id="myVidId" list="videoids" value="8bpVfMDSZSU">
+<datalist id="videoids"></datalist><button id="loadButton" onclick="loadVideo()" disabled>Load</button><hr>
+
+<!-- move resizable handle out of the video display -->
+<style>
+  .ui-resizable-se {
+    bottom: -10px;
+    right: -10px;
+  }
+</style>
+
+<div id="myResizable" style="background: #ddd;">
+  <!-- to be replaced by the <iframe> that displays the iYouTube pülayer -->
+  <div id="ytplayer"></div>
+</div>
+
+<div id="timeInputs" hidden="true">
+  <!-- jQuery range slider -->
+  <div id="slider"></div><br>
+  A: <input id="myTimeA" onchange="onInputTime(this,0)" title="[hh:]mm:ss[.sss]"></input>
+  B: <input id="myTimeB" onchange="onInputTime(this,1)" title="[hh:]mm:ss[.sss]"></input>
+  <button id="bmkAddButton" onmouseup="bmkAdd(myTimeA.value + '--' + myTimeB.value)">
+    Add bookmark
+  </button>
+</div>
+
+<div style="margin-top: 5px;">
+  A-B Loop:<input type="button" id="loopButton" value="A" onmousedown="onLoopDown()" disabled></input>
+  <style>select:invalid { color: gray; }</style>
+  <select id="myBookmarks"
+    hidden disabled onchange="onBmkSelect(this.selectedIndex)" contextmenu="bmkMenu"
+    oncontextmenu="if(this.selectedIndex==0) menuItem0.hidden=menuItem1.hidden=true;
+                   else menuItem0.hidden=menuItem1.hidden=false;"
+    title = "Annotate or delete bookmarked loops via right-click";
+  >
+    <option value="" selected disabled>Bookmarked</option>
+  </select>
+  Set speed:<input type="button" id="slowButton" value="Slow" onmousedown="onSlowDown()"></input>
+<div>
+<hr>
+© 2016 Alexander Grahn
+
+<!-- context (right-click) menu for bookmark entries -->
+<menu type="context" id="bmkMenu">
+  <menuitem id="menuItem0" label="Add a note"  onclick="onClickAddNote(myBookmarks.selectedIndex)"></menuitem>
+  <menuitem id="menuItem1" label="Delete this loop entry"  onclick="onClickMenuitem(myBookmarks.selectedIndex)"></menuitem>
+  <menuitem label="Delete all loop entries" onclick="onClickMenuitem(0)"></menuitem>
+</menu>
+
+<script>
+  var vidId;
+  var timeA, timeB;
+  var isTimeASet=false;
+  var isTimeBSet=false;
+  var timer=[];
+  var myTimeA = document.getElementById("myTimeA");
+  var myTimeB = document.getElementById("myTimeB");
+  var loopButton = document.getElementById("loopButton");
+  loopButton.disabled=true;
+  var slowButton = document.getElementById("slowButton");
+  var loadButton = document.getElementById("loadButton");
+  var myBookmarks = document.getElementById("myBookmarks");
+  var menuItem0 = document.getElementById("menuItem0");
+  var menuItem1 = document.getElementById("menuItem1");
+
+  //This will be the initial player size.
+  var playerSize=[$("#myResizable").width(), 9/16*$("#myResizable").width()];
+
+  //This code loads the IFrame Player API code asynchronously.
+  var scriptTag1 = document.getElementsByTagName('script')[0];
+  var scriptTag2 = document.createElement('script');
+  scriptTag2.src = "https://www.youtube.com/iframe_api";
+  scriptTag1.parentNode.insertBefore(scriptTag2, scriptTag1);
+
+  //This function creates an <iframe> (and YouTube player)
+  //after the API code downloads.
+  var player;
+  function onYouTubeIframeAPIReady() {
+    player = new YT.Player('ytplayer', {
+      listType: 'search',
+      width: playerSize[0],
+      height: playerSize[1],
+      events: {
+        onStateChange : onPlayerStateChange,
+        onReady: onPlayerReady,
+      }
+    });
+  }
+
+  //pretty printing the current media time (seconds to time string)
+  var secToTimeString = function(t) {
+    var h=Math.floor(t/3600);
+    var s=t % 3600;
+    var m=Math.floor(s/60);
+    s = s % 60;
+    var ms = String(s % 1).substring(2,5);
+    s = Math.floor(s);
+    return ((h>0 ? h+':'+strPadLeft(m,0,2) : m) + ':' + strPadLeft(s,0,2)
+        + (ms.length>0 ? '.'+ms :''));
+  }
+  var strPadLeft = function(string,pad,length) {
+    return (new Array(length+1).join(pad)+string).slice(-length);
+  }
+
+  //time string to seconds
+  var timeStringToSec=function(ts) {
+    var ta=ts.trim().split(':');
+    var s=Number(ta[ta.length-1]);
+    s+=60*Number(ta[ta.length-2]);
+    if(ta.length==3) s+=3600*Number(ta[0]);
+    return s;
+  }
+
+  var onSliderChange = function(e, ui) {
+    timeA=ui.values[0];
+    timeB=ui.values[1];
+    myTimeA.value=secToTimeString(timeA);
+    myTimeB.value=secToTimeString(timeB);
+  }
+
+  //create jQuery range slider
+  $( function() {
+    $( "#slider" ).slider({
+      min: 0,
+      step: 0.025,
+      range: true,
+      change: function(e, ui) {onSliderChange(e, ui);},
+      slide: function(e, ui) {onSliderChange(e, ui);},
+    });
+  } );
+
+  var onPlayerStateChange = function(e){
+    if (isTimeASet && isTimeBSet && e.data==YT.PlayerState.PLAYING)
+      timer.push(setInterval(onTimeUpdate,30));
+    else
+      while(timer.length) clearInterval(timer.pop());
+
+    if (e.data == -1){
+      cancelABLoop();
+      e.target.setPlaybackRate(1.0);
+      slowButton.value="Slow";
+    }else if(e.data==YT.PlayerState.CUED){
+      e.target.playVideo();
+      loopButton.disabled=myBookmarks.disabled=false;
+    }
+  }
+
+  var onPlayerReady = function(e){
+    loadButton.disabled=false;
+    //initialize resizable
+    $("#myResizable" ).resizable({
+      aspectRatio: false,
+      minWidth: 352,
+      minHeight: 198,
+      create: function(e,ui){
+        $("#slider").width(playerSize);
+      },
+      resize: function(event,ui){
+        $("#slider").width(ui.size.width);
+      },
+      start: function(event,ui){
+        document.getElementById("ytplayer").hidden=true;
+      },
+      stop: function(event,ui){
+        player.setSize(ui.size.width,ui.size.height);
+        $("#slider").width(ui.size.width);
+        document.getElementById("ytplayer").hidden=false;
+      }
+    });
+  }
+
+  var onInputTime = function(whichInput, sliderIdx) {
+    var time=whichInput.value.match(
+          /^\s*(?:\d+:[0-5][0-9]|[0-5]?[0-9]):[0-5][0-9](?:\.\d+)?\s*$/
+        );
+    if(!time){
+      if(sliderIdx==0) $("#slider" ).slider("values", 0, timeA);
+      else $("#slider" ).slider("values", 1, timeB);
+
+      return;
+    }
+
+    var sec=timeStringToSec(time[0]);
+    if(sliderIdx==0){
+      sec=Math.min(sec,timeB);
+      $("#slider" ).slider("values", 0, sec);
+    }else{
+      sec=Math.min(sec,player.getDuration());
+      sec=Math.max(sec,timeA);
+      $("#slider" ).slider("values", 1, sec);
+    }
+  }
+
+  var bmkHash;
+  var bmkArr;
+  var loadVideo = function() {
+    loopButton.disabled=myBookmarks.disabled=true;
+    vidId = document.getElementById("myVidId").value.toString().trim();
+
+    if(vidId.length!==0 && typeof knownIDsHash[vidId]==='undefined'){
+      knownIDsHash[vidId]='';
+      knownIDs.unshift(vidId);
+
+      var z = document.createElement('OPTION');
+      z.setAttribute('value', vidId);
+      document.getElementById('videoids').insertBefore(
+          z, document.getElementById('videoids').firstChild);
+
+      if(knownIDs.length>30) {
+        knownIDs.pop();
+        document.getElementById('videoids').removeChild(
+            document.getElementById('videoids').lastChild);
+      }
+
+      docCookies.setItem('knownIDs', knownIDs.join(), 31536e3);
+    }
+
+    player.cueVideoById({
+      videoId: vidId
+    });
+
+    //remove all bookmark items from previous video
+    bmkDelete(0);
+
+    //look for bookmark items with this video ID
+    if(docCookies.hasItem(vidId)){
+      var bmks = docCookies.getItem(vidId).split(',');
+      for(var i=0; i<bmks.length; i++){
+        bmkAdd(bmks[i]);
+        myBookmarks.options[0].hidden=false;
+        myBookmarks.options[0].selected=true;
+      }
+    }
+  }
+
+  var bmkAdd = function(bmkItem) {
+     var ta = timeStringToSec(bmkItem.split('--')[0]);
+     var tb = timeStringToSec(bmkItem.split('--')[1]);
+     var insIdx=-1;
+     //insert current loop into bookmarks select object, sorted in ascending
+     //order w.r.t. timeA & timeB
+     if(typeof bmkHash[bmkItem]==='undefined'){
+       for(var i=1; i<myBookmarks.options.length && insIdx<0; i++) {
+         var a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
+         var b=timeStringToSec(myBookmarks.options[i].text.split('--')[1]);
+         if(ta<a || ta==a && tb<b) insIdx=i;
+       }
+       if(insIdx<0) insIdx=myBookmarks.options.length;
+
+       var c = document.createElement('OPTION');
+       c.title = "";
+       if(docCookies.hasItem(vidId+'-'+bmkItem))
+         c.title = docCookies.getItem(vidId+'-'+bmkItem);
+       c.text = bmkItem;
+       bmkHash[c.text]='';
+       myBookmarks.add(c,insIdx);
+       bmkArr.splice(insIdx, 0, bmkItem);
+       docCookies.setItem(vidId, bmkArr.join(), 31536e3);
+       myBookmarks.hidden=myBookmarks.disabled=false;
+       myBookmarks.options[insIdx].selected=true;
+       myBookmarks.options[0].hidden=true;
+     }
+  }
+
+  var bmkDelete = function(idx) {
+    if(idx==0){
+      while(myBookmarks.options.length>1)
+        myBookmarks.remove(myBookmarks.options.length-1);
+      bmkHash=[];
+      bmkArr=[];
+    }else{
+      bmkArr.splice(idx-1,1);
+      bmkHash[myBookmarks.options[idx].text]=undefined;
+      myBookmarks.remove(idx);
+    }
+    if(myBookmarks.options.length==1){
+      myBookmarks.hidden=myBookmarks.disabled=true;
+      myBookmarks.options[0].hidden=false;
+      myBookmarks.options[0].selected=true;
+    }
+  }
+
+  var onBmkSelect = function(i){
+    cancelABLoop();
+    if(i==0) return;
+    var a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
+    var b=timeStringToSec(myBookmarks.options[i].text.split('--')[1]);
+    $("#slider").slider("option", "max", player.getDuration());
+    $("#slider").slider("option", "values", [a, b]);
+    isTimeASet=isTimeBSet=true;
+    timeInputs.hidden=false;
+    loopButton.value="Cancel";
+    myBookmarks.options[0].hidden=true;
+    if(player.getPlayerState()==YT.PlayerState.PLAYING)
+      timer.push(setInterval(onTimeUpdate,30));
+  }
+
+  var onClickMenuitem = function(idx){
+    if(idx==0){
+      if(confirm("Really delete ALL bookmarked loops?")){
+        //first remove any note associated with bookmarked loops
+        for(var i=1; i<myBookmarks.options.length; i++){
+          docCookies.removeItem(vidId+'-'+myBookmarks.options[i].text);
+        }
+        //then delete the bookmarked loop itself
+        bmkDelete(0);
+        docCookies.removeItem(vidId);
+      }
+    }else{
+      if(confirm("Delete this loop?")){
+        docCookies.removeItem(vidId+'-'+myBookmarks.options[idx].text);
+        bmkDelete(idx);
+        docCookies.setItem(vidId, bmkArr.join(), 31536e3);
+      }
+    }
+  }
+
+  var onClickAddNote = function(idx){
+    var defaultNote = (myBookmarks.options[idx].title || "example text");
+    var note = prompt("Enter short description", defaultNote);
+    if(note && note.trim().length) {
+      myBookmarks.options[idx].title = note;
+      docCookies.setItem(vidId+'-'+myBookmarks.options[idx].text, note, 31536e3);
+    }
+  }
+
+  var cancelABLoop = function () {
+    while(timer.length) clearInterval(timer.pop());
+    isTimeASet=isTimeBSet=false;
+    loopButton.value="A";
+    timeInputs.hidden=true;
+  }
+
+  var onTimeUpdate = function () {
+    if(player.getCurrentTime()<timeA||player.getCurrentTime()>=timeB)
+      player.seekTo(timeA,true);
+  }
+
+  var onLoopDown = function () {
+    if(isTimeBSet){
+      cancelABLoop();
+      myBookmarks.options[0].hidden=false;
+      myBookmarks.options[0].selected=true;
+    }else{
+      if(isTimeASet){
+        if(player.getCurrentTime()!=timeA){
+          if(player.getCurrentTime()<timeA){
+            timeB=timeA;
+            timeA=player.getCurrentTime();
+          }else{
+            timeB=player.getCurrentTime();
+          }
+          $("#slider").slider("option", "max", player.getDuration());
+          $("#slider").slider("option", "values", [ timeA, timeB ]);
+          isTimeBSet=true;
+          timeInputs.hidden=false;
+          loopButton.value="Cancel";
+          if(player.getPlayerState()==YT.PlayerState.PLAYING)
+            timer.push(setInterval(onTimeUpdate,25));
+        }
+      }else{
+        timeA=player.getCurrentTime();
+        isTimeASet=true;
+        loopButton.value="B";
+      }
+    }
+  }
+
+  var onSlowDown = function () {
+    if(player.getPlaybackRate()==1){
+      player.setPlaybackRate(0.5);
+      slowButton.value="Fast";
+    }else if(player.getPlaybackRate()==0.5){
+      player.setPlaybackRate(2);
+      slowButton.value="Normal";
+    }else{
+      player.setPlaybackRate(1);
+      slowButton.value="Slow";
+    }
+  }
+
+  var knownIDs=new Array();
+  var knownIDsHash=new Array();
+  var onLoad = function () { //get already watched IDs
+    if(docCookies.hasItem('knownIDs')){
+      knownIDs = docCookies.getItem('knownIDs').split(',');
+      for(var i=0; i<knownIDs.length; i++){
+        var z = document.createElement('OPTION');
+        z.setAttribute('value', knownIDs[i]);
+        document.getElementById('videoids').appendChild(z);
+        knownIDsHash[knownIDs[i].toString()]='';
+      }
+    }
+  }
+
+</script>
+
+</body>
+</html>
