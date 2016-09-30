@@ -10,6 +10,9 @@ Two video players, **ytplayer** and **vplayer**, based on HTML5, jQuery and Java
 - Bookmarked A-B loops can be annotated individually with short description texts.
 - resizable video display
 
+**Installation:**
+[Download from GitHub](https://github.com/grahna/ytplayer/archive/master.zip) and unzip the archive. 
+
 **Usage:** Open one of `ytplayer.html` or `vplayer.html` in Firefox. In **ytplayer** enter a YouTube video ID for viewing online video. **vplayer** is for viewing local video files.
 
 Note: In Chrome, persistent bookmarks are created only if the players are installed on a web server.
