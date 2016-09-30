@@ -144,6 +144,25 @@ Set speed:<input type="button" id="slowButton" value="Slow" onmousedown="onSlowD
     myTimeB.value=secToTimeString(timeB);
   }
 
+  var onSliderSlide = function(e, ui) {
+    if(ctrlPressed){
+      var delta=timeB-timeA;
+      if(ui.handleIndex==0){
+        timeA=ui.values[0];
+        timeB=timeA+delta;
+        $("#slider" ).slider("values", 1, timeB);
+      }else{
+        timeB=ui.values[1];
+        timeA=timeB-delta;
+        $("#slider" ).slider("values", 0, timeA);
+      }
+      myTimeA.value=secToTimeString(Math.max(timeA,0));
+      myTimeB.value=secToTimeString(Math.min(timeB, myVideo.duration));
+    }else{
+      onSliderChange(e, ui);
+    }
+  }
+
   //create jQuery range slider
   $( function() {
     $( "#slider" ).slider({
@@ -151,9 +170,17 @@ Set speed:<input type="button" id="slowButton" value="Slow" onmousedown="onSlowD
       step: 0.025,
       range: true,
       change: function(event, ui) {onSliderChange(event, ui);},
-      slide: function(event, ui) {onSliderChange(event, ui);},
+      slide: function(event, ui) {onSliderSlide(event, ui);},
     });
   } );
+
+  var ctrlPressed=false;
+  $(document).keydown(function(e) {
+    if (e.which == 17) ctrlPressed=true;
+  });
+  $(document).keyup(function(e) {
+    if (e.which == 17) ctrlPressed=false;
+  });
 
   var initResizable = function(){
     $("#myResizable" ).resizable({

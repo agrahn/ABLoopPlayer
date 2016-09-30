@@ -162,6 +162,25 @@ YT Video ID: <input id="myVidId" list="videoids" value="8bpVfMDSZSU">
     myTimeB.value=secToTimeString(timeB);
   }
 
+  var onSliderSlide = function(e, ui) {
+    if(ctrlPressed){
+      var delta=timeB-timeA;
+      if(ui.handleIndex==0){
+        timeA=ui.values[0];
+        timeB=timeA+delta;
+        $("#slider" ).slider("values", 1, timeB);
+      }else{
+        timeB=ui.values[1];
+        timeA=timeB-delta;
+        $("#slider" ).slider("values", 0, timeA);
+      }
+      myTimeA.value=secToTimeString(Math.max(timeA,0));
+      myTimeB.value=secToTimeString(Math.min(timeB, player.getDuration()));
+    }else{
+      onSliderChange(e, ui);
+    }
+  }
+
   //create jQuery range slider
   $( function() {
     $( "#slider" ).slider({
@@ -169,9 +188,17 @@ YT Video ID: <input id="myVidId" list="videoids" value="8bpVfMDSZSU">
       step: 0.025,
       range: true,
       change: function(e, ui) {onSliderChange(e, ui);},
-      slide: function(e, ui) {onSliderChange(e, ui);},
+      slide: function(e, ui) {onSliderSlide(e, ui);},
     });
   } );
+
+  var ctrlPressed=false;
+  $(document).keydown(function(e) {
+    if (e.which == 17) ctrlPressed=true;
+  });
+  $(document).keyup(function(e) {
+    if (e.which == 17) ctrlPressed=false;
+  });
 
   var onPlayerStateChange = function(e){
     if (isTimeASet && isTimeBSet && e.data==YT.PlayerState.PLAYING)
