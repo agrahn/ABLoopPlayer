@@ -33,9 +33,6 @@
 <script src="jquery-ui/external/jquery/jquery.js"></script>
 <script src="jquery-ui/jquery-ui.js"></script>
 
-<!-- Mozilla cookie API -->
-<script src="mozilla-cookies/cookies.js"></script>
-
 <body onload="onLoad()" style="white-space: nowrap; min-width: max-content; display: inline-block;">
 
 <h1 style="font-size: 150%;">YT Player with loop function</h1>
@@ -283,7 +280,7 @@ YT Video ID: <input id="myVidId" list="videoids" value="8bpVfMDSZSU">
             document.getElementById('videoids').lastChild);
       }
 
-      docCookies.setItem('knownIDs', knownIDs.join(), 31536e3);
+      localStorage.setItem('knownIDs', knownIDs.join());
     }
 
     player.cueVideoById({
@@ -294,8 +291,8 @@ YT Video ID: <input id="myVidId" list="videoids" value="8bpVfMDSZSU">
     bmkDelete(0);
 
     //look for bookmark items with this video ID
-    if(docCookies.hasItem(vidId)){
-      var bmks = docCookies.getItem(vidId).split(',');
+    if(localStorage.getItem(vidId)){
+      var bmks = localStorage.getItem(vidId).split(',');
       for(var i=0; i<bmks.length; i++){
         bmkAdd(bmks[i]);
         myBookmarks.options[0].hidden=false;
@@ -320,13 +317,13 @@ YT Video ID: <input id="myVidId" list="videoids" value="8bpVfMDSZSU">
 
        var c = document.createElement('OPTION');
        c.title = "";
-       if(docCookies.hasItem(vidId+'-'+bmkItem))
-         c.title = docCookies.getItem(vidId+'-'+bmkItem);
+       if(localStorage.getItem(vidId+'-'+bmkItem))
+         c.title = localStorage.getItem(vidId+'-'+bmkItem);
        c.text = bmkItem;
        bmkHash[c.text]='';
        myBookmarks.add(c,insIdx);
        bmkArr.splice(insIdx, 0, bmkItem);
-       docCookies.setItem(vidId, bmkArr.join(), 31536e3);
+       localStorage.setItem(vidId, bmkArr.join());
        myBookmarks.hidden=myBookmarks.disabled=false;
        myBookmarks.options[insIdx].selected=true;
        myBookmarks.options[0].hidden=true;
@@ -371,17 +368,17 @@ YT Video ID: <input id="myVidId" list="videoids" value="8bpVfMDSZSU">
       if(confirm("Really delete ALL bookmarked loops?")){
         //first remove any note associated with bookmarked loops
         for(var i=1; i<myBookmarks.options.length; i++){
-          docCookies.removeItem(vidId+'-'+myBookmarks.options[i].text);
+          localStorage.removeItem(vidId+'-'+myBookmarks.options[i].text);
         }
         //then delete the bookmarked loop itself
         bmkDelete(0);
-        docCookies.removeItem(vidId);
+        localStorage.removeItem(vidId);
       }
     }else{
       if(confirm("Delete this loop?")){
-        docCookies.removeItem(vidId+'-'+myBookmarks.options[idx].text);
+        localStorage.removeItem(vidId+'-'+myBookmarks.options[idx].text);
         bmkDelete(idx);
-        docCookies.setItem(vidId, bmkArr.join(), 31536e3);
+        localStorage.setItem(vidId, bmkArr.join());
       }
     }
   }
@@ -391,7 +388,7 @@ YT Video ID: <input id="myVidId" list="videoids" value="8bpVfMDSZSU">
     var note = prompt("Enter short description", defaultNote);
     if(note && note.trim().length) {
       myBookmarks.options[idx].title = note;
-      docCookies.setItem(vidId+'-'+myBookmarks.options[idx].text, note, 31536e3);
+      localStorage.setItem(vidId+'-'+myBookmarks.options[idx].text, note);
     }
   }
 
@@ -453,8 +450,8 @@ YT Video ID: <input id="myVidId" list="videoids" value="8bpVfMDSZSU">
   var knownIDs=new Array();
   var knownIDsHash=new Array();
   var onLoad = function () { //get already watched IDs
-    if(docCookies.hasItem('knownIDs')){
-      knownIDs = docCookies.getItem('knownIDs').split(',');
+    if(localStorage.getItem('knownIDs')){
+      knownIDs = localStorage.getItem('knownIDs').split(',');
       for(var i=0; i<knownIDs.length; i++){
         var z = document.createElement('OPTION');
         z.setAttribute('value', knownIDs[i]);

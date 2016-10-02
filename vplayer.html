@@ -33,9 +33,6 @@
 <script src="jquery-ui/external/jquery/jquery.js"></script>
 <script src="jquery-ui/jquery-ui.js"></script>
 
-<!-- Mozilla cookie API -->
-<script src="mozilla-cookies/cookies.js"></script>
-
 <body style="white-space: nowrap; min-width: max-content; display: inline-block;">
 
 <h1 style="font-size: 150%;">MP4/WebM/Ogg Player with loop function</h1>
@@ -198,7 +195,6 @@ Set speed:<input type="button" id="slowButton" value="Slow" onmousedown="onSlowD
   };
   initResizable();
 
-
   var onInputTime = function(whichInput, sliderIdx) {
     var time=whichInput.value.match(
           /^\s*(?:\d+:[0-5][0-9]|[0-5]?[0-9]):[0-5][0-9](?:\.\d+)?\s*$/
@@ -249,8 +245,8 @@ Set speed:<input type="button" id="slowButton" value="Slow" onmousedown="onSlowD
     myVideo.src=fileURL;
 
     //look for bookmark items with this video ID
-    if(docCookies.hasItem(vidId)){
-      var bmks = docCookies.getItem(vidId).split(',');
+    if(localStorage.getItem(vidId)){
+      var bmks = localStorage.getItem(vidId).split(',');
       for(var i=0; i<bmks.length; i++){
         bmkAdd(bmks[i]);
         myBookmarks.options[0].hidden=false;
@@ -280,13 +276,13 @@ Set speed:<input type="button" id="slowButton" value="Slow" onmousedown="onSlowD
 
        var c = document.createElement('OPTION');
        c.title = "";
-       if(docCookies.hasItem(vidId+'-'+bmkItem))
-         c.title = docCookies.getItem(vidId+'-'+bmkItem);
+       if(localStorage.getItem(vidId+'-'+bmkItem))
+         c.title = localStorage.getItem(vidId+'-'+bmkItem);
        c.text = bmkItem;
        bmkHash[c.text]='';
        myBookmarks.add(c,insIdx);
        bmkArr.splice(insIdx, 0, bmkItem);
-       docCookies.setItem(vidId, bmkArr.join(), 31536e3);
+       localStorage.setItem(vidId, bmkArr.join());
        myBookmarks.hidden=myBookmarks.disabled=false;
        myBookmarks.options[insIdx].selected=true;
        myBookmarks.options[0].hidden=true;
@@ -330,17 +326,17 @@ Set speed:<input type="button" id="slowButton" value="Slow" onmousedown="onSlowD
       if(confirm("Really delete ALL bookmarked loops?")){
         //first remove any note associated with bookmarked loops
         for(var i=1; i<myBookmarks.options.length; i++){
-          docCookies.removeItem(vidId+'-'+myBookmarks.options[i].text);
+          localStorage.removeItem(vidId+'-'+myBookmarks.options[i].text);
         }
         //then delete the bookmarked loop itself
         bmkDelete(0);
-        docCookies.removeItem(vidId);
+        localStorage.removeItem(vidId);
       }
     }else{
       if(confirm("Delete this loop?")){
-        docCookies.removeItem(vidId+'-'+myBookmarks.options[idx].text);
+        localStorage.removeItem(vidId+'-'+myBookmarks.options[idx].text);
         bmkDelete(idx);
-        docCookies.setItem(vidId, bmkArr.join(), 31536e3);
+        localStorage.setItem(vidId, bmkArr.join());
       }
     }
   }
@@ -350,7 +346,7 @@ Set speed:<input type="button" id="slowButton" value="Slow" onmousedown="onSlowD
     var note = prompt("Enter short description", defaultNote);
     if(note && note.trim().length) {
       myBookmarks.options[idx].title = note;
-      docCookies.setItem(vidId+'-'+myBookmarks.options[idx].text, note, 31536e3);
+      localStorage.setItem(vidId+'-'+myBookmarks.options[idx].text, note);
     }
   }
 
