@@ -6,13 +6,14 @@ Two video players, **ytplayer** and **vplayer**, based on HTML5, jQuery and Java
 
 **Features:**
 - A-B loop ranges can be adjusted using a double-handled slider, using the arrow keys on the keyboard, or, more accurately, via two time input fields.
-- A-B loops can be saved as bookmarks for the current or for later sessions on the same computer and in the same browser, preferably Firefox, thanks to local browser cookies.
+- An entire A-B loop window can be moved pressing <kbd>Ctrl</kbd> and moving one of the slider handles.
+- A-B loops can be saved as bookmarks for the current or for later sessions on the same computer and in the same browser.
 - Bookmarked A-B loops can be annotated individually with short description texts.
 - resizable video display
 
 **Installation:**
 [Download from GitHub](https://github.com/grahna/ytplayer/archive/master.zip) and unzip the archive file. 
 
-**Usage:** Open one of `ytplayer.html` or `vplayer.html` in Firefox. In **ytplayer**, enter a YouTube video ID for viewing online video. **vplayer** is for viewing local video files.
+**Usage:** Open one of `ytplayer.html` or `vplayer.html` in the Web browser. In **ytplayer**, enter a YouTube video ID for viewing online video. **vplayer** is for viewing local video files.
 
-Note: In Chrome, persistent bookmarks are created only if the players are installed on a web server.
+Note: In Chrome, bookmarked loops cannot be annotated nor deleted, currently.
