@@ -5,7 +5,7 @@
 Two video players, **ytplayer** and **vplayer**, based on HTML5, jQuery and JavaScript, with **A-B loop**, **slow motion** and **bookmarking** functionality for online video (YouTube) and local video files in the MP4/H.264, WebM or Ogg/Theora formats.
 
 **Features:**
-- The A-B loop window can be adjusted using a double-handled slider, <kbd>&larr</kbd> & <kbd>&rarr</kbd> on the keyboard, or, more accurately, via two time input fields.
+- The A-B loop window can be adjusted using a double-handled slider, <kbd>&larr;</kbd> & <kbd>&rarr;</kbd> on the keyboard, or, more accurately, via two time input fields.
 - The entire A-B loop window can be moved pressing <kbd>Ctrl</kbd> and moving one of the slider handles.
 - A-B loops can be saved as bookmarks for the current or for later sessions on the same computer and in the same browser.
 - Bookmarked A-B loops can be annotated individually with short description texts.
