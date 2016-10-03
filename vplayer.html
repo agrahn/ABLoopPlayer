@@ -48,6 +48,11 @@
     bottom: -10px;
     right: -10px;
   }
+  .divider{
+    width:20px;
+    height:auto;
+    display:inline-block;
+  }
 </style>
 
 <div id="myResizable"></div>
@@ -65,32 +70,22 @@ A-B Loop:<input type="button" id="loopButton" value="A" onmousedown="onLoopDown(
 <span id="myBmkSpan" hidden>
   <style>select:invalid { color: gray; }</style>
   <select id="myBookmarks"
-    onchange="onBmkSelect(this.selectedIndex)" contextmenu="bmkMenu"
-    oncontextmenu="if(this.selectedIndex==0) menuItem0.hidden=menuItem1.hidden=true;
-                   else menuItem0.hidden=menuItem1.hidden=false;"
-    title = "Annotate or delete bookmarked loops via right-click";
+    onchange="onBmkSelect(this.selectedIndex)"
   >
     <option value="" selected disabled>Bookmarked</option>
-  </select>
-  <button id="annotButton" style="width:1.5em; padding: 0px;" title="Add a note"
+  </select><!--
+  --><button id="annotButton" style="width:1.5em; padding: 0px;" title="Add a note"
     onclick="onClickAddNote(myBookmarks.selectedIndex)" disabled
     ><span class="ui-icon ui-icon-pencil"></span></button><!--
   --><button id="trashButton" style="width:1.5em; padding: 0px;" title="Delete bookmarked loop(s)"
     onclick="onClickMenuitem(myBookmarks.selectedIndex)"
   ><span class="ui-icon ui-icon-trash"></span></button>
-</span>  
-Set speed:<input type="button" id="slowButton" value="Slow" onmousedown="onSlowDown()"></input>
+</span>
+<span style="display:inline-block; margin-left: 20px;"></span>
+  Set speed:<input type="button" id="slowButton" value="Slow" onmousedown="onSlowDown()"></input>
 </div>
-<div id="annotText"></div>
 <hr>
 © 2016 Alexander Grahn
-
-<!-- context (right-click) menu for bookmark entries -->
-<menu type="context" id="bmkMenu">
-  <menuitem id="menuItem0" label="Add a note" onclick="onClickAddNote(myBookmarks.selectedIndex)"></menuitem>
-  <menuitem id="menuItem1" label="Delete this loop entry" onclick="onClickMenuitem(myBookmarks.selectedIndex)"></menuitem>
-  <menuitem label="Delete all loop entries" onclick="onClickMenuitem(0)"></menuitem>
-</menu>
 
 <script>
   var vidId;
@@ -288,8 +283,9 @@ Set speed:<input type="button" id="slowButton" value="Slow" onmousedown="onSlowD
 
        var c = document.createElement('OPTION');
        c.title = "";
-       if(localStorage.getItem(vidId+'-'+bmkItem))
+       if(localStorage.getItem(vidId+'-'+bmkItem)){
          c.title = localStorage.getItem(vidId+'-'+bmkItem);
+       }  
        c.text = bmkItem;
        bmkHash[c.text]='';
        myBookmarks.add(c,insIdx);
@@ -320,7 +316,6 @@ Set speed:<input type="button" id="slowButton" value="Slow" onmousedown="onSlowD
   }
 
   var onBmkSelect = function(i){
-    console.log("selected: " + i);
     cancelABLoop();
     if(i==0) return;
 
@@ -357,7 +352,7 @@ Set speed:<input type="button" id="slowButton" value="Slow" onmousedown="onSlowD
   }
 
   var onClickAddNote = function(idx){
-    var defaultNote = (myBookmarks.options[idx].title || "example text");
+    var defaultNote = (localStorage.getItem(vidId+'-'+myBookmarks.options[idx].text) || "example text");
     var note = prompt("Enter short description", defaultNote);
     if(note && note.trim().length) {
       myBookmarks.options[idx].title = note;
