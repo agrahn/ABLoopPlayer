@@ -62,24 +62,33 @@
 
 <div style="margin-top: 5px;">
 A-B Loop:<input type="button" id="loopButton" value="A" onmousedown="onLoopDown()"></input>
-<style>select:invalid { color: gray; }</style>
-<select id="myBookmarks"
-  hidden disabled onchange="onBmkSelect(this.selectedIndex)" contextmenu="bmkMenu"
-  oncontextmenu="if(this.selectedIndex==0) menuItem0.hidden=menuItem1.hidden=true;
-                 else menuItem0.hidden=menuItem1.hidden=false;"
-  title = "Annotate or delete bookmarked loops via right-click";
->
-  <option value="" selected disabled>Bookmarked</option>
-</select>
+<span id="myBmkSpan" hidden>
+  <style>select:invalid { color: gray; }</style>
+  <select id="myBookmarks"
+    onchange="onBmkSelect(this.selectedIndex)" contextmenu="bmkMenu"
+    oncontextmenu="if(this.selectedIndex==0) menuItem0.hidden=menuItem1.hidden=true;
+                   else menuItem0.hidden=menuItem1.hidden=false;"
+    title = "Annotate or delete bookmarked loops via right-click";
+  >
+    <option value="" selected disabled>Bookmarked</option>
+  </select>
+  <button id="annotButton" style="width:1.5em; padding: 0px;" title="Add a note"
+    onclick="onClickAddNote(myBookmarks.selectedIndex)" disabled
+    ><span class="ui-icon ui-icon-pencil"></span></button><!--
+  --><button id="trashButton" style="width:1.5em; padding: 0px;" title="Delete bookmarked loop(s)"
+    onclick="onClickMenuitem(myBookmarks.selectedIndex)"
+  ><span class="ui-icon ui-icon-trash"></span></button>
+</span>  
 Set speed:<input type="button" id="slowButton" value="Slow" onmousedown="onSlowDown()"></input>
 </div>
+<div id="annotText"></div>
 <hr>
 © 2016 Alexander Grahn
 
 <!-- context (right-click) menu for bookmark entries -->
 <menu type="context" id="bmkMenu">
-  <menuitem id="menuItem0" label="Add a note"  onclick="onClickAddNote(myBookmarks.selectedIndex)"></menuitem>
-  <menuitem id="menuItem1" label="Delete this loop entry"  onclick="onClickMenuitem(myBookmarks.selectedIndex)"></menuitem>
+  <menuitem id="menuItem0" label="Add a note" onclick="onClickAddNote(myBookmarks.selectedIndex)"></menuitem>
+  <menuitem id="menuItem1" label="Delete this loop entry" onclick="onClickMenuitem(myBookmarks.selectedIndex)"></menuitem>
   <menuitem label="Delete all loop entries" onclick="onClickMenuitem(0)"></menuitem>
 </menu>
 
@@ -221,7 +230,9 @@ Set speed:<input type="button" id="slowButton" value="Slow" onmousedown="onSlowD
 
   var playSelectedFile = function (f) {
     cancelABLoop();
+
     slowButton.value="Slow";
+    loopButton.disabled=true;
 
     //remove all bookmark items from previous video
     bmkDelete(0);
@@ -252,11 +263,12 @@ Set speed:<input type="button" id="slowButton" value="Slow" onmousedown="onSlowD
         myBookmarks.options[0].hidden=false;
         myBookmarks.options[0].selected=true;
       }
+      annotButton.disabled=true;
     }
   }
 
   var onCanPlay = function () {
-    loopButton.disabled=myBookmarks.disabled=false;
+    loopButton.disabled=false;
     initResizable();
   }
 
@@ -283,7 +295,7 @@ Set speed:<input type="button" id="slowButton" value="Slow" onmousedown="onSlowD
        myBookmarks.add(c,insIdx);
        bmkArr.splice(insIdx, 0, bmkItem);
        localStorage.setItem(vidId, bmkArr.join());
-       myBookmarks.hidden=myBookmarks.disabled=false;
+       myBmkSpan.hidden=annotButton.disabled=false;
        myBookmarks.options[insIdx].selected=true;
        myBookmarks.options[0].hidden=true;
      }
@@ -301,15 +313,17 @@ Set speed:<input type="button" id="slowButton" value="Slow" onmousedown="onSlowD
       myBookmarks.remove(idx);
     }
     if(myBookmarks.options.length==1){
-      myBookmarks.hidden=myBookmarks.disabled=true;
+      myBmkSpan.hidden=true;
       myBookmarks.options[0].hidden=false;
       myBookmarks.options[0].selected=true;
     }
   }
 
   var onBmkSelect = function(i){
+    console.log("selected: " + i);
     cancelABLoop();
     if(i==0) return;
+
     var a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
     var b=timeStringToSec(myBookmarks.options[i].text.split('--')[1]);
     $("#slider").slider("option", "max", myVideo.duration);
@@ -318,6 +332,7 @@ Set speed:<input type="button" id="slowButton" value="Slow" onmousedown="onSlowD
     timeInputs.hidden=false;
     loopButton.value="Cancel";
     myBookmarks.options[0].hidden=true;
+    annotButton.disabled=false;
     myVideo.addEventListener('timeupdate',onTimeUpdate);
   }
 
@@ -366,6 +381,7 @@ Set speed:<input type="button" id="slowButton" value="Slow" onmousedown="onSlowD
   var onLoopDown = function () {
     if(isTimeBSet){
       cancelABLoop();
+      annotButton.disabled=true;
       myBookmarks.options[0].hidden=false;
       myBookmarks.options[0].selected=true;
     }else{
