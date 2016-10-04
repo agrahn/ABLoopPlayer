@@ -10,13 +10,28 @@
 <body>
  
 <button id="opener">open the dialog</button>
-<input id="dialog" onchange="console.log(this.value)"></input>
- 
+<input id="dialog" style="width: 500; border: 1px solid powderblue;" onchange="console.log(this.value)"></input>
+
+<style>
+  .no-close .ui-dialog-titlebar-close {
+    display: none;
+  }
+</style>
+
 <script>
-$( "#dialog" ).dialog({ autoOpen: false });
+$( "#dialog" ).dialog({
+  autoOpen: false,
+  modal: true,
+  title: "Add a short description",
+  dialogClass: "no-close",
+  closeOnEscape: false,
+  closeText: "hide",
+  width: $("#dialog").width()
+});
 $( "#opener" ).click(function() {
   $( "#dialog" ).dialog( "open" );
 });
+console.log($("#dialog").width());
 </script>
  
 </body>
