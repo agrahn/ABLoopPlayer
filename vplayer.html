@@ -60,13 +60,13 @@
 <div id="timeInputs" hidden="true">
   <!-- placeholder for jQuery range slider -->
   <div id="slider"></div><br>
-  A:<input id="myTimeA" onchange="onInputTime(this,0)" title="[hh:]mm:ss[.sss]"></input>
-  B:<input id="myTimeB" onchange="onInputTime(this,1)" title="[hh:]mm:ss[.sss]"></input>
+  A: <input id="myTimeA" onchange="onInputTime(this,0)" title="[hh:]mm:ss[.sss]"></input>
+  B: <input id="myTimeB" onchange="onInputTime(this,1)" title="[hh:]mm:ss[.sss]"></input>
   <button id="bmkAddButton" onmouseup="bmkAdd(myTimeA.value + '--' + myTimeB.value)">Add bookmark</button>
 </div>
 
 <div style="margin-top: 5px;">
-A-B Loop:<input type="button" id="loopButton" value="A" onmousedown="onLoopDown()"></input>
+A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown()"></input>
 <span id="myBmkSpan" hidden>
   <style>select:invalid { color: gray; }</style>
   <select id="myBookmarks"
@@ -82,7 +82,7 @@ A-B Loop:<input type="button" id="loopButton" value="A" onmousedown="onLoopDown(
   ><span class="ui-icon ui-icon-trash"></span></button>
 </span>
 <span style="display:inline-block; margin-left: 20px;"></span>
-  Set speed:<input type="button" id="slowButton" value="Slow" onmousedown="onSlowDown()"></input>
+  Set speed: <input type="button" id="slowButton" value="Slow" onmousedown="onSlowDown()"></input>
 </div>
 <hr>
 © 2016 Alexander Grahn
@@ -165,7 +165,7 @@ A-B Loop:<input type="button" id="loopButton" value="A" onmousedown="onLoopDown(
   }
 
   //create jQuery range slider
-  $( function() {
+  $(document).ready(function(){
     $( "#slider" ).slider({
       min: 0,
       step: 0.025,
@@ -173,7 +173,8 @@ A-B Loop:<input type="button" id="loopButton" value="A" onmousedown="onLoopDown(
       change: function(event, ui) {onSliderChange(event, ui);},
       slide: function(event, ui) {onSliderSlide(event, ui);},
     });
-  } );
+    initResizable();
+  });
 
   var ctrlPressed=false;
   $(document).keydown(function(e) {
@@ -197,7 +198,6 @@ A-B Loop:<input type="button" id="loopButton" value="A" onmousedown="onLoopDown(
       }
     });
   };
-  initResizable();
 
   var onInputTime = function(whichInput, sliderIdx) {
     var time=whichInput.value.match(
@@ -288,7 +288,9 @@ A-B Loop:<input type="button" id="loopButton" value="A" onmousedown="onLoopDown(
        }  
        c.text = bmkItem;
        bmkHash[c.text]='';
-       myBookmarks.add(c,insIdx);
+       myBookmarks.add(c,insIdx); //append as a child to selector
+       //refresh enabling tooltips for all appended <option> elements
+       $("OPTION").tooltip();
        bmkArr.splice(insIdx, 0, bmkItem);
        localStorage.setItem(vidId, bmkArr.join());
        myBmkSpan.hidden=annotButton.disabled=false;

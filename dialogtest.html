@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>dialog demo</title>
+  <link href="jquery-ui/jquery-ui.css" rel="stylesheet">
+  <script src="jquery-ui/external/jquery/jquery.js"></script>
+  <script src="jquery-ui/jquery-ui.js"></script>
+</head>
+<body>
+ 
+<button id="opener">open the dialog</button>
+<input id="dialog" onchange="console.log(this.value)"></input>
+ 
+<script>
+$( "#dialog" ).dialog({ autoOpen: false });
+$( "#opener" ).click(function() {
+  $( "#dialog" ).dialog( "open" );
+});
+</script>
+ 
+</body>
+</html>
