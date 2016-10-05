@@ -1,7 +1,7 @@
 /*
   common.js
 
-  functions used by players
+  common code used by players
 
   Copyright (C) 2016  Alexander Grahn
 
@@ -19,8 +19,35 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+var vidId;
+var timeA, timeB;
+var isTimeASet=false;
+var isTimeBSet=false;
+var myTimeA, myTimeB
+var loopButto, slowButton;
+var myBookmarks;
+var menuItem0, menuItem1
+var ctrlPressed=false;
+var playerWidth;
+
+$(document).ready(function(){
+  myTimeA = document.getElementById("myTimeA");
+  myTimeB = document.getElementById("myTimeB");
+  loopButton = document.getElementById("loopButton");
+  slowButton = document.getElementById("slowButton");
+  myBookmarks = document.getElementById("myBookmarks");
+  menuItem0 = document.getElementById("menuItem0");
+  menuItem1 = document.getElementById("menuItem1");
+  loopButton.disabled=true;
+
+  //This will be the initial player size.
+  playerWidth=$("#myResizable").width();
+
+  initResizable();
+});
+
 // a modal prompt dialog based on jQuery
-// Usage: myPrompt( <receiving object>, <obj property to be set>, <dialog title> [, <default text>] );
+// Usage: myPrompt( <callback>(ret), <dialog title> [, <default text>] );
 function myPrompt(onclose, title, txt=""){
   var z=$(
     '<div style="width: fit-content; display: inline-block;"><p>'
@@ -54,7 +81,6 @@ function myPrompt(onclose, title, txt=""){
     ],
     close: function(e,ui) {
       onclose(ret);
-//      obj[prop] = ret;
       this.parentNode.removeChild(this);
     }
   }).focus();
@@ -119,8 +145,6 @@ var timeStringToSec=function(ts) {
   return s;
 }
 
-/*
-
 var onSliderChange = function(event, ui) {
   timeA=ui.values[0];
   timeB=ui.values[1];
@@ -147,7 +171,6 @@ var onSliderSlide = function(e, ui) {
   }
 }
 
-var ctrlPressed=false;
 $(document).keydown(function(e) {
   if (e.which == 17) ctrlPressed=true;
 });
@@ -226,33 +249,19 @@ var bmkDelete = function(idx) {
     myBmkSpan.hidden=true;
     myBookmarks.options[0].hidden=false;
     myBookmarks.options[0].selected=true;
+  }else{
+    onBmkSelect(1);
   }
 }
 
-var onBmkSelect = function(i){
-  cancelABLoop();
-  if(i==0) return;
-
-  var a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
-  var b=timeStringToSec(myBookmarks.options[i].text.split('--')[1]);
-  $("#slider").slider("option", "max", myGetDuration());
-  $("#slider").slider("option", "values", [a, b]);
-  isTimeASet=isTimeBSet=true;
-  timeInputs.hidden=false;
-  loopButton.value="Cancel";
-  myBookmarks.options[0].hidden=true;
-  annotButton.disabled=false;
-  myVideo.addEventListener('timeupdate',onTimeUpdate);
-}
-
-var onClickMenuitem = function(idx){
+var onCkickTrash = function(idx){
   if(idx==0){
     if(confirm("Really delete ALL bookmarked loops?")){
       //first remove any note associated with bookmarked loops
       for(var i=1; i<myBookmarks.options.length; i++){
         localStorage.removeItem(vidId+'-'+myBookmarks.options[i].text);
       }
-      //then delete the bookmarked loop itself
+      //then delete the bookmarked loops themselves
       bmkDelete(0);
       localStorage.removeItem(vidId);
     }
@@ -266,12 +275,15 @@ var onClickMenuitem = function(idx){
 }
 
 var onClickAddNote = function(idx){
-  var defaultNote = (localStorage.getItem(vidId+'-'+myBookmarks.options[idx].text) || "example text");
-  var note = prompt("Enter short description", defaultNote);
-  if(note && note.trim().length) {
-    myBookmarks.options[idx].title = note;
-    localStorage.setItem(vidId+'-'+myBookmarks.options[idx].text, note);
-  }
+  var defaultNote = (localStorage.getItem(vidId+'-'+myBookmarks.options[idx].text) || "example text")
+  
+  myPrompt(
+    function(note){
+      if(note && note.trim().length) {
+        myBookmarks.options[idx].title = note;
+        localStorage.setItem(vidId+'-'+myBookmarks.options[idx].text, note);
+      }
+    },
+    "Enter short description", defaultNote
+  );
 }
-
-*/

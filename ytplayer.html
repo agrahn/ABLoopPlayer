@@ -84,8 +84,8 @@ YT Video ID: <input id="myVidId" list="videoids" value="8bpVfMDSZSU">
 <!-- context (right-click) menu for bookmark entries -->
 <menu type="context" id="bmkMenu">
   <menuitem id="menuItem0" label="Add a note"  onclick="onClickAddNote(myBookmarks.selectedIndex)"></menuitem>
-  <menuitem id="menuItem1" label="Delete this loop entry"  onclick="onClickMenuitem(myBookmarks.selectedIndex)"></menuitem>
-  <menuitem label="Delete all loop entries" onclick="onClickMenuitem(0)"></menuitem>
+  <menuitem id="menuItem1" label="Delete this loop entry"  onclick="onCkickTrash(myBookmarks.selectedIndex)"></menuitem>
+  <menuitem label="Delete all loop entries" onclick="onCkickTrash(0)"></menuitem>
 </menu>
 
 <script>
@@ -105,7 +105,7 @@ YT Video ID: <input id="myVidId" list="videoids" value="8bpVfMDSZSU">
   var menuItem1 = document.getElementById("menuItem1");
 
   //This will be the initial player size.
-  var playerSize=[$("#myResizable").width(), 9/16*$("#myResizable").width()];
+  var playerWidth=$("#myResizable").width();
 
   //This code loads the IFrame Player API code asynchronously.
   var scriptTag1 = document.getElementsByTagName('script')[0];
@@ -119,8 +119,8 @@ YT Video ID: <input id="myVidId" list="videoids" value="8bpVfMDSZSU">
   function onYouTubeIframeAPIReady() {
     player = new YT.Player('ytplayer', {
       listType: 'search',
-      width: playerSize[0],
-      height: playerSize[1],
+      width: playerWidth,
+      height: 9/16*playerWidth,
       events: {
         onStateChange : onPlayerStateChange,
         onReady: onPlayerReady,
@@ -221,7 +221,7 @@ YT Video ID: <input id="myVidId" list="videoids" value="8bpVfMDSZSU">
       minWidth: 352,
       minHeight: 198,
       create: function(e,ui){
-        $("#slider").width(playerSize);
+        $("#slider").width(playerWidth);
       },
       resize: function(event,ui){
         $("#slider").width(ui.size.width);
@@ -231,7 +231,6 @@ YT Video ID: <input id="myVidId" list="videoids" value="8bpVfMDSZSU">
       },
       stop: function(event,ui){
         player.setSize(ui.size.width,ui.size.height);
-        $("#slider").width(ui.size.width);
         document.getElementById("ytplayer").hidden=false;
       }
     });
@@ -351,6 +350,7 @@ YT Video ID: <input id="myVidId" list="videoids" value="8bpVfMDSZSU">
   var onBmkSelect = function(i){
     cancelABLoop();
     if(i==0) return;
+
     var a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
     var b=timeStringToSec(myBookmarks.options[i].text.split('--')[1]);
     $("#slider").slider("option", "max", player.getDuration());
@@ -363,7 +363,7 @@ YT Video ID: <input id="myVidId" list="videoids" value="8bpVfMDSZSU">
       timer.push(setInterval(onTimeUpdate,30));
   }
 
-  var onClickMenuitem = function(idx){
+  var onCkickTrash = function(idx){
     if(idx==0){
       if(confirm("Really delete ALL bookmarked loops?")){
         //first remove any note associated with bookmarked loops
