@@ -26,12 +26,15 @@
   <meta name="description" content="MP4/Ogg/WebM player with loop function and slow motion playback">
   <meta name="author" content="Alexander Grahn">
   <meta name="date" content="2016/09/26">
-</head>
 
-<!-- jQuery framework -->
-<link href="jquery-ui/jquery-ui.css" rel="stylesheet">
-<script src="jquery-ui/external/jquery/jquery.js"></script>
-<script src="jquery-ui/jquery-ui.js"></script>
+  <!-- jQuery framework -->
+  <link href="jquery-ui/jquery-ui.css" rel="stylesheet">
+  <script src="jquery-ui/external/jquery/jquery.js"></script>
+  <script src="jquery-ui/jquery-ui.js"></script>
+  
+  <link href="css/common.css" rel="stylesheet">
+  <script src="js/common.js"></script>
+</head>
 
 <body style="white-space: nowrap; min-width: max-content; display: inline-block;">
 
@@ -114,29 +117,29 @@ A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown
   myVideo.disabled=true;
   myResizable.appendChild(myVideo);
 
-  //pretty printing the current media time
-  function secToTimeString(t) {
-    var h=Math.floor(t/3600);
-    var s=t % 3600;
-    var m=Math.floor(s/60);
-    s = s % 60;
-    var ms = String(s % 1).substring(2,5);
-    s = Math.floor(s);
-    return ((h>0 ? h+':'+strPadLeft(m,0,2) : m) + ':' + strPadLeft(s,0,2)
-        + (ms.length>0 ? '.'+ms :''));
-  }
-  function strPadLeft(string,pad,length) {
-    return (new Array(length+1).join(pad)+string).slice(-length);
-  }
-
-  //time string to seconds
-  var timeStringToSec=function(ts) {
-    var ta=ts.trim().split(':');
-    var s=Number(ta[ta.length-1]);
-    s+=60*Number(ta[ta.length-2]);
-    if(ta.length==3) s+=3600*Number(ta[0]);
-    return s;
-  }
+//  //pretty printing the current media time
+//  function secToTimeString(t) {
+//    var h=Math.floor(t/3600);
+//    var s=t % 3600;
+//    var m=Math.floor(s/60);
+//    s = s % 60;
+//    var ms = String(s % 1).substring(2,5);
+//    s = Math.floor(s);
+//    return ((h>0 ? h+':'+strPadLeft(m,0,2) : m) + ':' + strPadLeft(s,0,2)
+//        + (ms.length>0 ? '.'+ms :''));
+//  }
+//  function strPadLeft(string,pad,length) {
+//    return (new Array(length+1).join(pad)+string).slice(-length);
+//  }
+//
+//  //time string to seconds
+//  var timeStringToSec=function(ts) {
+//    var ta=ts.trim().split(':');
+//    var s=Number(ta[ta.length-1]);
+//    s+=60*Number(ta[ta.length-2]);
+//    if(ta.length==3) s+=3600*Number(ta[0]);
+//    return s;
+//  }
 
   var onSliderChange = function(event, ui) {
     timeA=ui.values[0];
@@ -354,12 +357,22 @@ A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown
   }
 
   var onClickAddNote = function(idx){
-    var defaultNote = (localStorage.getItem(vidId+'-'+myBookmarks.options[idx].text) || "example text");
-    var note = prompt("Enter short description", defaultNote);
-    if(note && note.trim().length) {
-      myBookmarks.options[idx].title = note;
-      localStorage.setItem(vidId+'-'+myBookmarks.options[idx].text, note);
-    }
+    var defaultNote = (localStorage.getItem(vidId+'-'+myBookmarks.options[idx].text) || "example text")
+    
+    myPrompt(
+      function(note){
+        if(note && note.trim().length) {
+          myBookmarks.options[idx].title = note;
+          localStorage.setItem(vidId+'-'+myBookmarks.options[idx].text, note);
+        }
+      },
+      "Enter short description", defaultNote
+    );
+//    var note = prompt("Enter short description", defaultNote);
+//    if(note && note.trim().length) {
+//      myBookmarks.options[idx].title = note;
+//      localStorage.setItem(vidId+'-'+myBookmarks.options[idx].text, note);
+//    }
   }
 
   var cancelABLoop = function () {

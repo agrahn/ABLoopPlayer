@@ -6,33 +6,20 @@
   <link href="jquery-ui/jquery-ui.css" rel="stylesheet">
   <script src="jquery-ui/external/jquery/jquery.js"></script>
   <script src="jquery-ui/jquery-ui.js"></script>
+
+  <link href="css/common.css" rel="stylesheet">
+  <script src="js/common.js"></script>
 </head>
 <body>
  
 <button id="opener">open the dialog</button>
-<input id="dialog" style="width: 500; border: 1px solid powderblue;" onchange="console.log(this.value)"></input>
-
-<style>
-  .no-close .ui-dialog-titlebar-close {
-    display: none;
-  }
-</style>
+<input id="myInput" value="hello"></input>
 
 <script>
-$( "#dialog" ).dialog({
-  autoOpen: false,
-  modal: true,
-  title: "Add a short description",
-  dialogClass: "no-close",
-  closeOnEscape: false,
-  closeText: "hide",
-  width: $("#dialog").width()
-});
 $( "#opener" ).click(function() {
-  $( "#dialog" ).dialog( "open" );
+  myPrompt(document.getElementById("myInput"), "value", "Enter short description", " world!");
+  //myConfirm(document.getElementById("myInput"), "value", "Really delete ALL bookmarked loops?");
 });
-console.log($("#dialog").width());
 </script>
- 
 </body>
 </html>
