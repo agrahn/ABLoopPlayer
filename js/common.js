@@ -208,8 +208,7 @@ var onInputTime = function(whichInput, sliderIdx) {
     sec=Math.min(sec,timeB);
     $("#slider" ).slider("values", 0, sec);
   }else{
-    sec=Math.min(sec,myGetDuration());
-    sec=Math.max(sec,timeA);
+    sec=Math.min(sec,myGetDuration()); sec=Math.max(sec,timeA);
     $("#slider" ).slider("values", 1, sec);
   }
 }
@@ -315,3 +314,17 @@ var onClickAddNote = function(idx){
     "Enter description", defaultNote
   );
 }
+
+var onSlowDown = function () {
+  if(myGetPlaybackRate()==1){
+    mySetPlaybackRate(0.5);
+    slowButton.value="Fast";
+  }else if(myGetPlaybackRate()==0.5){
+    mySetPlaybackRate(2);
+    slowButton.value="Normal";
+  }else{
+    mySetPlaybackRate(1);
+    slowButton.value="Slow";
+  }
+}
+

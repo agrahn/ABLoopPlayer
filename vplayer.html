@@ -94,6 +94,18 @@ A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown
     return myVideo.currentTime;
   }
 
+  var mySetCurrentTime = function(t){
+    myVideo.currentTime=t;
+  }
+
+  var myGetPlaybackRate = function(){
+    return myVideo.playbackRate;
+  }
+
+  var mySetPlaybackRate = function(r){
+    myVideo.playbackRate=r;
+  }
+
   var initResizable = function(){
     $("#myResizable" ).resizable({
       alsoResize: "#myVideo",
@@ -181,7 +193,7 @@ A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown
   var onTimeUpdate = function () {
     if(myVideo.paused) return;
     if(myGetCurrentTime()<timeA || myGetCurrentTime()>=timeB)
-      myVideo.currentTime=timeA;
+      mySetCurrentTime(timeA);
   }
 
   var onLoopDown = function () {
@@ -212,19 +224,6 @@ A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown
         isTimeASet=true;
         loopButton.value="B";
       }
-    }
-  }
-
-  var onSlowDown = function () {
-    if(myVideo.playbackRate==myVideo.defaultPlaybackRate){
-      myVideo.playbackRate=0.5;
-      slowButton.value="Fast";
-    }else if(myVideo.playbackRate==0.5){
-      myVideo.playbackRate=2;
-      slowButton.value="Normal";
-    }else{
-      myVideo.playbackRate=myVideo.defaultPlaybackRate;
-      slowButton.value="Slow";
     }
   }
 </script>

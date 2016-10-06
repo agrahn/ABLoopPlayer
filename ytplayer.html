@@ -111,9 +111,21 @@ A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown
     return player.getCurrentTime();
   }
 
+  var mySetCurrentTime = function(t){
+    player.seekTo(t,true);
+  }
+
+  var myGetPlaybackRate = function(){
+    return player.getPlaybackRate();
+  }
+
+  var mySetPlaybackRate = function(r){
+    player.setPlaybackRate(r);
+  }
+
   var onPlayerStateChange = function(e){
     if (isTimeASet && isTimeBSet && e.data==YT.PlayerState.PLAYING)
-      timer.push(setInterval(onTimeUpdate,30));
+      timer.push(setInterval(onTimeUpdate,25));
     else
       while(timer.length) clearInterval(timer.pop());
 
@@ -193,23 +205,6 @@ A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown
     }
   }
 
-  var bmkDelete = function(idx) {
-    if(idx==0){
-      while(myBookmarks.options.length>1)
-        myBookmarks.remove(myBookmarks.options.length-1);
-      bmkHash=[];
-      bmkArr=[];
-    }else{
-      bmkArr.splice(idx-1,1);
-      bmkHash[myBookmarks.options[idx].text]=undefined;
-      myBookmarks.remove(idx);
-    }
-    if(myBookmarks.options.length==1){
-      myBookmarks.options[0].hidden=false;
-      myBookmarks.options[0].selected=true;
-    }
-  }
-
   var onBmkSelect = function(i){
     cancelABLoop();
     if(i==0) return;
@@ -236,7 +231,7 @@ A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown
 
   var onTimeUpdate = function () {
     if(myGetCurrentTime()<timeA||myGetCurrentTime()>=timeB)
-      player.seekTo(timeA,true);
+      mySetCurrentTime(timeA);
   }
 
   var onLoopDown = function () {
@@ -268,19 +263,6 @@ A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown
         isTimeASet=true;
         loopButton.value="B";
       }
-    }
-  }
-
-  var onSlowDown = function () {
-    if(player.getPlaybackRate()==1){
-      player.setPlaybackRate(0.5);
-      slowButton.value="Fast";
-    }else if(player.getPlaybackRate()==0.5){
-      player.setPlaybackRate(2);
-      slowButton.value="Normal";
-    }else{
-      player.setPlaybackRate(1);
-      slowButton.value="Slow";
     }
   }
 
