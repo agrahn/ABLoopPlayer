@@ -1,7 +1,7 @@
 /*
   common.js
 
-  common code used by players
+  common code used by the players
 
   Copyright (C) 2016  Alexander Grahn
 
@@ -23,12 +23,14 @@ var vidId;
 var timeA, timeB;
 var isTimeASet=false;
 var isTimeBSet=false;
-var myTimeA, myTimeB
-var loopButto, slowButton;
+var myTimeA, myTimeB;
+var loopButton, slowButton;
 var myBookmarks;
-var menuItem0, menuItem1
+var menuItem0, menuItem1;
 var ctrlPressed=false;
 var playerWidth;
+var bmkHash;
+var bmkArr;
 
 $(document).ready(function(){
   myTimeA = document.getElementById("myTimeA");
@@ -42,6 +44,14 @@ $(document).ready(function(){
 
   //This will be the initial player size.
   playerWidth=$("#myResizable").width();
+
+  $( "#slider" ).slider({
+    min: 0,
+    step: 0.025,
+    range: true,
+    change: function(e, ui) {onSliderChange(e, ui);},
+    slide: function(e, ui) {onSliderSlide(e, ui);},
+  });
 
   initResizable();
 });
@@ -86,9 +96,11 @@ function myPrompt(onclose, title, txt=""){
   }).focus();
 }
 
-// a modal confirm dialog using jQuery
-// Usage: myConfirm( <receiving object>, <its property to be set>, <dialog title> [, <default text>] );
-function myConfirm(obj, prop, msg){
+// a modal confirm dialog
+// Usage: myConfirm( <callback>(<ret>), <message text> );
+//   <callback> must accept one arg, which is passed to either "true" or "false", depending
+//   on the result of the user interaction
+function myConfirm(onclose, msg){
   var z=$("<div>"+msg+"</div>");
   $(document.body).append(z);
   var ret=false;
@@ -115,7 +127,7 @@ function myConfirm(obj, prop, msg){
       },
     ],
     close: function(e,ui) {
-      obj[prop] = ret;
+      onclose(ret);
       this.parentNode.removeChild(this);
     }
   })
@@ -220,12 +232,18 @@ var bmkAdd = function(bmkItem) {
      c.title = "";
      if(localStorage.getItem(vidId+'-'+bmkItem)){
        c.title = localStorage.getItem(vidId+'-'+bmkItem);
-     }  
+     }
      c.text = bmkItem;
      bmkHash[c.text]='';
      myBookmarks.add(c,insIdx); //append as a child to selector
      //refresh enabling tooltips for all appended <option> elements
-     $("OPTION").tooltip();
+     $("OPTION").tooltip({
+       position: {
+         my: "left bottom",
+         at: "right+5px bottom",
+         collision: "none"
+       }
+     });
      bmkArr.splice(insIdx, 0, bmkItem);
      localStorage.setItem(vidId, bmkArr.join());
      myBmkSpan.hidden=annotButton.disabled=false;
@@ -254,29 +272,39 @@ var bmkDelete = function(idx) {
   }
 }
 
-var onCkickTrash = function(idx){
-  if(idx==0){
-    if(confirm("Really delete ALL bookmarked loops?")){
-      //first remove any note associated with bookmarked loops
-      for(var i=1; i<myBookmarks.options.length; i++){
-        localStorage.removeItem(vidId+'-'+myBookmarks.options[i].text);
-      }
-      //then delete the bookmarked loops themselves
-      bmkDelete(0);
-      localStorage.removeItem(vidId);
-    }
-  }else{
-    if(confirm("Delete this loop?")){
-      localStorage.removeItem(vidId+'-'+myBookmarks.options[idx].text);
-      bmkDelete(idx);
-      localStorage.setItem(vidId, bmkArr.join());
-    }
+var onClickTrash = function(idx){
+  if(idx==0){ //all items
+    myConfirm(
+      function(res){
+        if(res){
+          //first remove any note associated with bookmarked loops
+          for(var i=1; i<myBookmarks.options.length; i++){
+            localStorage.removeItem(vidId+'-'+myBookmarks.options[i].text);
+          }
+          //then delete the bookmarked loops themselves
+          bmkDelete(0);
+          localStorage.removeItem(vidId);
+        }  
+      },
+      "Really delete ALL bookmarked loops?"
+    );
+  }else{ //selected item
+    myConfirm(
+      function(res){
+        if(res){
+          localStorage.removeItem(vidId+'-'+myBookmarks.options[idx].text);
+          bmkDelete(idx);
+          localStorage.setItem(vidId, bmkArr.join());
+        }  
+      },
+      "Delete this loop?"
+    );
   }
 }
 
 var onClickAddNote = function(idx){
   var defaultNote = (localStorage.getItem(vidId+'-'+myBookmarks.options[idx].text) || "example text")
-  
+
   myPrompt(
     function(note){
       if(note && note.trim().length) {
@@ -284,6 +312,6 @@ var onClickAddNote = function(idx){
         localStorage.setItem(vidId+'-'+myBookmarks.options[idx].text, note);
       }
     },
-    "Enter short description", defaultNote
+    "Enter description", defaultNote
   );
 }
