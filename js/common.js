@@ -235,6 +235,7 @@ var bmkAdd = function(bmkItem) {
      c.text = bmkItem;
      bmkHash[c.text]='';
      myBookmarks.add(c,insIdx); //append as a child to selector
+     c.selected=true;
      //refresh enabling tooltips for all appended <option> elements
      $("OPTION").tooltip({
        position: {
@@ -246,7 +247,6 @@ var bmkAdd = function(bmkItem) {
      bmkArr.splice(insIdx, 0, bmkItem);
      localStorage.setItem(vidId, bmkArr.join());
      myBmkSpan.hidden=annotButton.disabled=false;
-     myBookmarks.options[insIdx].selected=true;
      myBookmarks.options[0].hidden=true;
    }
 }
