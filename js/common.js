@@ -24,7 +24,7 @@ var timeA, timeB;
 var isTimeASet=false;
 var isTimeBSet=false;
 var myTimeA, myTimeB;
-var loopButton, slowButton;
+var loopButton, mySpeed;
 var myBookmarks;
 var menuItem0, menuItem1;
 var ctrlPressed=false;
@@ -36,7 +36,7 @@ $(document).ready(function(){
   myTimeA = document.getElementById("myTimeA");
   myTimeB = document.getElementById("myTimeB");
   loopButton = document.getElementById("loopButton");
-  slowButton = document.getElementById("slowButton");
+  mySpeed = document.getElementById("mySpeed");
   myBookmarks = document.getElementById("myBookmarks");
   menuItem0 = document.getElementById("menuItem0");
   menuItem1 = document.getElementById("menuItem1");
@@ -58,7 +58,7 @@ $(document).ready(function(){
 
 // a modal prompt dialog based on jQuery
 // Usage: myPrompt( <callback>(ret), <dialog title> [, <default text>] );
-function myPrompt(onclose, title, txt=""){
+function myPrompt(onclose, title, txt){
   var z=$(
     '<div style="width: fit-content; display: inline-block;"><p>'
     +title+
@@ -214,41 +214,44 @@ var onInputTime = function(whichInput, sliderIdx) {
 }
 
 var bmkAdd = function(bmkItem) {
-   var ta = timeStringToSec(bmkItem.split('--')[0]);
-   var tb = timeStringToSec(bmkItem.split('--')[1]);
-   var insIdx=-1;
-   //insert current loop into bookmarks select object, sorted in ascending
-   //order w.r.t. timeA & timeB
-   if(typeof bmkHash[bmkItem]==='undefined'){
-     for(var i=1; i<myBookmarks.options.length && insIdx<0; i++) {
-       var a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
-       var b=timeStringToSec(myBookmarks.options[i].text.split('--')[1]);
-       if(ta<a || ta==a && tb<b) insIdx=i;
-     }
-     if(insIdx<0) insIdx=myBookmarks.options.length;
+  var ta = timeStringToSec(bmkItem.split('--')[0]);
+  var tb = timeStringToSec(bmkItem.split('--')[1]);
+  var insIdx=-1;
+  //insert current loop into bookmarks select object, sorted in ascending
+  //order w.r.t. timeA & timeB
+  if(typeof bmkHash[bmkItem]==='undefined'){
+    for(var i=1; i<myBookmarks.options.length && insIdx<0; i++) {
+      var a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
+      var b=timeStringToSec(myBookmarks.options[i].text.split('--')[1]);
+      if(ta<a || ta==a && tb<b) insIdx=i;
+    }
+    if(insIdx<0) insIdx=myBookmarks.options.length;
 
-     var c = document.createElement('OPTION');
-     c.title = "";
-     if(localStorage.getItem(vidId+'-'+bmkItem)){
-       c.title = localStorage.getItem(vidId+'-'+bmkItem);
-     }
-     c.text = bmkItem;
-     bmkHash[c.text]='';
-     myBookmarks.add(c,insIdx); //append as a child to selector
-     c.selected=true;
-     //refresh enabling tooltips for all appended <option> elements
-     $("OPTION").tooltip({
-       position: {
-         my: "left bottom",
-         at: "right+5px bottom",
-         collision: "none"
-       }
-     });
-     bmkArr.splice(insIdx, 0, bmkItem);
-     localStorage.setItem(vidId, bmkArr.join());
-     myBmkSpan.hidden=annotButton.disabled=false;
-     myBookmarks.options[0].hidden=true;
-   }
+    var c = document.createElement('OPTION');
+    c.title = "";
+    if(localStorage.getItem(vidId+'-'+bmkItem)){
+      c.title = localStorage.getItem(vidId+'-'+bmkItem);
+    }
+    c.text = bmkItem;
+    c.addEventListener("mouseover", function(e){e.target.selected=true;});
+    c.addEventListener("mouseup", function(e){
+      onBmkSelect(e.target.index); e.target.parentNode.size=1;
+    });
+    myBookmarks.add(c,insIdx); //append as a child to selector
+    c.selected=true;
+    //refresh enabling tooltips for all appended <option> elements
+    $("OPTION").tooltip({
+      position: {
+        my: "left bottom",
+        at: "right+5px bottom",
+        collision: "none"
+      }
+    });
+    bmkHash[c.text]='';
+    bmkArr.splice(insIdx, 0, bmkItem);
+    localStorage.setItem(vidId, bmkArr.join());
+    myBmkSpan.hidden=annotButton.disabled=false;
+  }
 }
 
 var bmkDelete = function(idx) {
@@ -264,7 +267,6 @@ var bmkDelete = function(idx) {
   }
   if(myBookmarks.options.length==1){
     myBmkSpan.hidden=true;
-    myBookmarks.options[0].hidden=false;
     myBookmarks.options[0].selected=true;
   }else{
     onBmkSelect(1);
@@ -283,7 +285,7 @@ var onClickTrash = function(idx){
           //then delete the bookmarked loops themselves
           bmkDelete(0);
           localStorage.removeItem(vidId);
-        }  
+        }
       },
       "Really delete ALL bookmarked loops?"
     );
@@ -294,7 +296,7 @@ var onClickTrash = function(idx){
           localStorage.removeItem(vidId+'-'+myBookmarks.options[idx].text);
           bmkDelete(idx);
           localStorage.setItem(vidId, bmkArr.join());
-        }  
+        }
       },
       "Delete this loop?"
     );
@@ -314,17 +316,3 @@ var onClickAddNote = function(idx){
     "Enter description", defaultNote
   );
 }
-
-var onSlowDown = function () {
-  if(myGetPlaybackRate()==1){
-    mySetPlaybackRate(0.5);
-    slowButton.value="Fast";
-  }else if(myGetPlaybackRate()==0.5){
-    mySetPlaybackRate(2);
-    slowButton.value="Normal";
-  }else{
-    mySetPlaybackRate(1);
-    slowButton.value="Slow";
-  }
-}
-

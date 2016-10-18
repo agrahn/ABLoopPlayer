@@ -34,3 +34,7 @@
   height:auto;
   display:inline-block;
 }
+
+hr {
+  height: 4px; border: 1px solid;
+}

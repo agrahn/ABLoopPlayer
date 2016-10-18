@@ -31,7 +31,7 @@
   <link href="jquery-ui/jquery-ui.css" rel="stylesheet">
   <script src="jquery-ui/external/jquery/jquery.js"></script>
   <script src="jquery-ui/jquery-ui.js"></script>
-  
+
   <link href="css/common.css" rel="stylesheet">
   <script src="js/common.js"></script>
 </head>
@@ -39,11 +39,11 @@
 <body onload="onLoad()" style="white-space: nowrap; min-width: max-content; display: inline-block;">
 
 <h1 style="font-size: 150%;">YT Player with loop function</h1>
-<p>Firefox recommended.<br>Also try the <a href="vplayer.html">MP4/WebM/Ogg Player</a> for local video files.</p>
+<p>Firefox or Chrome recommended.<br>Also try the <a href="vplayer.html">MP4/WebM/Ogg Player</a> for local video files.</p>
 
 <hr>
-YT Video ID: <input id="myVidId" list="videoids" value="8bpVfMDSZSU">
-<datalist id="videoids"></datalist><button id="loadButton" onclick="loadVideo()" disabled>Load</button><hr>
+YT Video ID: <input id="myVidId" list="videoids" value="8bpVfMDSZSU" style="margin-bottom: 5px;"/>
+<datalist id="videoids"></datalist><button id="loadButton" onclick="loadVideo()" disabled>Load</button>
 
 <div id="myResizable" style="background: #ddd;">
   <!-- to be replaced by the <iframe> that displays the iYouTube pülayer -->
@@ -52,17 +52,22 @@ YT Video ID: <input id="myVidId" list="videoids" value="8bpVfMDSZSU">
 
 <div id="timeInputs" hidden="true">
   <!-- jQuery range slider -->
-  <div id="slider"></div><br>
-  A: <input id="myTimeA" onchange="onInputTime(this,0)" title="[hh:]mm:ss[.sss]"></input>
-  B: <input id="myTimeB" onchange="onInputTime(this,1)" title="[hh:]mm:ss[.sss]"></input>
+  <div id="slider" style="margin-top: 5px; margin-bottom: 5px;"></div>
+  A: <input id="myTimeA" onchange="onInputTime(this,0)" title="[hh:]mm:ss[.sss]" size="10"/>
+  B: <input id="myTimeB" onchange="onInputTime(this,1)" title="[hh:]mm:ss[.sss]" size="10"/>
   <button id="bmkAddButton" onmouseup="bmkAdd(myTimeA.value + '--' + myTimeB.value)">Add bookmark</button>
 </div>
 
 <div style="margin-top: 5px;">
-A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown()"></input>
+A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown()"/>
 <span id="myBmkSpan" hidden>
   <style>select:invalid { color: gray; }</style>
-  <select id="myBookmarks" onchange="onBmkSelect(this.selectedIndex)">
+  <select id="myBookmarks" size="1"
+    onmousedown="
+      this.size=Math.min(5,this.options.length);
+    "
+    onblur="onBmkSelect(this.selectedIndex);this.size=1;"
+  >
     <option value="" selected disabled>Bookmarked</option>
   </select><!--
   --><button id="annotButton" style="width:1.5em; padding: 0px;" title="Add a note"
@@ -72,9 +77,15 @@ A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown
     onclick="onClickTrash(myBookmarks.selectedIndex)"
   ><span class="ui-icon ui-icon-trash"></span></button>
 </span>
-<span style="display:inline-block; margin-left: 20px;"></span>
-  Set speed: <input type="button" id="slowButton" value="Slow" onmousedown="onSlowDown()"></input>
 </div>
+Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)" style="margin-top: 5px;">
+         <option value="0.25">0.25</option>
+         <option value="0.5">0.5</option>
+         <option value="1.0" selected>Normal</option>
+         <option value="1.25">1.25</option>
+         <option value="1.5">1.5</option>
+         <option value="2.0">2.0</option>
+       </select>
 <hr>
 © 2016 Alexander Grahn
 
@@ -115,10 +126,6 @@ A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown
     player.seekTo(t,true);
   }
 
-  var myGetPlaybackRate = function(){
-    return player.getPlaybackRate();
-  }
-
   var mySetPlaybackRate = function(r){
     player.setPlaybackRate(r);
   }
@@ -132,7 +139,7 @@ A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown
     if (e.data == -1){
       cancelABLoop();
       e.target.setPlaybackRate(1.0);
-      slowButton.value="Slow";
+      mySpeed.selectedIndex=2;
     }else if(e.data==YT.PlayerState.CUED){
       e.target.playVideo();
       loopButton.disabled=false;
@@ -198,7 +205,6 @@ A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown
       var bmks = localStorage.getItem(vidId).split(',');
       for(var i=0; i<bmks.length; i++){
         bmkAdd(bmks[i]);
-        myBookmarks.options[0].hidden=false;
         myBookmarks.options[0].selected=true;
       }
       annotButton.disabled=true;
@@ -216,7 +222,6 @@ A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown
     isTimeASet=isTimeBSet=true;
     timeInputs.hidden=false;
     loopButton.value="Cancel";
-    myBookmarks.options[0].hidden=true;
     annotButton.disabled=false;
     if(player.getPlayerState()==YT.PlayerState.PLAYING)
       timer.push(setInterval(onTimeUpdate,30));
@@ -238,7 +243,6 @@ A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown
     if(isTimeBSet){
       cancelABLoop();
       annotButton.disabled=true;
-      myBookmarks.options[0].hidden=false;
       myBookmarks.options[0].selected=true;
     }else{
       if(isTimeASet){
@@ -269,15 +273,17 @@ A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown
   var knownIDs=new Array();
   var knownIDsHash=new Array();
   var onLoad = function () { //get already watched IDs
-    if(localStorage.getItem('knownIDs')){
-      knownIDs = localStorage.getItem('knownIDs').split(',');
-      for(var i=0; i<knownIDs.length; i++){
-        var z = document.createElement('OPTION');
-        z.setAttribute('value', knownIDs[i]);
-        document.getElementById('videoids').appendChild(z);
-        knownIDsHash[knownIDs[i].toString()]='';
+    try{
+      if(localStorage.getItem('knownIDs')){
+        knownIDs = localStorage.getItem('knownIDs').split(',');
+        for(var i=0; i<knownIDs.length; i++){
+          var z = document.createElement('OPTION');
+          z.setAttribute('value', knownIDs[i]);
+          document.getElementById('videoids').appendChild(z);
+          knownIDsHash[knownIDs[i].toString()]='';
+        }
       }
-    }
+    }catch(e){}
   }
 </script>
 
