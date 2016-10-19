@@ -25,7 +25,7 @@
   <meta charset="utf-8">
   <meta name="description" content="MP4/Ogg/WebM player with loop function and slow motion playback">
   <meta name="author" content="Alexander Grahn">
-  <meta name="date" content="2016/09/26">
+  <meta name="date" content="2016/10/19">
 
   <!-- jQuery framework -->
   <link href="jquery-ui/jquery-ui.css" rel="stylesheet">
@@ -36,19 +36,23 @@
   <script src="js/common.js"></script>
 </head>
 
-<body style="white-space: nowrap; min-width: max-content; display: inline-block;">
+<body style="min-width: max-content; display: inline-block;">
 
 <h1 style="font-size: 150%;">MP4/WebM/Ogg Player with loop function</h1>
 <p>Firefox or Chrome recommended. Also try the <a href="ytplayer.html">YT Player</a> for online video.</p>
 
 <hr>
-<input id="myInput" accept="video/*" type="file" onchange="playSelectedFile(this.files[0])" style="margin-bottom: 5px;"/>
+<div id="topElements" style="margin-bottom: 5px;">
+  <input id="myInput" accept="video/*" type="file" onchange="playSelectedFile(this.files[0])"/>
+  <span style="float: right;"><input type="checkbox"
+    onchange="contextHelp(this)" id="help">?</input></span>
+</div>
 
 <div id="myResizable"></div>
 
 <div id="timeInputs" hidden="true">
   <!-- placeholder for jQuery range slider -->
-  <div id="slider" style="margin-top: 5px; margin-bottom: 5px;"></div>
+  <div id="slider" style="margin-top: 5px; margin-bottom: 8px;"></div>
   A: <input id="myTimeA" onchange="onInputTime(this,0)" title="[hh:]mm:ss[.sss]" size="10"/>
   B: <input id="myTimeB" onchange="onInputTime(this,1)" title="[hh:]mm:ss[.sss]" size="10"/>
   <button id="bmkAddButton" onmouseup="bmkAdd(myTimeA.value + '--' + myTimeB.value)">Add Bookmark</button>
@@ -183,8 +187,12 @@ Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)" style="marg
 
     var a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
     var b=timeStringToSec(myBookmarks.options[i].text.split('--')[1]);
-    $("#slider").slider("option", "max", myGetDuration());
-    $("#slider").slider("option", "values", [a, b]);
+    $("#slider").slider({
+      max: myGetDuration(), values: [a, b],
+      classes: {"ui-slider-handle": "custom-slider-handle","ui-slider-range": "custom-slider-range" }
+    });
+    $(".ui-slider-handle").first().text("A");
+    $(".ui-slider-handle").last().text("B");
     isTimeASet=isTimeBSet=true;
     timeInputs.hidden=false;
     loopButton.value="Cancel";
@@ -232,6 +240,34 @@ Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)" style="marg
         isTimeASet=true;
         loopButton.value="B";
       }
+    }
+  }
+
+  var contextHelp = function(t) {
+    if(t.checked) {
+      t.title = "Disable context-sensitive help.";
+      myInput.title = "Browse the hard disk for video files.";
+      loopButton.title = "Click twice to mark loop range / click to cancel current loop.";
+      myBookmarks.title = "Choose from previously saved loops.";           
+      bmkAddButton.title = "Save current loop range to the list of bookmarks.";
+      myTimeA.title = myTimeB.title = "Fine-tune loop range. Input format: [hh:]mm:ss[.sss]"; 
+      annotButton.title = "Add a note to currently selected bookmark.";
+      trashButton.title = "Delete currently selected / delete all bookmarked loops.";
+      mySpeed.title = "Select playback rate.";
+      $(".ui-slider-handle").attr("title", "Move handle to adjust the loop range. "
+          +"Press <Ctrl> while moving the handle to shift entire loop window.");
+    } else {
+      t.title="Enable context-sensitive help.";
+      myInput.title =
+      loopButton.title =
+      myBookmarks.title =           
+      myTimeA.title = myTimeB.title =
+      bmkAddButton.title =
+      annotButton.title = 
+      trashButton.title =
+      mySpeed.title =
+      "";
+      $(".ui-slider-handle").attr("title", "");
     }
   }
 </script>

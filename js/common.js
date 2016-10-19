@@ -54,6 +54,8 @@ $(document).ready(function(){
   });
 
   initResizable();
+
+  contextHelp(document.getElementById("help"));
 });
 
 // a modal prompt dialog based on jQuery
@@ -239,8 +241,8 @@ var bmkAdd = function(bmkItem) {
     });
     myBookmarks.add(c,insIdx); //append as a child to selector
     c.selected=true;
-    //refresh enabling tooltips for all appended <option> elements
-    $("OPTION").tooltip({
+    //enable tooltip for current <option> element
+    $(c).tooltip({
       position: {
         my: "left bottom",
         at: "right+5px bottom",
