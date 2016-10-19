@@ -50,6 +50,7 @@ $(document).ready(function(){
     step: 0.025,
     range: true,
     change: function(e, ui) {onSliderChange(e, ui);},
+    slide: function(e, ui) {onSliderSlide(e, ui);},
     classes: {"ui-slider-handle": "custom-slider-handle","ui-slider-range": "custom-slider-range" },
   });
   $(".ui-slider-handle").first().text("A");
@@ -322,13 +323,13 @@ var onClickAddNote = function(idx){
 }
 
 var contextHelp = function(t) {
-  contextHelpLoadVideo(t); 
+  contextHelpLoadVideo(t);
   if(t.checked) {
     t.title = "Disable context-sensitive help.";
     loopButton.title = "Click twice to mark loop range / click to cancel current loop.";
-    myBookmarks.title = "Choose from previously saved loops.";           
+    myBookmarks.title = "Choose from previously saved loops.";
     bmkAddButton.title = "Save current loop range to the list of bookmarks.";
-    myTimeA.title = myTimeB.title = "Fine-tune loop range. Input format: [hh:]mm:ss[.sss]"; 
+    myTimeA.title = myTimeB.title = "Fine-tune loop range. Input format: [hh:]mm:ss[.sss]";
     annotButton.title = "Add a note to currently selected bookmark.";
     trashButton.title = "Delete currently selected / delete all bookmarked loops.";
     mySpeed.title = "Select playback rate.";
@@ -337,10 +338,10 @@ var contextHelp = function(t) {
   } else {
     t.title="Enable context-sensitive help.";
     loopButton.title =
-    myBookmarks.title =           
+    myBookmarks.title =
     myTimeA.title = myTimeB.title =
     bmkAddButton.title =
-    annotButton.title = 
+    annotButton.title =
     trashButton.title =
     mySpeed.title =
     "";

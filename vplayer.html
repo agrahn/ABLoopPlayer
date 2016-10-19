@@ -187,12 +187,8 @@ Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)" style="marg
 
     var a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
     var b=timeStringToSec(myBookmarks.options[i].text.split('--')[1]);
-    $("#slider").slider({
-      max: myGetDuration(), values: [a, b],
-      classes: {"ui-slider-handle": "custom-slider-handle","ui-slider-range": "custom-slider-range" }
-    });
-    $(".ui-slider-handle").first().text("A");
-    $(".ui-slider-handle").last().text("B");
+    $("#slider").slider("option", "max", myGetDuration());
+    $("#slider").slider("option", "values", [ a, b ]);
     isTimeASet=isTimeBSet=true;
     timeInputs.hidden=false;
     loopButton.value="Cancel";
@@ -243,31 +239,11 @@ Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)" style="marg
     }
   }
 
-  var contextHelp = function(t) {
+  var contextHelpLoadVideo = function(t) {
     if(t.checked) {
-      t.title = "Disable context-sensitive help.";
       myInput.title = "Browse the hard disk for video files.";
-      loopButton.title = "Click twice to mark loop range / click to cancel current loop.";
-      myBookmarks.title = "Choose from previously saved loops.";           
-      bmkAddButton.title = "Save current loop range to the list of bookmarks.";
-      myTimeA.title = myTimeB.title = "Fine-tune loop range. Input format: [hh:]mm:ss[.sss]"; 
-      annotButton.title = "Add a note to currently selected bookmark.";
-      trashButton.title = "Delete currently selected / delete all bookmarked loops.";
-      mySpeed.title = "Select playback rate.";
-      $(".ui-slider-handle").attr("title", "Move handle to adjust the loop range. "
-          +"Press <Ctrl> while moving the handle to shift entire loop window.");
     } else {
-      t.title="Enable context-sensitive help.";
-      myInput.title =
-      loopButton.title =
-      myBookmarks.title =           
-      myTimeA.title = myTimeB.title =
-      bmkAddButton.title =
-      annotButton.title = 
-      trashButton.title =
-      mySpeed.title =
-      "";
-      $(".ui-slider-handle").attr("title", "");
+      myInput.title = "";
     }
   }
 </script>
