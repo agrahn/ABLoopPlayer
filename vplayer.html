@@ -81,6 +81,7 @@ A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown
 Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)" style="margin-top: 5px;">
          <option value="0.25">0.25</option>
          <option value="0.5">0.5</option>
+         <option value="0.75">0.75</option>
          <option value="1.0" selected>Normal</option>
          <option value="1.25">1.25</option>
          <option value="1.5">1.5</option>
@@ -138,7 +139,7 @@ Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)" style="marg
   var playSelectedFile = function (f) {
     cancelABLoop();
 
-    mySpeed.selectedIndex=2;
+    mySpeed.selectedIndex=3;
     loopButton.disabled=true;
 
     //remove all bookmark items from previous video
