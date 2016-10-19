@@ -50,8 +50,10 @@ $(document).ready(function(){
     step: 0.025,
     range: true,
     change: function(e, ui) {onSliderChange(e, ui);},
-    slide: function(e, ui) {onSliderSlide(e, ui);},
+    classes: {"ui-slider-handle": "custom-slider-handle","ui-slider-range": "custom-slider-range" },
   });
+  $(".ui-slider-handle").first().text("A");
+  $(".ui-slider-handle").last().text("B");
 
   initResizable();
 
@@ -317,4 +319,31 @@ var onClickAddNote = function(idx){
     },
     "Enter description", defaultNote
   );
+}
+
+var contextHelp = function(t) {
+  contextHelpLoadVideo(t); 
+  if(t.checked) {
+    t.title = "Disable context-sensitive help.";
+    loopButton.title = "Click twice to mark loop range / click to cancel current loop.";
+    myBookmarks.title = "Choose from previously saved loops.";           
+    bmkAddButton.title = "Save current loop range to the list of bookmarks.";
+    myTimeA.title = myTimeB.title = "Fine-tune loop range. Input format: [hh:]mm:ss[.sss]"; 
+    annotButton.title = "Add a note to currently selected bookmark.";
+    trashButton.title = "Delete currently selected / delete all bookmarked loops.";
+    mySpeed.title = "Select playback rate.";
+    $(".ui-slider-handle").attr("title", "Move handle to adjust the loop range. "
+        +"Press <Ctrl> while moving the handle to shift entire loop window.");
+  } else {
+    t.title="Enable context-sensitive help.";
+    loopButton.title =
+    myBookmarks.title =           
+    myTimeA.title = myTimeB.title =
+    bmkAddButton.title =
+    annotButton.title = 
+    trashButton.title =
+    mySpeed.title =
+    "";
+    $(".ui-slider-handle").attr("title", "");
+  }
 }
