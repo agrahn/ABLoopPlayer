@@ -47,7 +47,7 @@
   <datalist id="videoids"></datalist>
   <button id="loadButton" onclick="loadVideo()" disabled>Load</button>
   <span style="float: right;"><input type="checkbox"
-    onchange="contextHelp(this)" id="help">?</input></span>
+    onchange="contextHelp(this)" id="help" checked>?</input></span>
 </div>
 
 <div id="myResizable" style="background: #ddd;">
@@ -56,11 +56,12 @@
 </div>
 
 <div id="timeInputs" hidden="true">
-  <!-- jQuery range slider -->
+  <!-- placeholder for jQuery range slider -->
   <div id="slider" style="margin-top: 5px; margin-bottom: 8px;"></div>
-  A: <input id="myTimeA" onchange="onInputTime(this,0)" size="10"/>
-  B: <input id="myTimeB" onchange="onInputTime(this,1)" size="10"/>
-  <button id="bmkAddButton" onmouseup="bmkAdd(myTimeA.value + '--' + myTimeB.value)">Add Bookmark</button>
+  A: <input id="myTimeA" onchange="onInputTime(this,0)" size="8"/>
+  B: <input id="myTimeB" onchange="onInputTime(this,1)" size="8"/>
+  <button id="bmkAddButton" onmouseup="bmkAdd(myTimeA.value + '--' + myTimeB.value)">
+    Add Bookmark</button>
 </div>
 
 <div style="margin-top: 5px;">
@@ -83,31 +84,28 @@ A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown
   ><span class="ui-icon ui-icon-trash"></span></button>
 </span>
 </div>
-Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)" style="margin-top: 5px;">
-         <option value="0.25">0.25</option>
-         <option value="0.5">0.5</option>
-         <option value="1.0" selected>Normal</option>
-         <option value="1.25">1.25</option>
-         <option value="1.5">1.5</option>
-         <option value="2.0">2.0</option>
-       </select>
+Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)"
+         style="margin-top: 5px;" disabled></select>
 <hr>
 © 2016 Alexander Grahn
 
-<script>
+<script id="mainScript">
   var timer=[];
   var loadButton = document.getElementById("loadButton");
 
-  //This code loads the IFrame Player API code asynchronously.
-  var scriptTag1 = document.getElementsByTagName('script')[0];
+  //Load the IFrame Player API code at the very end.
+  var scriptTag1 = document.getElementById('mainScript');
   var scriptTag2 = document.createElement('script');
   scriptTag2.src = "https://www.youtube.com/iframe_api";
   scriptTag1.parentNode.insertBefore(scriptTag2, scriptTag1);
 
   //This function creates an <iframe> (and YouTube player)
-  //after the API code downloads.
+  //after the API code has been downloaded.
   var player;
   function onYouTubeIframeAPIReady() {
+    var playerWidth=$("#myResizable").width();
+    initResizable();
+
     player = new YT.Player('ytplayer', {
       listType: 'search',
       width: playerWidth,
@@ -143,11 +141,25 @@ Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)" style="marg
 
     if (e.data == -1){
       cancelABLoop();
-      e.target.setPlaybackRate(1.0);
-      mySpeed.selectedIndex=2;
     }else if(e.data==YT.PlayerState.CUED){
       e.target.playVideo();
       loopButton.disabled=false;
+      $("#slider").slider("option", "max", myGetDuration());
+
+      //determine available playback rates and fill the #mySpeed select element
+      var rates = player.getAvailablePlaybackRates();
+      for(var i=0; i<rates.length; i++) {
+        var c = document.createElement('OPTION');
+        mySpeed.add(c); //append as a child to selector
+
+        c.value = c.text = rates[i];
+        if(rates[i] == 1.0) {
+          c.text = "Normal";
+          c.selected=true;
+          mySetPlaybackRate(1);
+        }
+      }
+      mySpeed.disabled=false;
     }
   }
 
@@ -156,18 +168,15 @@ Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)" style="marg
       aspectRatio: false,
       minWidth: 352,
       minHeight: 198,
-      create: function(e,ui){
-        $("#slider").width(playerWidth);
-      },
-      resize: function(event,ui){
-        $("#slider").width(ui.size.width);
-      },
       start: function(event,ui){
         document.getElementById("ytplayer").hidden=true;
       },
       stop: function(event,ui){
         player.setSize(ui.size.width,ui.size.height);
         document.getElementById("ytplayer").hidden=false;
+      },
+      resize: function(event,ui){
+        $("#slider").width(ui.size.width);
       }
     });
   }
@@ -214,6 +223,10 @@ Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)" style="marg
       }
       annotButton.disabled=true;
     }
+
+    //remove all speed options
+    mySpeed.disabled=true;
+    while(mySpeed.options.length) mySpeed.remove(mySpeed.options.length-1);
   }
 
   var onBmkSelect = function(i){
@@ -222,7 +235,6 @@ Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)" style="marg
 
     var a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
     var b=timeStringToSec(myBookmarks.options[i].text.split('--')[1]);
-    $("#slider").slider("option", "max", myGetDuration());
     $("#slider").slider("option", "values", [ a, b ]);
     isTimeASet=isTimeBSet=true;
     timeInputs.hidden=false;
@@ -260,7 +272,6 @@ Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)" style="marg
           }
           isTimeBSet=true;
           loopButton.value="Cancel";
-          $("#slider").slider("option", "max", myGetDuration());
           $("#slider").slider("option", "values", [ timeA, timeB ]);
           timeInputs.hidden=false;
 

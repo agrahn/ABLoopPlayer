@@ -39,13 +39,13 @@
 <body style="min-width: max-content; display: inline-block;">
 
 <h1 style="font-size: 150%;">MP4/WebM/Ogg Player with loop function</h1>
-<p>Firefox or Chrome recommended. Also try the <a href="ytplayer.html">YT Player</a> for online video.</p>
+<p>Firefox or Chrome recommended.<br>Also try the <a href="ytplayer.html">YT Player</a> for online video.</p>
 
 <hr>
 <div id="topElements" style="margin-bottom: 5px;">
   <input id="myInput" accept="video/*" type="file" onchange="playSelectedFile(this.files[0])"/>
   <span style="float: right;"><input type="checkbox"
-    onchange="contextHelp(this)" id="help">?</input></span>
+    onchange="contextHelp(this)" id="help" checked>?</input></span>
 </div>
 
 <div id="myResizable"></div>
@@ -53,8 +53,8 @@
 <div id="timeInputs" hidden="true">
   <!-- placeholder for jQuery range slider -->
   <div id="slider" style="margin-top: 5px; margin-bottom: 8px;"></div>
-  A: <input id="myTimeA" onchange="onInputTime(this,0)" title="[hh:]mm:ss[.sss]" size="10"/>
-  B: <input id="myTimeB" onchange="onInputTime(this,1)" title="[hh:]mm:ss[.sss]" size="10"/>
+  A: <input id="myTimeA" onchange="onInputTime(this,0)" title="[hh:]mm:ss[.sss]" size="8"/>
+  B: <input id="myTimeB" onchange="onInputTime(this,1)" title="[hh:]mm:ss[.sss]" size="8"/>
   <button id="bmkAddButton" onmouseup="bmkAdd(myTimeA.value + '--' + myTimeB.value)">Add Bookmark</button>
 </div>
 
@@ -82,7 +82,7 @@ Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)" style="marg
          <option value="0.25">0.25</option>
          <option value="0.5">0.5</option>
          <option value="0.75">0.75</option>
-         <option value="1.0" selected>Normal</option>
+         <option value="1.0" id="normalSpeed" selected>Normal</option>
          <option value="1.25">1.25</option>
          <option value="1.5">1.5</option>
          <option value="2.0">2.0</option>
@@ -97,9 +97,11 @@ Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)" style="marg
   var myVideo = document.createElement("video");
   myVideo.id="myVideo";
   myVideo.controls=true;
-  myVideo.width=playerWidth;
+  myVideo.width=$("#myResizable").width();
   myVideo.disabled=true;
-  $("#myResizable").append(myVideo);
+
+  var myResizable = document.getElementById("myResizable");
+  myResizable.appendChild(myVideo);
 
   var myGetDuration = function(){
     return myVideo.duration;
@@ -127,8 +129,8 @@ Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)" style="marg
       aspectRatio: true,
       minWidth: 352,
       create: function(e,ui){
-        myVideo.width=playerWidth;
-        $("#slider").width(playerWidth);
+        myVideo.width=$("#myResizable").width();
+        $("#slider").width(myVideo.width);
       },
       resize: function(event,ui){
         $("#slider").width(ui.size.width);
@@ -139,7 +141,9 @@ Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)" style="marg
   var playSelectedFile = function (f) {
     cancelABLoop();
 
-    mySpeed.selectedIndex=3;
+    mySpeed.options.namedItem("normalSpeed").selected=true;
+    mySetPlaybackRate(mySpeed.value);
+
     loopButton.disabled=true;
 
     //remove all bookmark items from previous video
@@ -179,6 +183,7 @@ Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)" style="marg
 
   var onCanPlay = function () {
     loopButton.disabled=false;
+    $("#slider").slider("option", "max", myGetDuration());
     initResizable();
   }
 
@@ -188,7 +193,6 @@ Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)" style="marg
 
     var a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
     var b=timeStringToSec(myBookmarks.options[i].text.split('--')[1]);
-    $("#slider").slider("option", "max", myGetDuration());
     $("#slider").slider("option", "values", [ a, b ]);
     isTimeASet=isTimeBSet=true;
     timeInputs.hidden=false;
@@ -226,7 +230,6 @@ Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)" style="marg
           }
           isTimeBSet=true;
           loopButton.value="Cancel";
-          $("#slider").slider("option", "max", myGetDuration());
           $("#slider").slider("option", "values", [ timeA, timeB ]);
           timeInputs.hidden=false;
 

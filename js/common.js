@@ -28,7 +28,6 @@ var loopButton, mySpeed;
 var myBookmarks;
 var menuItem0, menuItem1;
 var ctrlPressed=false;
-var playerWidth;
 var bmkHash;
 var bmkArr;
 
@@ -42,10 +41,7 @@ $(document).ready(function(){
   menuItem1 = document.getElementById("menuItem1");
   loopButton.disabled=true;
 
-  //This will be the initial player size.
-  playerWidth=$("#myResizable").width();
-
-  $( "#slider" ).slider({
+  $( "#slider" ).slider({ //initialisation
     min: 0,
     step: 0.025,
     range: true,
@@ -55,8 +51,6 @@ $(document).ready(function(){
   });
   $(".ui-slider-handle").first().text("A");
   $(".ui-slider-handle").last().text("B");
-
-  initResizable();
 
   contextHelp(document.getElementById("help"));
 });
@@ -333,8 +327,8 @@ var contextHelp = function(t) {
     annotButton.title = "Add a note to currently selected bookmark.";
     trashButton.title = "Delete currently selected / delete all bookmarked loops.";
     mySpeed.title = "Select playback rate.";
-    $(".ui-slider-handle").attr("title", "Move handle to adjust the loop range. "
-        +"Press <Ctrl> while moving the handle to shift entire loop window.");
+    $("#slider").attr("title", "Move slider handles to adjust the loop range. "
+        +"Press <Ctrl> while moving a handle to shift the entire loop window.");
   } else {
     t.title="Enable context-sensitive help.";
     loopButton.title =
@@ -345,6 +339,6 @@ var contextHelp = function(t) {
     trashButton.title =
     mySpeed.title =
     "";
-    $(".ui-slider-handle").attr("title", "");
+    $("#slider").attr("title", "");
   }
 }

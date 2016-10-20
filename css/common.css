@@ -28,15 +28,8 @@
   right: -10px;
 }
 
-/* for setting whitespace between elements */
-.divider{
-  width:20px;
-  height:auto;
-  display:inline-block;
-}
-
 hr {
-  height: 4px; border: 1px solid;
+  height: 4px; border: 1px solid #888;
 }
 
 .custom-slider-handle {
