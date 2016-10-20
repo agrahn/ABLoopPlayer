@@ -144,7 +144,6 @@ Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)"
     }else if(e.data==YT.PlayerState.CUED){
       e.target.playVideo();
       loopButton.disabled=false;
-      $("#slider").slider("option", "max", myGetDuration());
 
       //determine available playback rates and fill the #mySpeed select element
       var rates = player.getAvailablePlaybackRates();
@@ -236,6 +235,7 @@ Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)"
     var a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
     var b=timeStringToSec(myBookmarks.options[i].text.split('--')[1]);
     $("#slider").slider("option", "values", [ a, b ]);
+    $("#slider").slider("option", "max", myGetDuration());
     isTimeASet=isTimeBSet=true;
     timeInputs.hidden=false;
     loopButton.value="Cancel";
@@ -273,6 +273,7 @@ Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)"
           isTimeBSet=true;
           loopButton.value="Cancel";
           $("#slider").slider("option", "values", [ timeA, timeB ]);
+          $("#slider").slider("option", "max", myGetDuration());
           timeInputs.hidden=false;
 
           if(player.getPlayerState()==YT.PlayerState.PLAYING)
