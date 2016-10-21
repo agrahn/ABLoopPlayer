@@ -321,9 +321,11 @@ var onClickAddNote = function(idx){
 }
 
 var contextHelp = function(t) {
-  contextHelpLoadVideo(t);
   if(t.checked) {
     t.title = "Disable context-sensitive help.";
+    myVidId.title = "Open video on youtube.com and "
+      + "get its ID from the browser's address bar.";
+    myInput.title = "Browse the hard disk for video files.";
     loopButton.title = "Click twice to mark loop range / click to cancel current loop.";
     myBookmarks.title = "Choose from previously saved loops.";
     bmkAddButton.title = "Save current loop range to the list of bookmarks.";
@@ -336,6 +338,8 @@ var contextHelp = function(t) {
         + "Also, handles can be moved with the arrow keys [<--] , [-->].");
   } else {
     t.title="Enable context-sensitive help.";
+    myVidId.title = "";
+    myInput.title = "";
     loopButton.title =
     myBookmarks.title =
     myTimeA.title = myTimeB.title =
@@ -562,15 +566,6 @@ var onLoadWindowYT = function() {
   }
 }
 
-var contextHelpLoadVideoYT = function(t) {
-  if(t.checked) {
-    myVidId.title = "Open video on youtube.com and "
-      + "get its ID from the browser's address bar.";
-  } else {
-    myVidId.title = "";
-  }
-}
-
 /////////////////////////
 // <video> specific code
 /////////////////////////
@@ -748,14 +743,6 @@ var onLoadWindowVT = function() {
   myResizable.appendChild(myVideo);
 }
 
-var contextHelpLoadVideoVT = function(t) {
-  if(t.checked) {
-    myInput.title = "Browse the hard disk for video files.";
-  } else {
-    myInput.title = "";
-  }
-}
-
 //functions with player specific implementation
 var onBmkSelect;
 var myGetDuration;
@@ -766,7 +753,6 @@ var initResizable;
 var cancelABLoop;
 var onTimeUpdate;
 var onLoopDown;
-var contextHelpLoadVideo;
 var onLoadWindow;
 
 //initialization functions
@@ -781,7 +767,6 @@ var initYT = function () { // YT
   onTimeUpdate = onTimeUpdateYT;
   onLoopDown = onLoopDownYT;
   onLoadWindow = onLoadWindowYT;
-  contextHelpLoadVideo = contextHelpLoadVideoYT;
 }
 
 var initVT = function () { // <video> tag
@@ -795,5 +780,4 @@ var initVT = function () { // <video> tag
   onTimeUpdate = onTimeUpdateVT;
   onLoopDown = onLoopDownVT;
   onLoadWindow = onLoadWindowVT;
-  contextHelpLoadVideo = contextHelpLoadVideoVT;
 }

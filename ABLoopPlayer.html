@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <!--
-  ytplayer.html
+  ABLoopPlayer.html
 
-  YouTube video player with A-B loop, slow motion and bookmarking
-  functionality
+  Player for YouTube and local video files with A-B loop, slow motion
+  and bookmarking functionality.
 
   Copyright (C) 2016  Alexander Grahn
 
@@ -23,7 +23,7 @@
 <html lang="en"/>
 <head>
   <meta charset="utf-8"/>
-  <meta name="description" content="YT player with loop function and slow motion playback"/>
+  <meta name="description" content="Player for YouTube and local video files with A-B loop function and slow motion playback"/>
   <meta name="author" content="Alexander Grahn"/>
   <meta name="date" content="2016/10/19"/>
 
@@ -36,22 +36,25 @@
   <link href="css/common.css" rel="stylesheet"/>
 
   <!-- code used by the players -->
-  <script src="js/common.js"></script>
+  <script src="js/main.js"></script>
   <script>initYT();</script>
   <script src="https://www.youtube.com/iframe_api"></script>
 </head>
 
 <body style="min-width: max-content; display: inline-block;">
 
-<h1 style="font-size: 150%;">YT Player with loop function</h1>
-<p>Firefox or Chrome recommended.<br/>Also try the <a href="vplayer.html">MP4/WebM/Ogg Player</a> for local video files.</p>
+<h1 style="font-size: 150%;">Video player with A-B loop function</h1>
+<p>Firefox or Chrome recommended.</p>
 
 <hr class="double" style="margin-bottom: 0px;"/>
 <div id="topElements" style="margin: 0px 0px 3px 0px; padding: 5px; background-color: #eee;">
+  <div style="margin: 0px 0px 3px 0px;">
   YT Video ID: <input id="myVidId" list="videoids" value="8bpVfMDSZSU" size="14"/>
   <datalist id="videoids"></datalist>
   <button id="loadButton" onclick="loadVideo()" disabled>Load</button>
   <span style="float: right;"><input type="checkbox" onchange="contextHelp(this)" id="help" checked/>?</span>
+  </div>
+  Video File: <input id="myInput" accept="video/*" type="file" onchange="playSelectedFile(this.files[0])"/>
 </div>
 
 <div id="myResizable" style="background: #ddd;">

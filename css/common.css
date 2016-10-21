@@ -28,8 +28,8 @@
   right: -10px;
 }
 
-hr {
-  height: 4px; border: 1px solid #888;
+hr.double {
+  height: 3px; border: 1px solid #888;
 }
 
 .custom-slider-handle {
