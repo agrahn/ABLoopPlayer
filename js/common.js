@@ -629,7 +629,6 @@ var myGetPlaybackRate = function(){
 }
 
 var mySetPlaybackRateVT = function(r){
-  console.log("set rate : " + r);
   myVideo.playbackRate=r;
 }
 
