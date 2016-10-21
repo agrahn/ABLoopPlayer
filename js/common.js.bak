@@ -20,7 +20,6 @@
 */
 
 var vidId;
-var myVideo;
 var timeA, timeB;
 var isTimeASet=false;
 var isTimeBSet=false;
@@ -32,7 +31,7 @@ var ctrlPressed=false;
 var bmkHash;
 var bmkArr;
 
-window.addEventListener( "load", function(){
+$(document).ready(function(){
   myTimeA = document.getElementById("myTimeA");
   myTimeB = document.getElementById("myTimeB");
   loopButton = document.getElementById("loopButton");
@@ -41,9 +40,8 @@ window.addEventListener( "load", function(){
   menuItem0 = document.getElementById("menuItem0");
   menuItem1 = document.getElementById("menuItem1");
   loopButton.disabled=true;
-  mySpeed.disabled=true;
 
-  $("#slider").slider({ //initialisation
+  $( "#slider" ).slider({ //initialisation
     min: 0,
     step: 0.025,
     range: true,
@@ -55,20 +53,11 @@ window.addEventListener( "load", function(){
   $(".ui-slider-handle").last().text("B");
 
   contextHelp(document.getElementById("help"));
-  onLoadWindow(); //run player specific code
-});
-
-window.addEventListener( "keydown", function(e) {
-  if (e.which == 17) ctrlPressed=true;
-});
-
-window.addEventListener( "keyup", function(e) {
-  if (e.which == 17) ctrlPressed=false;
 });
 
 // a modal prompt dialog based on jQuery
 // Usage: myPrompt( <callback>(ret), <dialog title> [, <default text>] );
-var myPrompt = function(onclose, title, txt){
+function myPrompt(onclose, title, txt){
   var z=$(
     '<div style="width: fit-content; display: inline-block;"><p>'
     +title+
@@ -110,7 +99,7 @@ var myPrompt = function(onclose, title, txt){
 // Usage: myConfirm( <callback>(<ret>), <message text> );
 //   <callback> must accept one arg, which is passed to either "true" or "false", depending
 //   on the result of the user interaction
-var myConfirm = function(onclose, msg) {
+function myConfirm(onclose, msg){
   var z=$("<div>"+msg+"</div>");
   $(document.body).append(z);
   var ret=false;
@@ -144,7 +133,7 @@ var myConfirm = function(onclose, msg) {
 }
 
 //pretty printing the current media time
-var secToTimeString = function(t) {
+function secToTimeString(t) {
   var h=Math.floor(t/3600);
   var s=t % 3600;
   var m=Math.floor(s/60);
@@ -154,12 +143,12 @@ var secToTimeString = function(t) {
   return ((h>0 ? h+':'+strPadLeft(m,0,2) : m) + ':' + strPadLeft(s,0,2)
       + (ms.length>0 ? '.'+ms :''));
 }
-var strPadLeft = function strPadLeft(string,pad,length) {
+function strPadLeft(string,pad,length) {
   return (new Array(length+1).join(pad)+string).slice(-length);
 }
 
 // time string to seconds
-var timeStringToSec = function(ts) {
+var timeStringToSec=function(ts) {
   var ta=ts.trim().split(':');
   var s=Number(ta[ta.length-1]);
   s+=60*Number(ta[ta.length-2]);
@@ -192,6 +181,13 @@ var onSliderSlide = function(e, ui) {
     onSliderChange(e, ui);
   }
 }
+
+$(document).keydown(function(e) {
+  if (e.which == 17) ctrlPressed=true;
+});
+$(document).keyup(function(e) {
+  if (e.which == 17) ctrlPressed=false;
+});
 
 var onInputTime = function(whichInput, sliderIdx) {
   var time=whichInput.value.match(
@@ -347,13 +343,9 @@ var contextHelp = function(t) {
   }
 }
 
-///////////////////////////
 // YT player specific code
-///////////////////////////
 var timer=[];
-var knownIDs=new Array();
-var knownIDsHash=new Array();
-
+ 
 //This function creates an <iframe> (and YouTube player)
 //after the API code has been downloaded.
 var player;
@@ -404,8 +396,9 @@ var onPlayerStateChange = function(e){
   }
 }
 
+var loadButton = document.getElementById("loadButton");
 var onPlayerReady = function(e){
-  document.getElementById("loadButton").disabled=false;
+  loadButton.disabled=false;
 }
 
 var loadVideo = function() {
@@ -450,8 +443,20 @@ var loadVideo = function() {
   while(mySpeed.options.length) mySpeed.remove(mySpeed.options.length-1);
 }
 
-var mySetPlaybackRateYT = function(r){
-  player.setPlaybackRate(r);
+var knownIDs=new Array();
+var knownIDsHash=new Array();
+var onLoad = function () { //get already watched IDs
+  try{
+    if(localStorage.getItem('knownIDs')){
+      knownIDs = localStorage.getItem('knownIDs').split(',');
+      for(var i=0; i<knownIDs.length; i++){
+        var z = document.createElement('OPTION');
+        z.setAttribute('value', knownIDs[i]);
+        document.getElementById('videoids').appendChild(z);
+        knownIDsHash[knownIDs[i].toString()]='';
+      }
+    }
+  }catch(e){}
 }
 
 var myGetDurationYT = function(){
@@ -464,6 +469,10 @@ var myGetCurrentTimeYT = function(){
 
 var mySetCurrentTimeYT = function(t){
   player.seekTo(t,true);
+}
+
+var mySetPlaybackRateYT = function(r){
+  player.setPlaybackRate(r);
 }
 
 var initResizableYT = function(){
@@ -486,11 +495,6 @@ var initResizableYT = function(){
 
 var onBmkSelectYT = function(i){
   cancelABLoop();
-
-  //needs to reset for some reason
-  if(document.getElementById("help").checked)
-    myBookmarks.title = "Choose from previously saved loops.";
-
   if(i==0) return;
 
   var a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
@@ -548,19 +552,6 @@ var onLoopDownYT = function () {
   }
 }
 
-var onLoadWindowYT = function() {
-  //get already watched IDs
-  if(localStorage.getItem('knownIDs')){
-    knownIDs = localStorage.getItem('knownIDs').split(',');
-    for(var i=0; i<knownIDs.length; i++){
-      var z = document.createElement('OPTION');
-      z.setAttribute('value', knownIDs[i]);
-      document.getElementById('videoids').appendChild(z);
-      knownIDsHash[knownIDs[i].toString()]='';
-    }
-  }
-}
-
 var contextHelpLoadVideoYT = function(t) {
   if(t.checked) {
     myVidId.title = "Open video on youtube.com and "
@@ -570,9 +561,7 @@ var contextHelpLoadVideoYT = function(t) {
   }
 }
 
-/////////////////////////
 // <video> specific code
-/////////////////////////
 var URL = window.URL || window.webkitURL;
 
 var playSelectedFile = function (f) {
@@ -624,22 +613,8 @@ var onCanPlay = function () {
   initResizable();
 }
 
-var myGetPlaybackRate = function(){
-  return myVideo.playbackRate;
-}
-
-var mySetPlaybackRateVT = function(r){
-  console.log("set rate : " + r);
-  myVideo.playbackRate=r;
-}
-
 var onBmkSelectVT = function(i){
   cancelABLoop();
-
-  //needs to reset for some reason
-  if(document.getElementById("help").checked)
-    myBookmarks.title = "Choose from previously saved loops.";
-
   if(i==0) return;
 
   var a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
@@ -662,6 +637,14 @@ var myGetCurrentTimeVT = function(){
 
 var mySetCurrentTimeVT = function(t){
   myVideo.currentTime=t;
+}
+
+var myGetPlaybackRateVT = function(){
+  return myVideo.playbackRate;
+}
+
+var mySetPlaybackRateVT = function(r){
+  myVideo.playbackRate=r;
 }
 
 var initResizableVT = function(){
@@ -721,33 +704,6 @@ var onLoopDownVT = function () {
   }
 }
 
-var onLoadWindowVT = function() {
-  //add speed options
-  var rates = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
-  for(var i=0; i<rates.length; i++) {
-    var c = document.createElement('OPTION');
-    mySpeed.add(c); //append as a child to selector
-
-    c.value = c.text = rates[i];
-    if(rates[i] == 1.0) {
-      c.id = "normalSpeed";
-      c.text = "Normal";
-      c.selected=true;
-    }
-  }
-  mySpeed.disabled=false;
-
-  //just to show it's a video player ;)
-  myVideo = document.createElement("video");
-  myVideo.id="myVideo";
-  myVideo.controls=true;
-  myVideo.width=$("#myResizable").width();
-  myVideo.disabled=true;
-
-  var myResizable = document.getElementById("myResizable");
-  myResizable.appendChild(myVideo);
-}
-
 var contextHelpLoadVideoVT = function(t) {
   if(t.checked) {
     myInput.title = "Browse the hard disk for video files.";
@@ -756,44 +712,6 @@ var contextHelpLoadVideoVT = function(t) {
   }
 }
 
-//functions with player specific implementation
-var onBmkSelect;
-var myGetDuration;
-var myGetCurrentTime;
-var mySetCurrentTime;
-var mySetPlaybackRate;
-var initResizable;
-var cancelABLoop;
-var onTimeUpdate;
-var onLoopDown;
-var contextHelpLoadVideo;
-var onLoadWindow;
+//functions with different implementation for both players
 
-//initialization functions
-var initYT = function () { // YT
-  onBmkSelect = onBmkSelectYT;
-  myGetDuration = myGetDurationYT;
-  myGetCurrentTime = myGetCurrentTimeYT;
-  mySetCurrentTime = mySetCurrentTimeYT;
-  mySetPlaybackRate = mySetPlaybackRateYT;
-  initResizable = initResizableYT;
-  cancelABLoop = cancelABLoopYT;
-  onTimeUpdate = onTimeUpdateYT;
-  onLoopDown = onLoopDownYT;
-  onLoadWindow = onLoadWindowYT;
-  contextHelpLoadVideo = contextHelpLoadVideoYT;
-}
-
-var initVT = function () { // <video> tag
-  onBmkSelect = onBmkSelectVT;
-  myGetDuration = myGetDurationVT;
-  myGetCurrentTime = myGetCurrentTimeVT;
-  mySetCurrentTime = mySetCurrentTimeVT;
-  mySetPlaybackRate = mySetPlaybackRateVT;
-  initResizable = initResizableVT;
-  cancelABLoop = cancelABLoopVT;
-  onTimeUpdate = onTimeUpdateVT;
-  onLoopDown = onLoopDownVT;
-  onLoadWindow = onLoadWindowVT;
-  contextHelpLoadVideo = contextHelpLoadVideoVT;
-}
+//YT:

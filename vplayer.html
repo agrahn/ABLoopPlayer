@@ -32,8 +32,12 @@
   <script src="jquery-ui/external/jquery/jquery.js"></script>
   <script src="jquery-ui/jquery-ui.js"></script>
 
+  <!-- styles used in this document -->
   <link href="css/common.css" rel="stylesheet">
+
+  <!-- code used by the players -->
   <script src="js/common.js"></script>
+  <script>initVT();</script>
 </head>
 
 <body style="min-width: max-content; display: inline-block;">
@@ -78,179 +82,10 @@ A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown
   ><span class="ui-icon ui-icon-trash"></span></button>
 </span>
 </div>
-Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)" style="margin-top: 5px;">
-         <option value="0.25">0.25</option>
-         <option value="0.5">0.5</option>
-         <option value="0.75">0.75</option>
-         <option value="1.0" id="normalSpeed" selected>Normal</option>
-         <option value="1.25">1.25</option>
-         <option value="1.5">1.5</option>
-         <option value="2.0">2.0</option>
-       </select>
+Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)"
+         style="margin-top: 5px;" disabled></select>
 <hr>
 © 2016 Alexander Grahn
-
-<script>
-  var URL = window.URL || window.webkitURL;
-
-  //just to show it's a video player ;)
-  var myVideo = document.createElement("video");
-  myVideo.id="myVideo";
-  myVideo.controls=true;
-  myVideo.width=$("#myResizable").width();
-  myVideo.disabled=true;
-
-  var myResizable = document.getElementById("myResizable");
-  myResizable.appendChild(myVideo);
-
-  var myGetDuration = function(){
-    return myVideo.duration;
-  }
-
-  var myGetCurrentTime = function(){
-    return myVideo.currentTime;
-  }
-
-  var mySetCurrentTime = function(t){
-    myVideo.currentTime=t;
-  }
-
-  var myGetPlaybackRate = function(){
-    return myVideo.playbackRate;
-  }
-
-  var mySetPlaybackRate = function(r){
-    myVideo.playbackRate=r;
-  }
-
-  var initResizable = function(){
-    $("#myResizable" ).resizable({
-      alsoResize: "#myVideo",
-      aspectRatio: true,
-      minWidth: 352,
-      create: function(e,ui){
-        myVideo.width=$("#myResizable").width();
-        $("#slider").width(myVideo.width);
-      },
-      resize: function(event,ui){
-        $("#slider").width(ui.size.width);
-      }
-    });
-  };
-
-  var playSelectedFile = function (f) {
-    cancelABLoop();
-
-    mySpeed.options.namedItem("normalSpeed").selected=true;
-    mySetPlaybackRate(mySpeed.value);
-
-    loopButton.disabled=true;
-
-    //remove all bookmark items from previous video
-    bmkDelete(0);
-
-    //replace #myResizable container and its #myVideo child
-    myResizable = document.getElementById("myResizable");
-    var parent = myResizable.parentNode;
-    var myResizableOld=myResizable;
-    myResizable = document.createElement("div");
-    myResizable.id="myResizable";
-    parent.replaceChild(myResizable, myResizableOld);
-    myVideo = document.createElement("video");
-    myVideo.id="myVideo";
-    myVideo.addEventListener("mouseover", function(e){e.target.controls=true;});
-    myVideo.addEventListener("mouseout", function(e){e.target.controls=false;});
-    myVideo.controls=null;
-    myResizable.appendChild(myVideo);
-
-    //set video source and add event listeners
-    vidId = f.name+'-'+f.size; //some checksum would be better
-    var fileURL = URL.createObjectURL(f);
-    myVideo.addEventListener("canplay", onCanPlay);
-    myVideo.addEventListener("play", function(e){mySetPlaybackRate(mySpeed.value);});
-    myVideo.src=fileURL;
-
-    //look for bookmark items with this video ID
-    if(localStorage.getItem(vidId)){
-      var bmks = localStorage.getItem(vidId).split(',');
-      for(var i=0; i<bmks.length; i++){
-        bmkAdd(bmks[i]);
-        myBookmarks.options[0].selected=true;
-      }
-      annotButton.disabled=true;
-    }
-  }
-
-  var onCanPlay = function () {
-    loopButton.disabled=false;
-    $("#slider").slider("option", "max", myGetDuration());
-    initResizable();
-  }
-
-  var onBmkSelect = function(i){
-    cancelABLoop();
-    if(i==0) return;
-
-    var a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
-    var b=timeStringToSec(myBookmarks.options[i].text.split('--')[1]);
-    $("#slider").slider("option", "values", [ a, b ]);
-    isTimeASet=isTimeBSet=true;
-    timeInputs.hidden=false;
-    loopButton.value="Cancel";
-    annotButton.disabled=false;
-    myVideo.addEventListener('timeupdate',onTimeUpdate);
-  }
-
-  var cancelABLoop = function () {
-    myVideo.removeEventListener('timeupdate',onTimeUpdate);
-    isTimeASet=isTimeBSet=false;
-    loopButton.value="A";
-    timeInputs.hidden=true;
-  }
-
-  var onTimeUpdate = function () {
-    if(myVideo.paused) return;
-    if(myGetCurrentTime()<timeA || myGetCurrentTime()>=timeB)
-      mySetCurrentTime(timeA);
-  }
-
-  var onLoopDown = function () {
-    if(isTimeBSet){
-      cancelABLoop();
-      annotButton.disabled=true;
-      myBookmarks.options[0].selected=true;
-    }else{
-      if(isTimeASet){
-        if(myGetCurrentTime()!=timeA){
-          if(myGetCurrentTime()<timeA){
-            timeB=timeA;
-            timeA=myGetCurrentTime();
-          }else{
-            timeB=myGetCurrentTime();
-          }
-          isTimeBSet=true;
-          loopButton.value="Cancel";
-          $("#slider").slider("option", "values", [ timeA, timeB ]);
-          timeInputs.hidden=false;
-
-          myVideo.addEventListener('timeupdate',onTimeUpdate);
-        }
-      }else{
-        timeA=myGetCurrentTime();
-        isTimeASet=true;
-        loopButton.value="B";
-      }
-    }
-  }
-
-  var contextHelpLoadVideo = function(t) {
-    if(t.checked) {
-      myInput.title = "Browse the hard disk for video files.";
-    } else {
-      myInput.title = "";
-    }
-  }
-</script>
 
 </body>
 </html>
