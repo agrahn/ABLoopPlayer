@@ -363,6 +363,7 @@ var onYouTubeIframeAPIReady = function() {
   initResizable();
 
   player = new YT.Player('ytplayer', {
+    videoId: " ", 
     width: playerWidth,
     height: 9/16*playerWidth,
     playerVars: {

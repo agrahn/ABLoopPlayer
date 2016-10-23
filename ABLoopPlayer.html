@@ -37,7 +37,7 @@
 
   <!-- code used by the players -->
   <script src="js/main.js"></script>
-  <script>initYT();</script>
+  <script>initVT();</script>
   <script src="https://www.youtube.com/iframe_api"></script>
 </head>
 
@@ -48,19 +48,16 @@
 
 <hr class="double" style="margin-bottom: 0px;"/>
 <div id="topElements" style="margin: 0px 0px 3px 0px; padding: 5px; background-color: #eee;">
-  <div style="margin: 0px 0px 3px 0px;">
-  YT Video ID: <input id="myVidId" list="videoids" value="8bpVfMDSZSU" size="14"/>
-  <datalist id="videoids"></datalist>
-  <button id="loadButton" onclick="loadVideo()" disabled>Load</button>
-  <span style="float: right;"><input type="checkbox" onchange="contextHelp(this)" id="help" checked/>?</span>
-  </div>
+  YT Video ID: <input id="inputYTid" list="YTids" value="8bpVfMDSZSU" size="14" disabled/>
+  <datalist id="YTids"></datalist>
+  <button id="loadButtonYT" onclick="loadVideo(inputYTid.value)"
+    disabled>Load</button>
+  <span style="margin: 0px 5px 0px 8px; color: #aaa; background-color: #aaa;">|</span>
   Video File: <input id="myInput" accept="video/*" type="file" onchange="playSelectedFile(this.files[0])"/>
+  <span style="float: right;"><input type="checkbox" onchange="contextHelp(this)" id="help" checked/>?</span>
 </div>
 
-<div id="myResizable" style="background: #ddd;">
-  <!-- to be replaced by the <iframe> that displays the YouTube player -->
-  <div id="ytplayer"></div>
-</div>
+<div id="myResizable" style="background: #ddd;"></div>
 
 <div id="timeInputs" hidden style="margin: 3px 0px 0px 0px;">
   <!-- placeholder for jQuery range slider -->
