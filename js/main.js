@@ -31,7 +31,7 @@ var ctrlPressed=false;
 var bmkHash;
 var bmkArr;
 
-$( document ).ready(function() {  
+$(document).ready(function() {  
   inputYTid = document.getElementById("inputYTid");
   loadButtonYT = document.getElementById("loadButtonYT");
   myTimeA = document.getElementById("myTimeA");
@@ -41,6 +41,8 @@ $( document ).ready(function() {
   myBookmarks = document.getElementById("myBookmarks");
   menuItem0 = document.getElementById("menuItem0");
   menuItem1 = document.getElementById("menuItem1");
+
+  inputYTid.disabled = loadButtonYT.disabled = true;
 
   //get already watched YT IDs
   if(localStorage.getItem('knownIDs')){
@@ -64,9 +66,8 @@ $( document ).ready(function() {
   $(".ui-slider-handle").first().text("A");
   $(".ui-slider-handle").last().text("B");
 
-  onLoadWindow(); //run player specific code
-//  console.log("window");
   contextHelp(document.getElementById("help"));
+  playSelectedFile(""); 
 });
 
 window.addEventListener( "keydown", function(e) {
@@ -375,7 +376,7 @@ var knownIDsHash=new Array();
 
 var playYT = function (id) {
   initYT(); //initialize player-specific functions
-  inputYTid.disabled = loadButtonYT.disabled = loopButton.disabled = true;
+  loopButton.disabled = true;
 
   while(mySpeed.options.length) mySpeed.remove(mySpeed.options.length-1);
   mySpeed.disabled=true;
@@ -388,6 +389,7 @@ var playYT = function (id) {
   var myResizableOld=myResizable;
   myResizable = document.createElement("div");
   myResizable.id="myResizable";
+  myResizable.style.backgroundColor = '#ddd';
   parent.replaceChild(myResizable, myResizableOld);
   var playerWidth=$("#myResizable").width();
   $("#myResizable").height(playerWidth*9/16);
@@ -395,6 +397,7 @@ var playYT = function (id) {
 
   //create and append <div> as a container for YT iframe
   var ytDiv = document.createElement("div");
+  ytDiv.id = "ytDiv";
   myResizable.appendChild(ytDiv);
 
   //create iframe for YT replacing ytDiv
@@ -403,7 +406,7 @@ var playYT = function (id) {
     width: playerWidth,
     height: $("#myResizable").height(),
     playerVars: {
-      autoplay: 1,
+      autoplay: 0,
       autohide: 2, //controls
       rel: 0,  // no related videos at the end
       showinfo: 0, //and other clutter
@@ -416,7 +419,7 @@ var playYT = function (id) {
 }
 
 var onYouTubeIframeAPIReady = function() {
-  playYT("");
+  inputYTid.disabled = loadButtonYT.disabled = false;
 }
 
 var onPlayerStateChange = function(e){
@@ -428,6 +431,8 @@ var onPlayerStateChange = function(e){
   if (e.data == -1){
     cancelABLoop();
   }else if(e.data==YT.PlayerState.CUED){
+    e.target.playVideo();
+
     //determine available playback rates and fill the #mySpeed select element
     var rates = ytPlayer.getAvailablePlaybackRates();
     for(var i=0; i<rates.length; i++) {
@@ -444,7 +449,7 @@ var onPlayerStateChange = function(e){
     mySpeed.disabled=false;
     loopButton.disabled=false;
 
-    //look for bookmark items with this video ID
+    //look for bookmark items with the current video ID
     if(localStorage.getItem(vidId)){
       var bmks = localStorage.getItem(vidId).split(',');
       for(var i=0; i<bmks.length; i++){
@@ -454,7 +459,7 @@ var onPlayerStateChange = function(e){
       annotButton.disabled=true;
     }
 
-    //add to the list of valid and already visited video IDs
+    //append to the list of valid and already visited video IDs
     if(vidId.length!==0 && typeof knownIDsHash[vidId]==='undefined'){
       knownIDsHash[vidId]='';
       knownIDs.unshift(vidId);
@@ -477,6 +482,7 @@ var onPlayerStateChange = function(e){
 
 var onPlayerReady = function(e){
   inputYTid.disabled = loadButtonYT.disabled = false;
+  e.target.cueVideoById({ videoId: vidId });
 }
 
 var loadVideo = function(id) {
@@ -505,12 +511,15 @@ var initResizableYT = function(){
     aspectRatio: false,
     minWidth: 352,
     minHeight: 198,
+    create: function(event, ui){
+      $("#slider").width($("#myResizable" ).width());
+    },
     start: function(event,ui){
-      document.getElementById("ytplayer").hidden=true;
+      document.getElementById("ytDiv").hidden=true;
     },
     stop: function(event,ui){
       ytPlayer.setSize(ui.size.width,ui.size.height);
-      document.getElementById("ytplayer").hidden=false;
+      document.getElementById("ytDiv").hidden=false;
     },
     resize: function(event,ui){
       $("#slider").width(ui.size.width);
@@ -582,9 +591,6 @@ var onLoopDownYT = function () {
   }
 }
 
-var onLoadWindow = function() {
-}
-
 /////////////////////////
 // <video> specific code
 /////////////////////////
@@ -615,9 +621,8 @@ var playSelectedFile = function (f) {
 
   myVideo = document.createElement("video");
   myVideo.id="myVideo";
-  myVideo.controls=null;
-  myVideo.addEventListener("mouseover", function(e){e.target.controls=true;});
-  myVideo.addEventListener("mouseout", function(e){e.target.controls=false;});
+  myVideo.controls="controls";
+  myVideo.width=$("#myResizable").width();
   myVideo.addEventListener("canplay", onCanPlay);
   myVideo.addEventListener("play", function(e){mySetPlaybackRate(mySpeed.value);});
   myResizable.appendChild(myVideo);
@@ -646,7 +651,9 @@ var playSelectedFile = function (f) {
   }
 }
 
-var onCanPlay = function () {
+var onCanPlay = function (e) {
+  e.target.addEventListener("mouseover", function(e){e.target.controls=true;});
+  e.target.addEventListener("mouseout", function(e){e.target.controls=false;});
   loopButton.disabled=false;
   $("#slider").slider("option", "max", myGetDuration());
   initResizable();
@@ -768,7 +775,6 @@ var initResizable;
 var cancelABLoop;
 var onTimeUpdate;
 var onLoopDown;
-var onLoadWindow;
 
 //initialization functions
 var initYT = function () { // YT
