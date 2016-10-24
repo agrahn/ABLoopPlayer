@@ -20,12 +20,13 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
+
 <html lang="en"/>
 <head>
   <meta charset="utf-8"/>
   <meta name="description" content="Player for YouTube and local video files with A-B loop function and slow motion playback"/>
   <meta name="author" content="Alexander Grahn"/>
-  <meta name="date" content="2016/10/19"/>
+  <meta name="date" content="2016/10/24"/>
 
   <!-- jQuery framework -->
   <link href="jquery-ui/jquery-ui.css" rel="stylesheet"/>
@@ -46,7 +47,7 @@
 <p>Firefox or Chrome recommended.</p>
 
 <hr class="double" style="margin-bottom: 0px;"/>
-<div id="topElements" style="margin: 0px 0px 3px 0px; padding: 5px; background-color: #eee;">
+<div id="topElements" style="margin: 0px 0px 3px 0px; padding: 5px; background-color: #ddd;">
   YT Video ID: <input id="inputYTid" list="YTids" value="8bpVfMDSZSU" size="14" disabled/>
   <datalist id="YTids"></datalist>
   <button id="loadButtonYT" onclick="loadVideo(inputYTid.value)"
@@ -58,10 +59,10 @@
 
 <div id="myResizable" style="background: #ddd;"></div>
 
-<div id="timeInputs" hidden style="margin: 3px 0px 0px 0px;">
+<div id="timeInputs" style="margin: 3px 0px 0px 0px;">
   <!-- placeholder for jQuery range slider -->
   <div id="slider" style="margin-top: 6px; margin-bottom: 5px;"></div>
-  <div style="margin: 3px 0px 0px 0px; padding: 5px; background-color: #eee;">
+  <div style="margin: 3px 0px 0px 0px; padding: 5px; background-color: #ddd;">
   A: <input id="myTimeA" onchange="onInputTime(this,0)" size="8"/>
   B: <input id="myTimeB" onchange="onInputTime(this,1)" size="8"/>
   <button id="bmkAddButton" onmouseup="bmkAdd(myTimeA.value + '--' + myTimeB.value)">
@@ -69,14 +70,12 @@
   </div>
 </div>
 
-<div style="margin: 3px 0px 0px 0px; padding: 5px; background-color: #eee;">
+<div style="margin: 3px 0px 0px 0px; padding: 5px; background-color: #ddd;">
 A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown()"/>
 <span id="myBmkSpan" hidden>
   <style>select:invalid { color: gray; }</style>
   <select id="myBookmarks" size="1"
-    onmousedown="
-      this.size=Math.min(5,this.options.length);
-    "
+    onmousedown="this.size=Math.min(5,this.options.length)"
     onblur="onBmkSelect(this.selectedIndex);this.size=1;"
   >
     <option value="" selected disabled>Bookmarked</option>

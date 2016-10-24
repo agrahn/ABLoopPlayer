@@ -1,0 +1,48 @@
+/*
+  common.css
+
+  Copyright (C) 2016  Alexander Grahn
+
+  This file is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This file is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/* suppress close button in dialog title bar */
+.noTitlebar .ui-dialog-titlebar {
+  display: none;
+}
+
+/* move resizable handle out of the video display */
+.ui-resizable-se {
+  bottom: -10px;
+  right: -10px;
+}
+
+hr.double {
+  height: 3px; border: 1px solid #888;
+}
+
+.custom-slider-handle {
+  text-align: center;
+  height: 1.2em;
+  line-height: 1.2em;
+  top: 50%;
+}
+
+.ui-slider-horizontal .ui-state-default {
+  background: #DDD;
+}
+
+.custom-slider-range {
+  background-color: #888;
+}
