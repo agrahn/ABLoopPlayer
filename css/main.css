@@ -46,3 +46,12 @@ hr.double {
 .custom-slider-range {
   background-color: #888;
 }
+
+.github-logo {
+  width: 100%;
+  background-image: url(../svg/Octicons-logo-github.svg);
+  background-size: cover;
+  height: 0;
+  padding: 0; /* reset */
+  padding-bottom: calc(100% * 1024/2857);
+}
