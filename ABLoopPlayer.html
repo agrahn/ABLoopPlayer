@@ -26,7 +26,7 @@
   <meta charset="utf-8"/>
   <meta name="description" content="Player for YouTube and local video files with A-B loop function and slow motion playback"/>
   <meta name="author" content="Alexander Grahn"/>
-  <meta name="date" content="2016/10/24"/>
+  <meta name="date" content="2016/10/26"/>
 
   <!-- jQuery framework -->
   <link href="jquery-ui/jquery-ui.css" rel="stylesheet"/>
@@ -38,26 +38,25 @@
 
   <!-- main code that implements the video player -->
   <script src="js/main.js"></script>
-
-  <script src="https://www.youtube.com/iframe_api"></script>
 </head>
 
 <body style="min-width: max-content; display: inline-block;">
 
-<h1 style="font-size: 150%;">Video player with A-B loop function</h1>
+<!--  <h1 style="font-size: 150%;">Video player with A-B loop function</h1> -->
+<h1 style="font-size: 150%;">ABLoopPlayer</h1>
+Player for <b>YouTube</b> and <b>local video files</b> in the MP4/WebM/Ogg formats with<br/>
+A-B loop, slow/fast motion and bookmarking.
 <p>Firefox or Chrome recommended.</p>
-
-<div class="github-logo"> </div>
 
 <hr class="double" style="margin-bottom: 0px;"/>
 <div id="topElements" style="margin: 0px 0px 3px 0px; padding: 5px; background-color: #ddd;">
-  YT Video ID: <input id="inputYTid" list="YTids" value="8bpVfMDSZSU" size="14" disabled/>
+  YT Video ID / search terms: <input id="inputYTid" list="YTids" value="8bpVfMDSZSU" size="14" disabled/>
   <datalist id="YTids"></datalist>
   <button id="loadButtonYT" onclick="loadVideo(inputYTid.value)"
-    disabled>Load</button>
-  <span style="margin: 0px 5px 0px 8px; color: #aaa; background-color: #aaa;">|</span>
+    disabled><span class="ui-icon ui-icon-play"></span> / <span class="ui-icon ui-icon-search"></span></button>
+<span style="float: right;"><input type="checkbox" onchange="contextHelp(this.checked)" id="help"/>?</span><br/>
   Video File: <input id="myInput" accept="video/*" type="file" onchange="playSelectedFile(this.files[0])"/>
-  <span style="float: right;"><input type="checkbox" onchange="contextHelp(this)" id="help" checked/>?</span>
+  
 </div>
 
 <!-- takes one of the players -->
@@ -96,6 +95,12 @@ Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)"
 </div>
 <hr class="double" style="margin-top: 0px;"/>
 © 2016 Alexander Grahn
+<span style="float: right; margin-right: 5px;">
+<a href="https://github.com/agrahn/ABLoopPlayer/archive/master.zip">Download</a> or
+<a href="https://github.com/agrahn/ABLoopPlayer">
+  visit project on <img src="svg/GitHub_logo_2013.svg" style="height:1em;"/>
+</a>
+</span>
 
 </body>
 </html>
