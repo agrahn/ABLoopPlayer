@@ -32,6 +32,15 @@ var bmkHash;
 var bmkArr;
 
 $(document).ready(function() {
+  //if we are online, asynchronously load youtube iframe player api
+  if(navigator.onLine) {
+    var scripts = document.getElementsByTagName('script');
+    var scriptTag1 = scripts[scripts.length-1];
+    var scriptTag2 = document.createElement('script');
+    scriptTag2.src = "https://www.youtube.com/iframe_api";
+    scriptTag1.parentNode.insertBefore(scriptTag2, null);
+  }
+
   inputYTid = document.getElementById("inputYTid");
   loadButtonYT = document.getElementById("loadButtonYT");
   myTimeA = document.getElementById("myTimeA");
@@ -66,7 +75,9 @@ $(document).ready(function() {
   $(".ui-slider-handle").first().text("A");
   $(".ui-slider-handle").last().text("B");
 
-  contextHelp(document.getElementById("help"));
+  if(localStorage.getItem(help)!="unchecked") document.getElementById("help").checked=true;
+  contextHelp(document.getElementById("help").checked);
+
   playSelectedFile("");
 });
 
@@ -334,7 +345,9 @@ var onClickAddNote = function(idx){
 }
 
 var contextHelp = function(t) {
-  if(t.checked) {
+  if(t) {
+    localStorage.setItem(help, "checked");
+
     t.title = "Disable context-sensitive help.";
     inputYTid.title = "Open video on youtube.com and get its ID from the browser's address bar.";
     myInput.title = "Browse the hard disk for video files (mp4/H.264, webm, ogv/Theora).";
@@ -349,6 +362,8 @@ var contextHelp = function(t) {
         + "Press [Ctrl] while moving a handle to shift the entire loop window. "
         + "Also, handles can be moved with the arrow keys [<--] , [-->].");
   } else {
+    localStorage.setItem(help, "unchecked");
+
     t.title="Enable context-sensitive help.";
     inputYTid.title = "";
     myInput.title = "";
@@ -374,7 +389,7 @@ var timer=[];
 var knownIDs=new Array();
 var knownIDsHash=new Array();
 
-var playYT = function (id) {
+var playYT = function (id, qu) {  //video id or query string
   initYT(); //initialize player-specific functions
   cancelABLoopYT();
   $(timeInputs).hide();
@@ -405,21 +420,46 @@ var playYT = function (id) {
 
   //create iframe for YT replacing ytDiv
   try{ytPlayer.destroy();} catch(e){}
-  ytPlayer = new YT.Player('ytDiv', {
-    videoId: id,
-    width: playerWidth,
-    height: $("#myResizable").height(),
-    playerVars: {
-      autoplay: 0,
-      autohide: 2, //controls
-      rel: 0,  // no related videos at the end
-      showinfo: 0, //and other clutter
-    },
-    events: {
-      onStateChange : onPlayerStateChange,
-      onReady: onPlayerReady,
-    }
-  });
+
+  if(id.length) {
+    console.log("id given: "+ id);
+    ytPlayer = new YT.Player('ytDiv', {
+      videoId: id,
+      width: playerWidth,
+      height: $("#myResizable").height(),
+      playerVars: {
+        autoplay: 0,
+        autohide: 2, //controls
+        rel: 0,  // no related videos at the end
+        showinfo: 0, //and other clutter
+      },
+      events: {
+        onStateChange: onPlayerStateChange,
+        onReady: onPlayerReady,
+        onError: function(e) {console.log("error:" + e.data);playYT("", id);}
+      }
+    });
+  } else {
+    console.log("query given: "+ qu);
+    ytPlayer = new YT.Player('ytDiv', {
+      width: playerWidth,
+      height: $("#myResizable").height(),
+      playerVars: {
+        listType: "search",
+        list: qu,
+        autoplay: 0,
+        autohide: 2, //controls
+        rel: 0,  // no related videos at the end
+        showinfo: 0, //and other clutter
+      },
+      events: {
+        //onStateChange: onPlayerStateChange,
+        onStateChange: function(e){
+          console.log("e.data = ", e.data);
+        },
+      }
+    });
+  }  
 }
 
 var onYouTubeIframeAPIReady = function() {
@@ -435,8 +475,6 @@ var onPlayerStateChange = function(e){
   if (e.data == -1){
     cancelABLoopYT();
   }else if(e.data==YT.PlayerState.CUED){
-    e.target.playVideo();
-
     //determine available playback rates and fill the #mySpeed select element
     var rates = ytPlayer.getAvailablePlaybackRates();
     for(var i=0; i<rates.length; i++) {
@@ -481,17 +519,21 @@ var onPlayerStateChange = function(e){
 
       localStorage.setItem('knownIDs', knownIDs.join());
     }
+    e.target.playVideo(); //finally start playing
   }
 }
 
 var onPlayerReady = function(e){
-  inputYTid.disabled = loadButtonYT.disabled = false;
   e.target.cueVideoById({ videoId: vidId });
 }
 
 var loadVideo = function(id) {
   vidId = id.toString().trim();
-  playYT(vidId);
+  playYT(vidId, "");
+}
+
+var searchVideo = function(qu) {
+  playYT("", qu.toString().trim());
 }
 
 var mySetPlaybackRateYT = function(r){
@@ -513,8 +555,8 @@ var mySetCurrentTimeYT = function(t){
 var initResizableYT = function(){
   $("#myResizable" ).resizable({
     aspectRatio: false,
-    minWidth: 320,
-    minHeight: 180,
+    minWidth: 160,
+    minHeight: 90,
     create: function(event, ui){
       $("#slider").width($("#myResizable" ).width());
     },
