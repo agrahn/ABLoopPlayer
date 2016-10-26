@@ -429,7 +429,6 @@ var playYT = function (id, qu) {  //video id or query string
       showinfo: 0, //and other clutter
     };
   } else { //video search resulting in a playlist
-    console.log("query " + qu);
     playerVars = {
       listType: "search",
       list: qu,
@@ -448,8 +447,8 @@ var playYT = function (id, qu) {  //video id or query string
     playerVars: playerVars,
     events: {
       onStateChange: onPlayerStateChange,
-//      onReady: onPlayerReady,
-      onError: function(e) {console.log("error:" + e.data);if(e.data==2) playYT("", id);}
+      onReady: onPlayerReady,
+      onError: function(e) {console.log("error:" + e.data);playYT("", id);}
     }
   });
 }
@@ -459,11 +458,12 @@ var onYouTubeIframeAPIReady = function() {
 }
 
 var onPlayerReady = function(e){
-  e.target.playVideo();
+  e.target.cueVideoById({ videoId: vidId });
 }
 
 var onPlayerStateChange = function(e){
   console.log("playerStateChange "+e.data);
+  console.log("playListIdx old="+playListIdx + " new=" + e.target.getPlaylistIndex());
   if(e.target.getPlaylistIndex() != playListIdx) {//the video has changed
     cancelABLoopYT();
     $(timeInputs).hide();

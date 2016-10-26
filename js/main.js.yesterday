@@ -388,12 +388,14 @@ var ytPlayer;
 var timer=[];
 var knownIDs=new Array();
 var knownIDsHash=new Array();
-var playListIdx;//index of playlist video currently played
 
 var playYT = function (id, qu) {  //video id or query string
   initYT(); //initialize player-specific functions
   cancelABLoopYT();
   $(timeInputs).hide();
+
+  while(mySpeed.options.length) mySpeed.remove(mySpeed.options.length-1);
+  mySpeed.disabled=true;
 
   loopButton.disabled = true;
 
@@ -416,67 +418,65 @@ var playYT = function (id, qu) {  //video id or query string
   ytDiv.id = "ytDiv";
   myResizable.appendChild(ytDiv);
 
+  //create iframe for YT replacing ytDiv
+  try{ytPlayer.destroy();} catch(e){}
 
-  playListIdx = -1;
-  var playerVars;
-  if(id.length) {  //play a single video ID
-    console.log("single");
-    playerVars = {
-      playlist: id,
-      autoplay: 1,
-      autohide: 2, //controls
-      rel: 0,      //no related videos at the end
-      showinfo: 0, //and other clutter
-    };
-  } else { //video search resulting in a playlist
-    console.log("query " + qu);
-    playerVars = {
-      listType: "search",
-      list: qu,
-      autoplay: 0,
-      autohide: 2, //controls
-      rel: 0,      //no related videos at the end
-      showinfo: 1, //displaying current video info might be useful
-    };
-  }
-
-  //create new YT player iframe, replacing ytDiv
-  try{ytPlayer.destroy();}catch(e){} //remove previous player, if there is one
-  ytPlayer = new YT.Player('ytDiv', {
-    width: playerWidth,
-    height: $("#myResizable").height(),
-    playerVars: playerVars,
-    events: {
-      onStateChange: onPlayerStateChange,
-//      onReady: onPlayerReady,
-      onError: function(e) {console.log("error:" + e.data);if(e.data==2) playYT("", id);}
-    }
-  });
+  if(id.length) {
+    console.log("id given: "+ id);
+    ytPlayer = new YT.Player('ytDiv', {
+      videoId: id,
+      width: playerWidth,
+      height: $("#myResizable").height(),
+      playerVars: {
+        autoplay: 0,
+        autohide: 2, //controls
+        rel: 0,  // no related videos at the end
+        showinfo: 0, //and other clutter
+      },
+      events: {
+        onStateChange: onPlayerStateChange,
+        onReady: onPlayerReady,
+        onError: function(e) {if(e.data==2){playYT("", id);}}
+      }
+    });
+  } else {
+    console.log("query given: "+ qu);
+    ytPlayer = new YT.Player('ytDiv', {
+      width: playerWidth,
+      height: $("#myResizable").height(),
+      playerVars: {
+        listType: "search",
+        list: qu,
+        autoplay: 0,
+        autohide: 2, //controls
+        rel: 0,  // no related videos at the end
+        showinfo: 0, //and other clutter
+      },
+      events: {
+        //onStateChange: onPlayerStateChange,
+        onStateChange: function(e){
+          console.log("e.data = ", e.data);
+        },
+      }
+    });
+  }  
 }
 
 var onYouTubeIframeAPIReady = function() {
   inputYTid.disabled = loadButtonYT.disabled = false;
 }
 
-var onPlayerReady = function(e){
-  e.target.playVideo();
-}
-
 var onPlayerStateChange = function(e){
-  console.log("playerStateChange "+e.data);
-  if(e.target.getPlaylistIndex() != playListIdx) {//the video has changed
+  if (isTimeASet && isTimeBSet && e.data==YT.PlayerState.PLAYING)
+    timer.push(setInterval(onTimeUpdateYT,25));
+  else
+    while(timer.length) clearInterval(timer.pop());
+
+  if (e.data == -1){
     cancelABLoopYT();
-    $(timeInputs).hide();
-
-    playListIdx = e.target.getPlaylistIndex();
-    var id = e.target.getPlaylist()[playListIdx].trim(); //current video ID 
-
-    //clear list of playback rates
-    while(mySpeed.options.length) mySpeed.remove(mySpeed.options.length-1);
-    mySpeed.disabled=true;
-    //determine available playback rates and populate the #mySpeed element
-    var rates = e.target.getAvailablePlaybackRates();
-    console.log("available rates " + rates.join(", "));
+  }else if(e.data==YT.PlayerState.CUED){
+    //determine available playback rates and fill the #mySpeed select element
+    var rates = ytPlayer.getAvailablePlaybackRates();
     for(var i=0; i<rates.length; i++) {
       var c = document.createElement('OPTION');
       mySpeed.add(c); //append as a child to selector
@@ -491,11 +491,9 @@ var onPlayerStateChange = function(e){
     mySpeed.disabled=false;
     loopButton.disabled=false;
 
-    //clear current bookmark list
-    bmkDelete(0);
-    //populate bookmark list with saved items for the current video ID
-    if(localStorage.getItem(id)){
-      var bmks = localStorage.getItem(id).split(',');
+    //look for bookmark items with the current video ID
+    if(localStorage.getItem(vidId)){
+      var bmks = localStorage.getItem(vidId).split(',');
       for(var i=0; i<bmks.length; i++){
         bmkAdd(bmks[i]);
         myBookmarks.options[0].selected=true;
@@ -504,28 +502,29 @@ var onPlayerStateChange = function(e){
     }
 
     //append to the list of valid and already visited video IDs
-    if(typeof knownIDsHash[id]==='undefined'){
-      knownIDsHash[id]='';
-      knownIDs.unshift(id);
+    if(vidId.length!==0 && typeof knownIDsHash[vidId]==='undefined'){
+      knownIDsHash[vidId]='';
+      knownIDs.unshift(vidId);
 
       var z = document.createElement('OPTION');
-      z.setAttribute('value', id);
+      z.setAttribute('value', vidId);
       document.getElementById('YTids').insertBefore(
-        z, document.getElementById('YTids').firstChild);
+          z, document.getElementById('YTids').firstChild);
 
-      while(knownIDs.length>30) {
+      if(knownIDs.length>30) {
         knownIDs.pop();
         document.getElementById('YTids').removeChild(
-          document.getElementById('YTids').lastChild);
+            document.getElementById('YTids').lastChild);
       }
 
       localStorage.setItem('knownIDs', knownIDs.join());
     }
+    e.target.playVideo(); //finally start playing
   }
+}
 
-  while(timer.length) clearInterval(timer.pop());
-  if (isTimeASet && isTimeBSet && e.data==YT.PlayerState.PLAYING)
-    timer.push(setInterval(onTimeUpdateYT,25));
+var onPlayerReady = function(e){
+  e.target.cueVideoById({ videoId: vidId });
 }
 
 var loadVideo = function(id) {
