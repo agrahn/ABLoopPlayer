@@ -51,17 +51,19 @@ A-B loop, loop bookmarking, YT video search and slow/fast motion.
 <div id="topElements" style="margin-bottom: 3px; padding: 5px; background-color: #ddd;">
   <div style="display: flex;">
   YT Video ID / search terms:
-  <input id="inputYTid" list="YTids" value="8bpVfMDSZSU"
-         style="margin-left: 5px; margin-right: 3px; flex: 1 1 auto;" disabled/>
-    <datalist id="YTids"></datalist>
-  <span style="float: right;">
-    <button id="loadButtonYT" onclick="searchVideo(inputYTid.value)" disabled>
-      <span class="ui-icon ui-icon-play"></span> / <span class="ui-icon ui-icon-search"></span>
-    </button>
-    <input type="checkbox" onchange="contextHelp(this.checked)" id="help"/>?
-  </span>
+  <input id="inputYT" list="YTids" value="8bpVfMDSZSU"
+    style="margin-left: 5px; margin-right: 1px; flex: 1 1 auto;" disabled/><datalist id="YTids"></datalist><!--
+    --><span style="float: right;"><!--
+    --><button id="loadButtonYT" onclick="loadYT(inputYT.value)"
+            style="margin-left: 0px; margin-right: 0px; padding: 0;" disabled><!--
+            --><span class="ui-icon ui-icon-play"></span></button><!--
+    --><button id="searchButtonYT" onclick="searchYT(inputYT.value)"
+            style="margin-left: 0px; padding: 0;" disabled><!--
+            --><span class="ui-icon ui-icon-search"></span></button>
+    <input type="checkbox" onchange="contextHelp(this)" id="help"/>?
+    </span>
   </div>
-  Video File: <input id="myInput" accept="video/*" type="file"
+  Video File: <input id="inputVT" accept="video/*" type="file"
                  onchange="playSelectedFile(this.files[0])"/>
 </div>  
 
