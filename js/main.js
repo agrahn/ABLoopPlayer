@@ -41,8 +41,9 @@ $(document).ready(function() {
     scriptTag1.parentNode.insertBefore(scriptTag2, null);
   }
 
-  inputYTid = document.getElementById("inputYTid");
+  inputYT = document.getElementById("inputYT");
   loadButtonYT = document.getElementById("loadButtonYT");
+  searchButtonYT = document.getElementById("searchButtonYT");
   myTimeA = document.getElementById("myTimeA");
   myTimeB = document.getElementById("myTimeB");
   loopButton = document.getElementById("loopButton");
@@ -51,7 +52,7 @@ $(document).ready(function() {
   menuItem0 = document.getElementById("menuItem0");
   menuItem1 = document.getElementById("menuItem1");
 
-  inputYTid.disabled = loadButtonYT.disabled = true;
+  inputYT.disabled = loadButtonYT.disabled = searchButtonYT.disabled = true;
 
   //get already watched YT IDs
   if(localStorage.getItem('knownIDs')){
@@ -76,7 +77,7 @@ $(document).ready(function() {
   $(".ui-slider-handle").last().text("B");
 
   if(localStorage.getItem(help)!="unchecked") document.getElementById("help").checked=true;
-  contextHelp(document.getElementById("help").checked);
+  contextHelp(document.getElementById("help"));
 
   playSelectedFile("");
 });
@@ -345,12 +346,13 @@ var onClickAddNote = function(idx){
 }
 
 var contextHelp = function(t) {
-  if(t) {
+  if(t.checked) {
     localStorage.setItem(help, "checked");
 
     t.title = "Disable context-sensitive help.";
-    inputYTid.title = "Open video on youtube.com and get its ID from the browser's address bar.";
-    myInput.title = "Browse the hard disk for video files (mp4/H.264, webm, ogv/Theora).";
+    inputYT.title = "Enter a valid YT video ID or one or more search terms. " +
+      "To get a video ID, open a video on youtube.com and get its ID from the browser's address bar.";
+    inputVT.title = "Browse the hard disk for video files (mp4/H.264, webm, ogv/Theora).";
     loopButton.title = "Click twice to mark loop range / click to cancel current loop.";
     myBookmarks.title = "Choose from previously saved loops.";
     bmkAddButton.title = "Save current loop range to the list of bookmarks.";
@@ -365,8 +367,8 @@ var contextHelp = function(t) {
     localStorage.setItem(help, "unchecked");
 
     t.title="Enable context-sensitive help.";
-    inputYTid.title = "";
-    myInput.title = "";
+    inputYT.title = "";
+    inputVT.title = "";
     loopButton.title =
     myBookmarks.title =
     myTimeA.title = myTimeB.title =
@@ -382,7 +384,7 @@ var contextHelp = function(t) {
 ///////////////////////////
 // YT player specific code
 ///////////////////////////
-var inputYTid;
+var inputYT;
 var loadButtonYT;
 var ytPlayer;
 var timer=[];
@@ -455,7 +457,7 @@ var playYT = function (id, qu) {  //video id or query string
 }
 
 var onYouTubeIframeAPIReady = function() {
-  inputYTid.disabled = loadButtonYT.disabled = false;
+  inputYT.disabled = loadButtonYT.disabled = searchButtonYT.disabled = false;
 }
 
 var onPlayerReady = function(e){
@@ -763,7 +765,7 @@ var mySetCurrentTimeVT = function(t){
 var initResizableVT = function(){
   $("#myResizable" ).resizable({
     aspectRatio: true,
-    minWidth: 320,
+    minWidth: 160,
     create: function(e,ui){
       myVideo.width=$("#myResizable").width();
       $("#slider").width($(myVideo).width());
