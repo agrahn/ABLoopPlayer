@@ -42,22 +42,28 @@
 
 <body style="min-width: max-content; display: inline-block;">
 
-<!--  <h1 style="font-size: 150%;">Video player with A-B loop function</h1> -->
-<h1 style="font-size: 150%;">ABLoopPlayer</h1>
-Player for <b>YouTube</b> and <b>local video files</b> in the MP4/WebM/Ogg formats with<br/>
-A-B loop, slow/fast motion and bookmarking.
-<p>Firefox or Chrome recommended.</p>
+<h1 style="font-size: 150%; margin-top: 0;">ABLoopPlayer</h1>
+Player for <em>YouTube</em> and <em>local video files</em> in the MP4/WebM/Ogg formats with<br/>
+A-B loop, loop bookmarking, YT video search and slow/fast motion.
+<p style="margin-top: 0.5em;">Firefox or Chrome recommended.</p>
 
 <hr class="double" style="margin-bottom: 0px;"/>
-<div id="topElements" style="margin: 0px 0px 3px 0px; padding: 5px; background-color: #ddd;">
-  YT Video ID / search terms: <input id="inputYTid" list="YTids" value="8bpVfMDSZSU" size="14" disabled/>
-  <datalist id="YTids"></datalist>
-  <button id="loadButtonYT" onclick="loadVideo(inputYTid.value)"
-    disabled><span class="ui-icon ui-icon-play"></span> / <span class="ui-icon ui-icon-search"></span></button>
-<span style="float: right;"><input type="checkbox" onchange="contextHelp(this.checked)" id="help"/>?</span><br/>
-  Video File: <input id="myInput" accept="video/*" type="file" onchange="playSelectedFile(this.files[0])"/>
-  
-</div>
+<div id="topElements" style="margin-bottom: 3px; padding: 5px; background-color: #ddd;">
+  <div style="display: flex;">
+  YT Video ID / search terms:
+  <input id="inputYTid" list="YTids" value="8bpVfMDSZSU"
+         style="margin-left: 5px; margin-right: 3px; flex: 1 1 auto;" disabled/>
+    <datalist id="YTids"></datalist>
+  <span style="float: right;">
+    <button id="loadButtonYT" onclick="searchVideo(inputYTid.value)" disabled>
+      <span class="ui-icon ui-icon-play"></span> / <span class="ui-icon ui-icon-search"></span>
+    </button>
+    <input type="checkbox" onchange="contextHelp(this.checked)" id="help"/>?
+  </span>
+  </div>
+  Video File: <input id="myInput" accept="video/*" type="file"
+                 onchange="playSelectedFile(this.files[0])"/>
+</div>  
 
 <!-- takes one of the players -->
 <div id="myResizable" style="background: #ddd;"></div>
