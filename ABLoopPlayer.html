@@ -24,7 +24,8 @@
 <html lang="en"/>
 <head>
   <meta charset="utf-8"/>
-  <meta name="description" content="Player for YouTube and local video files with A-B loop function and slow motion playback"/>
+  <meta name="description" content="Player for YouTube and local video files with
+              A-B repeat, loop bookmarking, YT video search and slow/fast motion."/>
   <meta name="author" content="Alexander Grahn"/>
   <meta name="date" content="2016/10/26"/>
 
@@ -42,19 +43,25 @@
 
 <body style="min-width: max-content; display: inline-block;">
 
-<h1 style="font-size: 150%; margin-top: 0;">ABLoopPlayer</h1>
-Player for <em>YouTube</em> and <em>local video files</em> in the MP4/WebM/Ogg formats with<br/>
-A-B loop, loop bookmarking, YT video search and slow/fast motion.
+<h1 style="font-size: 150%; margin-top: 0;">AB Loop Player</h1>
+<div id="test"
+  style="visibility: hidden; white-space: nowrap; width: auto;position: absolute;">
+Player for <em>YouTube</em> and <em>local video files</em> in the MP4/WebM/Ogg formats with</div> 
+<div id="introText">
+Player for <em>YouTube</em> and <em>local video files</em> in the MP4/WebM/Ogg formats with
+A-B repeat, loop bookmarking, YT video search and slow/fast motion.
+</div>
 <p style="margin-top: 0.5em;">Firefox or Chrome recommended.</p>
 
+<!-- value="8bpVfMDSZSU" -->
 <hr class="double" style="margin-bottom: 0px;"/>
 <div id="topElements" style="margin-bottom: 3px; padding: 5px; background-color: #ddd;">
   <div style="display: flex;">
   YT Video ID / search terms:
-  <input id="inputYT" list="YTids" value="8bpVfMDSZSU"
+  <input id="inputYT" list="YTids" value="so what miles davis trumpet solo"  onfocus="this.select();"
     style="margin-left: 5px; margin-right: 1px; flex: 1 1 auto;" disabled/><datalist id="YTids"></datalist><!--
     --><span style="float: right;"><!--
-    --><button id="loadButtonYT" onclick="loadYT(inputYT.value)"
+    --><button id="loadButtonYT" onclick="playYT(inputYT.value)"
             style="margin-left: 0px; margin-right: 0px; padding: 0;" disabled><!--
             --><span class="ui-icon ui-icon-play"></span></button><!--
     --><button id="searchButtonYT" onclick="searchYT(inputYT.value)"
@@ -64,7 +71,7 @@ A-B loop, loop bookmarking, YT video search and slow/fast motion.
     </span>
   </div>
   Video File: <input id="inputVT" accept="video/*" type="file"
-                 onchange="playSelectedFile(this.files[0])"/>
+                     onchange="playSelectedFile(this.files[0])"/>
 </div>  
 
 <!-- takes one of the players -->

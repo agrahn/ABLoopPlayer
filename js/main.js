@@ -32,6 +32,7 @@ var bmkHash;
 var bmkArr;
 
 $(document).ready(function() {
+  $("#introText").width($("#test").width()+1);
   //if we are online, asynchronously load youtube iframe player api
   if(navigator.onLine) {
     var scripts = document.getElementsByTagName('script');
@@ -96,7 +97,7 @@ var myPrompt = function(onclose, title, txt){
   var z=$(
     '<div style="width: fit-content; display: inline-block;"><p>'
     +title+
-    '</p><input value="'+txt+'" size="40"></input></div>"'
+    '</p><input value="'+txt+'" size="40" onfocus="this.select();"></input></div>'
   );
   $(document.body).append(z);
   var ret=null;
@@ -123,6 +124,7 @@ var myPrompt = function(onclose, title, txt){
         }
       },
     ],
+
     close: function(e,ui) {
       onclose(ret);
       this.parentNode.removeChild(this);
@@ -351,7 +353,10 @@ var contextHelp = function(t) {
 
     t.title = "Disable context-sensitive help.";
     inputYT.title = "Enter a valid YT video ID or one or more search terms. " +
-      "To get a video ID, open a video on youtube.com and get its ID from the browser's address bar.";
+      "To get a particular video ID, open the video on youtube.com and get its ID " +
+      "from the browser's address bar.";
+    loadButtonYT.title = "Load YouTube video.";
+    searchButtonYT.title = "Search for matching videos on YouTube.";
     inputVT.title = "Browse the hard disk for video files (mp4/H.264, webm, ogv/Theora).";
     loopButton.title = "Click twice to mark loop range / click to cancel current loop.";
     myBookmarks.title = "Choose from previously saved loops.";
@@ -362,13 +367,15 @@ var contextHelp = function(t) {
     mySpeed.title = "Select playback rate.";
     $("#slider").attr("title", "Move slider handles to adjust the loop range. "
         + "Press [Ctrl] while moving a handle to shift the entire loop window. "
-        + "Also, handles can be moved with the arrow keys [<--] , [-->].");
+        + "Also, handles can be moved with the arrow keys [←] , [→].⏎");
   } else {
     localStorage.setItem(help, "unchecked");
 
     t.title="Enable context-sensitive help.";
-    inputYT.title = "";
-    inputVT.title = "";
+    inputYT.title =
+    loadButtonYT.title =
+    searchButtonYT.title =
+    inputVT.title =
     loopButton.title =
     myBookmarks.title =
     myTimeA.title = myTimeB.title =
@@ -390,16 +397,20 @@ var ytPlayer;
 var timer=[];
 var knownIDs=new Array();
 var knownIDsHash=new Array();
-var playListIdx;//index of playlist video currently played
 
-var playYT = function (id, qu) {  //video id or query string
+//function for loading YT player 
+//arg 1: input (video id | query string), arg 2: type ("id" | "search")
+var loadYT = function (input, type) {
   initYT(); //initialize player-specific functions
+
   cancelABLoopYT();
   $(timeInputs).hide();
-
   loopButton.disabled = true;
 
   bmkDelete(0);
+
+  //remove previous player, if there is one
+  try{ytPlayer.destroy();}catch(e){}
 
   //replace #myResizable container
   myResizable = document.getElementById("myResizable");
@@ -418,67 +429,90 @@ var playYT = function (id, qu) {  //video id or query string
   ytDiv.id = "ytDiv";
   myResizable.appendChild(ytDiv);
 
-
-  playListIdx = -1;
-  var playerVars;
-  if(id.length) {  //play a single video ID
-    console.log("single");
-    playerVars = {
-      playlist: id,
-      autoplay: 1,
-      autohide: 2, //controls
-      rel: 0,      //no related videos at the end
-      showinfo: 0, //and other clutter
-    };
-  } else { //video search resulting in a playlist
-    console.log("query " + qu);
-    playerVars = {
-      listType: "search",
-      list: qu,
-      autoplay: 0,
-      autohide: 2, //controls
-      rel: 0,      //no related videos at the end
-      showinfo: 1, //displaying current video info might be useful
-    };
-  }
-
+  vidID = "undefined";//YT id of video currently being played
   //create new YT player iframe, replacing ytDiv
-  try{ytPlayer.destroy();}catch(e){} //remove previous player, if there is one
-  ytPlayer = new YT.Player('ytDiv', {
-    width: playerWidth,
-    height: $("#myResizable").height(),
-    playerVars: playerVars,
-    events: {
-      onStateChange: onPlayerStateChange,
-//      onReady: onPlayerReady,
-      onError: function(e) {console.log("error:" + e.data);if(e.data==2) playYT("", id);}
-    }
-  });
+  if(type=="id") {  //play a single video ID
+    console.log("single");
+    ytPlayer = new YT.Player('ytDiv', {
+      videoId: input,
+      width: playerWidth,
+      height: $("#myResizable").height(),
+      playerVars: {
+        autoplay: 1,
+        autohide: 2, //controls
+        rel: 0,      //no related videos at the end
+        showinfo: 0, //and other clutter
+      },
+      events: {
+        onStateChange: function(e) { onPlayerStateChange(e, input); },
+        onError: onError
+      }
+    });
+  } else { //video search resulting in a playlist
+    console.log("query " + input);
+    ytPlayer = new YT.Player('ytDiv', {
+      width: playerWidth,
+      height: $("#myResizable").height(),
+      playerVars: {
+        listType: "search",
+        list: input,
+        autoplay: 0,
+        autohide: 2, //controls
+        rel: 0,      //no related videos at the end
+        showinfo: 1, //displaying current video info might be useful
+      },
+      events: {
+        onStateChange: function(e) {
+          onPlayerStateChange(e,
+            e.target.getPlaylist()[e.target.getPlaylistIndex()]);
+        },
+        onError: onError
+      }
+    });
+  }
 }
 
 var onYouTubeIframeAPIReady = function() {
   inputYT.disabled = loadButtonYT.disabled = searchButtonYT.disabled = false;
 }
 
-var onPlayerReady = function(e){
-  e.target.playVideo();
+var onError = function(e){
+  console.log("Error: " + e.data);
+  vidId = "undefined";
+
+  $(timeInputs).hide();
+  cancelABLoopYT();
+  loopButton.disabled = true;
+
+  //clear list of playback rates
+  while(mySpeed.options.length) mySpeed.remove(mySpeed.options.length-1);
+  mySpeed.disabled=true;
+
+  //clear current bookmark list
+  bmkDelete(0);
 }
 
-var onPlayerStateChange = function(e){
+var onPlayerStateChange = function(e, id){ //event object, video id
   console.log("playerStateChange "+e.data);
-  if(e.target.getPlaylistIndex() != playListIdx) {//the video has changed
-    cancelABLoopYT();
-    $(timeInputs).hide();
+  if(id != vidId && e.data==YT.PlayerState.PLAYING) {//the video has changed
+    loopButton.disabled=false;
 
-    playListIdx = e.target.getPlaylistIndex();
-    var id = e.target.getPlaylist()[playListIdx].trim(); //current video ID 
+    console.log("new :" +id);
+    vidId = id;
+
+    $(timeInputs).hide();
+    cancelABLoopYT();
 
     //clear list of playback rates
     while(mySpeed.options.length) mySpeed.remove(mySpeed.options.length-1);
     mySpeed.disabled=true;
+
+    //clear current bookmark list
+    bmkDelete(0);
+
+
     //determine available playback rates and populate the #mySpeed element
     var rates = e.target.getAvailablePlaybackRates();
-    console.log("available rates " + rates.join(", "));
     for(var i=0; i<rates.length; i++) {
       var c = document.createElement('OPTION');
       mySpeed.add(c); //append as a child to selector
@@ -491,10 +525,7 @@ var onPlayerStateChange = function(e){
       }
     }
     mySpeed.disabled=false;
-    loopButton.disabled=false;
 
-    //clear current bookmark list
-    bmkDelete(0);
     //populate bookmark list with saved items for the current video ID
     if(localStorage.getItem(id)){
       var bmks = localStorage.getItem(id).split(',');
@@ -523,6 +554,7 @@ var onPlayerStateChange = function(e){
 
       localStorage.setItem('knownIDs', knownIDs.join());
     }
+    
   }
 
   while(timer.length) clearInterval(timer.pop());
@@ -530,13 +562,13 @@ var onPlayerStateChange = function(e){
     timer.push(setInterval(onTimeUpdateYT,25));
 }
 
-var loadVideo = function(id) {
+var playYT = function(id) {
   vidId = id.toString().trim();
-  playYT(vidId, "");
+  loadYT(vidId, "id");
 }
 
-var searchVideo = function(qu) {
-  playYT("", qu.toString().trim());
+var searchYT = function(qu) {
+  loadYT(qu.toString().trim(), "search");
 }
 
 var mySetPlaybackRateYT = function(r){

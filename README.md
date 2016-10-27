@@ -13,8 +13,9 @@ Firefox or Chrome recommended.
 - Bookmarked A-B loops can be annotated individually with short description texts.
 - playback rates from slow to fast motion
 - resizable video display
+- search videos on YouTube
 
-**Usage:** Use it online on [GitHub Pages](https://agrahn.github.io/ABLoopPlayer/): Type in a YouTube video ID or browse the hard disk for video files in one of the supported formats.
+**Usage:** Use it online on [GitHub Pages](https://agrahn.github.io/ABLoopPlayer/): Type in a valid YouTube video ID, any number search terms, or browse the hard disk for video files in one of the supported formats.
 
-**Installation (optional):** [Download from GitHub](https://github.com/agrahn/ABLoopPlayer/archive/master.zip) and unzip the archive file. Open `index.html` in the browser.
+**Installation (optional):** [Download from GitHub](https://github.com/agrahn/ABLoopPlayer/archive/master.zip) and unzip the archive file. Open `ABLoopPlayer.html` in the browser.
 
