@@ -403,11 +403,7 @@ var knownIDsHash=new Array();
 var loadYT = function (input, type) {
   initYT(); //initialize player-specific functions
 
-  cancelABLoopYT();
-  $(timeInputs).hide();
-  loopButton.disabled = true;
-
-  bmkDelete(0);
+  resetElements();
 
   //remove previous player, if there is one
   try{ytPlayer.destroy();}catch(e){}
@@ -429,7 +425,6 @@ var loadYT = function (input, type) {
   ytDiv.id = "ytDiv";
   myResizable.appendChild(ytDiv);
 
-  vidID = "undefined";//YT id of video currently being played
   //create new YT player iframe, replacing ytDiv
   if(type=="id") {  //play a single video ID
     console.log("single");
@@ -444,7 +439,10 @@ var loadYT = function (input, type) {
         showinfo: 0, //and other clutter
       },
       events: {
-        onStateChange: function(e) { onPlayerStateChange(e, input); },
+        onStateChange: function(e) {
+          onPlayerStateChange(e,
+            e.target.getVideoUrl().replace(/.*v=/, "").trim());
+        },
         onError: onError
       }
     });
@@ -476,8 +474,7 @@ var onYouTubeIframeAPIReady = function() {
   inputYT.disabled = loadButtonYT.disabled = searchButtonYT.disabled = false;
 }
 
-var onError = function(e){
-  console.log("Error: " + e.data);
+var resetElements = function() {
   vidId = "undefined";
 
   $(timeInputs).hide();
@@ -492,8 +489,13 @@ var onError = function(e){
   bmkDelete(0);
 }
 
+var onError = function(e){
+  console.log("Error: " + e.data);
+  resetElements();
+}
+
 var onPlayerStateChange = function(e, id){ //event object, video id
-  console.log("playerStateChange "+e.data);
+  console.log("playerStateChange:"+e.data + ":" + vidId + ":" + id + ":");
   if(id != vidId && e.data==YT.PlayerState.PLAYING) {//the video has changed
     loopButton.disabled=false;
 
