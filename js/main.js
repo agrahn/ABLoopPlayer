@@ -30,6 +30,7 @@ var menuItem0, menuItem1;
 var ctrlPressed=false;
 var bmkHash;
 var bmkArr;
+var scrubTimer = new Array();
 
 $(document).ready(function() {
   $("#introText").width($("#test").width()+1);
@@ -65,16 +66,24 @@ $(document).ready(function() {
     }
   }
 
-  $("#slider").slider({ //initialisation
+  $("#scrub").slider({
+    min: 0, step: 0.001, range: "min",
+    slide: function(e, ui) {
+      mySetCurrentTime(ui.value);
+    },
+  })
+  $("#scrub").css("height", "6px");
+    
+  $("#slider").slider({
     min: 0,
     step: 0.025,
     range: true,
     change: function(e, ui) {onSliderChange(e, ui);},
     slide: function(e, ui) {onSliderSlide(e, ui);},
-    classes: {"ui-slider-handle": "custom-slider-handle","ui-slider-range": "custom-slider-range" },
   });
-  $(".ui-slider-handle").first().text("A");
-  $(".ui-slider-handle").last().text("B");
+  $("#slider").css("height", "1em");
+  $("#slider .ui-slider-handle").first().css("margin-left", "0em").text("A");
+  $("#slider .ui-slider-handle").last().css("margin-left", "-1em").text("B");
 
   if(localStorage.getItem(help)!="unchecked") document.getElementById("help").checked=true;
   contextHelp(document.getElementById("help"));
@@ -392,7 +401,7 @@ var contextHelp = function(t) {
 var inputYT;
 var singleId;
 var ytPlayer;
-var timer=[];
+var timer=new Array();
 var knownIDs=new Array();
 var knownIDsHash=new Array();
 
@@ -497,7 +506,17 @@ var onPlayerStateChange = function(e, id){ //event object, video id
     return;
   }
 
+  while(scrubTimer.length) clearInterval(scrubTimer.pop());
+  if(e.data==YT.PlayerState.PLAYING) {
+    scrubTimer.push(setInterval(
+      function(e){
+        $("#scrub").slider("option", "value", myGetCurrentTimeYT());
+      } , 0.025
+    ));
+  }
+
   if(id != vidId && e.data==YT.PlayerState.PLAYING) {//the video has changed
+    $("#scrub").slider("option", "max", myGetDuration());
     loopButton.disabled=false;
 
     vidId = id;
@@ -601,6 +620,7 @@ var initResizableYT = function(){
     },
     resize: function(event,ui){
       $("#slider").width(ui.size.width);
+      $("#scrub").width(ui.size.width);
     }
   });
 }
@@ -692,10 +712,22 @@ var playSelectedFile = function (f) {
   myVideo.controls="controls";
   myVideo.width=$("#myResizable").width();
   myVideo.addEventListener("durationchange", function(e){
-    $("#slider").slider("option", "max", myGetDuration());}
-  );
+    $("#slider").slider("option", "max", myGetDuration());
+    $("#scrub").slider("option", "max", myGetDuration());
+  });
   myVideo.addEventListener("loadeddata", onLoadedData);
-  myVideo.addEventListener("play", function(e){mySetPlaybackRate(mySpeed.value);});
+  myVideo.addEventListener("play", function(){
+    mySetPlaybackRate(mySpeed.value);
+    scrubTimer.push(setInterval(
+      function(e){
+        $("#scrub").slider("option", "value", myGetCurrentTimeVT());
+      } , 0.025
+    ));
+  });
+  myVideo.addEventListener("pause", function(){
+    while(scrubTimer.length) clearInterval(scrubTimer.pop());
+  });
+
   myResizable.appendChild(myVideo);
 
   if(f) { //a video file was selected
@@ -766,7 +798,6 @@ var onBmkSelectVT = function(i){
   $(timeInputs).show();
   loopButton.value="Cancel";
   annotButton.disabled=false;
-  myVideo.addEventListener('timeupdate',onTimeUpdateVT);
 }
 
 var myGetDurationVT = function(){
@@ -793,12 +824,13 @@ var initResizableVT = function(){
       myVideo.width=ui.size.width;
       myVideo.height=ui.size.height;
       $("#slider").width(ui.size.width);
+      $("#scrub").width(ui.size.width);
     }
   });
 };
 
 var cancelABLoopVT = function () {
-  try{myVideo.removeEventListener('timeupdate',onTimeUpdateVT);} catch(e){}
+  while(timer.length) clearInterval(timer.pop());
   isTimeASet=isTimeBSet=false;
   loopButton.value="A";
 }
@@ -828,8 +860,6 @@ var onLoopDownVT = function () {
         loopButton.value="Cancel";
         $("#slider").slider("option", "values", [ timeA, timeB ]);
         $(timeInputs).show();
-
-        myVideo.addEventListener('timeupdate',onTimeUpdateVT);
       }
     }else{
       timeA=myGetCurrentTimeVT();
@@ -841,6 +871,7 @@ var onLoopDownVT = function () {
 
 //functions with player specific implementation
 var onBmkSelect;
+var mySetCurrentTime;
 var myGetDuration;
 var mySetPlaybackRate;
 var onLoopDown;
@@ -849,6 +880,7 @@ var cancelABLoop;
 //initialization functions
 var initYT = function () { // YT
   onBmkSelect = onBmkSelectYT;
+  mySetCurrentTime = mySetCurrentTimeYT;
   myGetDuration = myGetDurationYT;
   mySetPlaybackRate = mySetPlaybackRateYT;
   onLoopDown = onLoopDownYT;
@@ -857,6 +889,7 @@ var initYT = function () { // YT
 
 var initVT = function () { // <video> tag
   onBmkSelect = onBmkSelectVT;
+  mySetCurrentTime = mySetCurrentTimeVT;
   myGetDuration = myGetDurationVT;
   mySetPlaybackRate = mySetPlaybackRateVT;
   onLoopDown = onLoopDownVT;

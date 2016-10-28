@@ -32,17 +32,28 @@ hr.double {
   height: 3px; border: 1px solid #888;
 }
 
-.custom-slider-handle {
+
+#slider .ui-slider-handle {
   text-align: center;
-  height: 1.2em;
-  line-height: 1.2em;
-  top: 50%;
+  height: 1em; width: 1em; top: 0px;
+  border: 0px;
+  padding: 0;
+  color: #000;
 }
 
-.ui-slider-horizontal .ui-state-default {
-  background: #DDD;
+#slider .ui-state-default {
+  background: none;
 }
 
-.custom-slider-range {
+#slider .ui-slider-range {
   background-color: #888;
 }
+
+#scrub .ui-slider-range {
+  background-color: #F00;
+}
+
+#scrub .ui-slider-handle {
+  display: none;
+}
+

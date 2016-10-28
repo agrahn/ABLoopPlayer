@@ -24,10 +24,11 @@
 <html lang="en"/>
 <head>
   <meta charset="utf-8"/>
+  <meta name="application-name" content="ABLoopPlayer"/>
   <meta name="description" content="Player for YouTube and local video files with
-              A-B repeat, loop bookmarking, YT video search and slow/fast motion."/>
+    A-B repeat, loop bookmarking, YT video search and slow/fast motion."/>
+  <meta name="keywords" content="AB loop A-B repeat AB bookmark Youtube search video file"/>
   <meta name="author" content="Alexander Grahn"/>
-  <meta name="date" content="2016/10/26"/>
 
   <!-- jQuery framework -->
   <link href="jquery-ui/jquery-ui.css" rel="stylesheet"/>
@@ -53,12 +54,11 @@ A-B repeat, loop bookmarking, YT video search and slow/fast motion.
 </div>
 <p style="margin-top: 0.5em;">Firefox or Chrome recommended.</p>
 
-<!-- value="8bpVfMDSZSU" -->
 <hr class="double" style="margin-bottom: 0px;"/>
 <div id="topElements" style="margin-bottom: 3px; padding: 5px; background-color: #ddd;">
   <div style="display: flex;">
   YT ID / search terms:
-  <input id="inputYT" list="YTids" value="so what miles davis"  onfocus="this.select();"
+  <input id="inputYT" list="YTids" value="so what miles davis solo"  onfocus="this.select();"
     style="margin-left: 5px; margin-right: 1px; flex: 1 1 auto;" disabled/><datalist id="YTids"></datalist><!--
     --><span style="float: right;"><!--
       --><button id="searchButtonYT" onclick="searchYT(inputYT.value)"
@@ -72,10 +72,11 @@ A-B repeat, loop bookmarking, YT video search and slow/fast motion.
 
 <!-- takes one of the players -->
 <div id="myResizable" style="background: #ddd;"></div>
+<div id="scrub" style="margin-top: 4px;"></div>
 
 <div id="timeInputs" style="margin: 3px 0px 0px 0px;">
   <!-- placeholder for jQuery range slider -->
-  <div id="slider" style="margin-top: 6px; margin-bottom: 5px;"></div>
+  <div id="slider" style="margin-top: 0px; margin-bottom: 2px;"></div>
   <div style="margin: 3px 0px 0px 0px; padding: 5px; background-color: #ddd;">
   A: <input id="myTimeA" onchange="onInputTime(this,0)" size="8"/>
   B: <input id="myTimeB" onchange="onInputTime(this,1)" size="8"/>
