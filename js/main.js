@@ -208,6 +208,11 @@ var onSliderChange = function(event, ui) {
   myTimeB.value=secToTimeString(timeB);
 }
 
+var onTimeUpdate = function () {
+  if(myGetCurrentTime()<timeA || myGetCurrentTime()>=timeB)
+    mySetCurrentTime(timeA);
+}
+
 var onSliderSlide = function(e, ui) {
   if(ctrlPressed){
     var delta=timeB-timeA;
@@ -395,6 +400,30 @@ var contextHelp = function(t) {
   }
 }
 
+var cancelABLoop = function () {
+  while(timer.length) clearInterval(timer.pop());
+  isTimeASet=isTimeBSet=false;
+  loopButton.value="A";
+}
+
+var resetUI = function() {
+  vidId = "undefined";
+
+  $(timeInputs).hide();
+  cancelABLoop();
+  while(scrubTimer.length) clearInterval(scrubTimer.pop());
+  $("#scrub").slider("option", "value", 0);
+
+  loopButton.disabled = true;
+
+  //clear list of playback rates
+  while(mySpeed.options.length) mySpeed.remove(mySpeed.options.length-1);
+  mySpeed.disabled=true;
+
+  //clear current bookmark list
+  bmkDelete(0);
+}
+
 ///////////////////////////
 // YT player specific code
 ///////////////////////////
@@ -409,7 +438,6 @@ var knownIDsHash=new Array();
 //arg 1: input (video id | query string), arg 2: type ("singleId" | "search")
 var loadYT = function (input, type) {
   initYT(); //initialize player-specific functions
-
   resetUI();
 
   //remove previous player, if there is one
@@ -479,21 +507,6 @@ var onYouTubeIframeAPIReady = function() {
   inputYT.disabled = searchButtonYT.disabled = false;
 }
 
-var resetUI = function() {
-  vidId = "undefined";
-
-  $(timeInputs).hide();
-  cancelABLoop();
-  loopButton.disabled = true;
-
-  //clear list of playback rates
-  while(mySpeed.options.length) mySpeed.remove(mySpeed.options.length-1);
-  mySpeed.disabled=true;
-
-  //clear current bookmark list
-  bmkDelete(0);
-}
-
 var onError = function(e){
   console.log("Error: " + e.data);
   resetUI();
@@ -506,17 +519,14 @@ var onPlayerStateChange = function(e, id){ //event object, video id
     return;
   }
 
-  while(scrubTimer.length) clearInterval(scrubTimer.pop());
-  if(e.data==YT.PlayerState.PLAYING) {
+  if(id != vidId && e.data==YT.PlayerState.PLAYING) {//the video has changed
+    $("#scrub").slider("option", "max", myGetDuration());
     scrubTimer.push(setInterval(
       function(e){
         $("#scrub").slider("option", "value", myGetCurrentTimeYT());
       } , 0.025
     ));
-  }
 
-  if(id != vidId && e.data==YT.PlayerState.PLAYING) {//the video has changed
-    $("#scrub").slider("option", "max", myGetDuration());
     loopButton.disabled=false;
 
     vidId = id;
@@ -580,7 +590,7 @@ var onPlayerStateChange = function(e, id){ //event object, video id
 
   while(timer.length) clearInterval(timer.pop());
   if (isTimeASet && isTimeBSet && e.data==YT.PlayerState.PLAYING)
-    timer.push(setInterval(onTimeUpdateYT,25));
+    timer.push(setInterval(onTimeUpdate,25));
 }
 
 var searchYT = function(qu) {
@@ -643,18 +653,7 @@ var onBmkSelectYT = function(i){
   loopButton.value="Cancel";
   annotButton.disabled=false;
   if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING)
-    timer.push(setInterval(onTimeUpdateYT,25));
-}
-
-var cancelABLoopYT = function () {
-  while(timer.length) clearInterval(timer.pop());
-  isTimeASet=isTimeBSet=false;
-  loopButton.value="A";
-}
-
-var onTimeUpdateYT = function () {
-  if(myGetCurrentTimeYT()<timeA||myGetCurrentTimeYT()>=timeB)
-    mySetCurrentTimeYT(timeA);
+    timer.push(setInterval(onTimeUpdate,25));
 }
 
 var onLoopDownYT = function () {
@@ -679,7 +678,7 @@ var onLoopDownYT = function () {
         $(timeInputs).show();
 
         if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING)
-          timer.push(setInterval(onTimeUpdateYT,25));
+          timer.push(setInterval(onTimeUpdate,25));
       }
     }else{
       timeA=myGetCurrentTimeYT();
@@ -718,14 +717,10 @@ var playSelectedFile = function (f) {
   myVideo.addEventListener("loadeddata", onLoadedData);
   myVideo.addEventListener("play", function(){
     mySetPlaybackRate(mySpeed.value);
-    scrubTimer.push(setInterval(
-      function(e){
-        $("#scrub").slider("option", "value", myGetCurrentTimeVT());
-      } , 0.025
-    ));
+    if (isTimeASet && isTimeBSet) timer.push(setInterval(onTimeUpdate,25));
   });
   myVideo.addEventListener("pause", function(){
-    while(scrubTimer.length) clearInterval(scrubTimer.pop());
+    while(timer.length) clearInterval(timer.pop());
   });
 
   myResizable.appendChild(myVideo);
@@ -760,6 +755,12 @@ var onLoadedData = function (e) {
   e.target.addEventListener("mouseover", function(e){e.target.controls=true;});
   e.target.addEventListener("mouseout", function(e){e.target.controls=false;});
   loopButton.disabled=false;
+
+  scrubTimer.push(setInterval(
+    function(e){
+      $("#scrub").slider("option", "value", myGetCurrentTimeVT());
+    } , 0.025
+  ));
 
   initResizableVT();
 
@@ -798,6 +799,8 @@ var onBmkSelectVT = function(i){
   $(timeInputs).show();
   loopButton.value="Cancel";
   annotButton.disabled=false;
+  if(!myVideo.paused)
+    timer.push(setInterval(onTimeUpdate,25));
 }
 
 var myGetDurationVT = function(){
@@ -829,18 +832,6 @@ var initResizableVT = function(){
   });
 };
 
-var cancelABLoopVT = function () {
-  while(timer.length) clearInterval(timer.pop());
-  isTimeASet=isTimeBSet=false;
-  loopButton.value="A";
-}
-
-var onTimeUpdateVT = function () {
-  if(myVideo.paused) return;
-  if(myGetCurrentTimeVT()<timeA || myGetCurrentTimeVT()>=timeB)
-    mySetCurrentTimeVT(timeA);
-}
-
 var onLoopDownVT = function () {
   if(isTimeBSet){
     cancelABLoop();
@@ -860,6 +851,9 @@ var onLoopDownVT = function () {
         loopButton.value="Cancel";
         $("#slider").slider("option", "values", [ timeA, timeB ]);
         $(timeInputs).show();
+
+        if(!myVideo.paused)
+          timer.push(setInterval(onTimeUpdate,25));
       }
     }else{
       timeA=myGetCurrentTimeVT();
@@ -871,27 +865,27 @@ var onLoopDownVT = function () {
 
 //functions with player specific implementation
 var onBmkSelect;
+var myGetCurrentTime;
 var mySetCurrentTime;
 var myGetDuration;
 var mySetPlaybackRate;
 var onLoopDown;
-var cancelABLoop;
 
 //initialization functions
 var initYT = function () { // YT
   onBmkSelect = onBmkSelectYT;
+  myGetCurrentTime = myGetCurrentTimeYT;
   mySetCurrentTime = mySetCurrentTimeYT;
   myGetDuration = myGetDurationYT;
   mySetPlaybackRate = mySetPlaybackRateYT;
   onLoopDown = onLoopDownYT;
-  cancelABLoop = cancelABLoopYT;
 }
 
 var initVT = function () { // <video> tag
   onBmkSelect = onBmkSelectVT;
+  myGetCurrentTime = myGetCurrentTimeVT;
   mySetCurrentTime = mySetCurrentTimeVT;
   myGetDuration = myGetDurationVT;
   mySetPlaybackRate = mySetPlaybackRateVT;
   onLoopDown = onLoopDownVT;
-  cancelABLoop = cancelABLoopVT;
 }
