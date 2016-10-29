@@ -44,15 +44,12 @@
 
 <body style="min-width: max-content; display: inline-block;">
 
-<h1 style="font-size: 150%; margin-top: 0;">AB Loop Player</h1>
-<div id="test"
-  style="visibility: hidden; white-space: nowrap; width: auto;position: absolute;">
-Player for <em>YouTube</em> and <em>local video files</em> in the MP4/WebM/Ogg formats with</div> 
+<h1 style="font-size: 150%; margin-top: 0; margin-bottom: 0.5em;">AB Loop Player</h1>
 <div id="introText">
 Player for <em>YouTube</em> and <em>local video files</em> in the MP4/WebM/Ogg formats with
 A-B repeat, loop bookmarking, YT video search and slow/fast motion.
 </div>
-<p style="margin-top: 0.5em;">Firefox or Chrome recommended.</p>
+<div style="margin-top: 0.5em;">Firefox or Chrome recommended.</div>
 
 <hr class="double" style="margin-bottom: 0px;"/>
 <div id="topElements" style="margin-bottom: 3px; padding: 5px; background-color: #ddd;">
@@ -68,7 +65,7 @@ A-B repeat, loop bookmarking, YT video search and slow/fast motion.
     </span>
   </div>
   Video File: <input id="inputVT" accept="video/*" type="file" onchange="playSelectedFile(this.files[0])"/>
-</div>  
+</div>
 
 <!-- takes one of the players -->
 <div id="myResizable" style="background: #ddd;"></div>
@@ -114,5 +111,8 @@ Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)"
 </a>
 </span>
 
+<div id="test"
+  style="visibility: hidden; white-space: nowrap; width: auto;position: absolute;">
+Player for <em>YouTube</em> and <em>local video files</em> in the MP4/WebM/Ogg formats with</div>
 </body>
 </html>
