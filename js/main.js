@@ -81,8 +81,8 @@ $(document).ready(function() {
     slide: function(e, ui) {onSliderSlide(e, ui);},
   });
   $("#slider").css("height", "1em");
-  $("#slider .ui-slider-handle").first().css("margin-left", "0em").text("A");
-  $("#slider .ui-slider-handle").last().css("margin-left", "-1em").text("B");
+  $("#slider .ui-slider-handle").first().css("margin-left", "-1em").text("A");
+  $("#slider .ui-slider-handle").last().css("margin-left", "0em").text("B");
 
   if(localStorage.getItem(help)!="unchecked") document.getElementById("help").checked=true;
   contextHelp(document.getElementById("help"));
