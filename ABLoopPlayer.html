@@ -42,7 +42,7 @@
   <script src="js/main.js"></script>
 </head>
 
-<body style="min-width: max-content; display: inline-block;">
+<body style="margin-left: 1em; margin-right: 1em; min-width: max-content; display: inline-block;">
 
 <h1 style="font-size: 150%; margin-top: 0; margin-bottom: 0.5em;">AB Loop Player</h1>
 <div id="introText">
@@ -64,7 +64,8 @@ A-B repeat, loop bookmarking, YT video search and slow/fast motion.
       <input type="checkbox" onchange="contextHelp(this)" id="help"/>?
     </span>
   </div>
-  Video File: <input id="inputVT" accept="video/*,audio/*" type="file" onchange="playSelectedFile(this.files[0])"/>
+  Media file: <input id="inputVT" accept="video/*,audio/*" type="file" onchange="playSelectedFile(this.files[0])"/>
+  <input type="checkbox" onchange="toggleAudio()" id="aonly"/>audio only
 </div>
 
 <!-- takes one of the players -->

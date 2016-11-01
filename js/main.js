@@ -539,7 +539,6 @@ var onPlayerStateChange = function(e, id){ //event object, video id
     //clear current bookmark list
     bmkDelete(0);
 
-
     //determine available playback rates and populate the #mySpeed element
     var rates = e.target.getAvailablePlaybackRates();
     for(var i=0; i<rates.length; i++) {
@@ -618,6 +617,7 @@ var initResizableYT = function(){
     minHeight: 90,
     create: function(event, ui){
       $("#slider").width($("#myResizable" ).width());
+      $("#scrub").width($("#myResizable" ).width());
     },
     start: function(event,ui){
       $(ytDiv).hide();
@@ -704,7 +704,11 @@ var playSelectedFile = function (f) {
   myResizable.id="myResizable";
   parent.replaceChild(myResizable, myResizableOld);
 
-  myVideo = document.createElement("video");
+  if(document.getElementById("aonly").checked)
+    myVideo = document.createElement("audio");
+  else
+    myVideo = document.createElement("video");
+
   myVideo.id="myVideo";
   myVideo.controls="controls";
   myVideo.width=$("#myResizable").width();
@@ -750,8 +754,10 @@ var playSelectedFile = function (f) {
 }
 
 var onLoadedData = function (e) {
-  e.target.addEventListener("mouseover", function(e){e.target.controls=true;});
-  e.target.addEventListener("mouseout", function(e){e.target.controls=false;});
+  if(!document.getElementById("aonly").checked) {
+    e.target.addEventListener("mouseover", function(e){e.target.controls=true;});
+    e.target.addEventListener("mouseout", function(e){e.target.controls=false;});
+  }
   loopButton.disabled=false;
 
   scrubTimer.push(setInterval(
@@ -819,11 +825,12 @@ var initResizableVT = function(){
     minWidth: 160,
     create: function(e,ui){
       myVideo.width=$("#myResizable").width();
-      $("#slider").width($(myVideo).width());
+      $("#slider").width($("#myResizable").width());
+      $("#scrub").width($("#myResizable").width());
     },
     resize: function(event,ui){
       myVideo.width=ui.size.width;
-      myVideo.height=ui.size.height;
+      if(!document.getElementById("aonly").checked) myVideo.height=ui.size.height;
       $("#slider").width(ui.size.width);
       $("#scrub").width(ui.size.width);
     }
@@ -859,6 +866,10 @@ var onLoopDownVT = function () {
       loopButton.value="B";
     }
   }
+}
+
+var toggleAudio = function() {
+  if(myVideo.readyState) playSelectedFile(inputVT.files[0]);
 }
 
 //functions with player specific implementation
