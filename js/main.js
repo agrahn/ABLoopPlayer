@@ -823,7 +823,7 @@ var initHeight;
 var initResizableVT = function(){
   $("#myResizable" ).resizable({
     aspectRatio: (document.getElementById("aonly").checked ? false : true),
-    minWidth: 160,
+    minWidth: (document.getElementById("aonly").checked ? $("#myResizable").width() : 160),
     create: function(e,ui){
       myVideo.width = $("#myResizable").width();
       initHeight = $("#myResizable").height();
