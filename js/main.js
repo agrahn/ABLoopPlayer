@@ -369,7 +369,7 @@ var contextHelp = function(t) {
       "from the browser's address bar.";
 
     searchButtonYT.title = "Look up matching videos on YouTube.";
-    inputVT.title = "Browse the hard disk for media files (mp4/H.264, webm, ogg, ogv, mp3, wav, ...).";
+    inputVT.title = "Browse the hard disk for media files (mp4/H.264, webm, ogg, mp3, wav, ...).";
     loopButton.title = "Click twice to mark loop range / click to cancel current loop.";
     myBookmarks.title = "Choose from previously saved loops.";
     bmkAddButton.title = "Save current loop range to the list of bookmarks.";
