@@ -819,18 +819,24 @@ var mySetCurrentTimeVT = function(t){
   myVideo.currentTime=t;
 }
 
+var initHeight;
 var initResizableVT = function(){
   $("#myResizable" ).resizable({
     aspectRatio: (document.getElementById("aonly").checked ? false : true),
     minWidth: 160,
     create: function(e,ui){
-      myVideo.width=$("#myResizable").width();
+      myVideo.width = $("#myResizable").width();
+      initHeight = $("#myResizable").height();
       $("#slider").width($("#myResizable").width());
       $("#scrub").width($("#myResizable").width());
     },
     resize: function(event,ui){
       myVideo.width=ui.size.width;
-      if(!document.getElementById("aonly").checked) myVideo.height=ui.size.height;
+      if(document.getElementById("aonly").checked) {
+		ui.size.height = initHeight;
+	  } else {
+		myVideo.height=ui.size.height;
+	  }
       $("#slider").width(ui.size.width);
       $("#scrub").width(ui.size.width);
     }
