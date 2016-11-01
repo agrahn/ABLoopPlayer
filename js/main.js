@@ -821,7 +821,7 @@ var mySetCurrentTimeVT = function(t){
 
 var initResizableVT = function(){
   $("#myResizable" ).resizable({
-    aspectRatio: true,
+    aspectRatio: (document.getElementById("aonly").checked ? false : true),
     minWidth: 160,
     create: function(e,ui){
       myVideo.width=$("#myResizable").width();
