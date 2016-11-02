@@ -736,6 +736,10 @@ var playSelectedFile = function (f) {
   myVideo.addEventListener("pause", function(){
     while(loopTimer.length) clearInterval(loopTimer.pop());
   });
+  myVideo.addEventListener("error", function(e){
+    console.log("Error: " + e.target);
+    resetUI();
+  });
 
   myResizable.appendChild(myVideo);
 
