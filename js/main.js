@@ -375,10 +375,10 @@ var contextHelp = function(t) {
     localStorage.setItem(help, "checked");
 
     t.title = "Uncheck to disable context-sensitive help.";
-	if(aonly.checked)
-	  aonly.title = "Uncheck to enable video display.";
-	else
-	  aonly.title = "Suppress video display.";
+    if(aonly.checked)
+      aonly.title = "Uncheck to enable video display.";
+    else
+      aonly.title = "Suppress video display.";
     inputYT.title = "Enter a valid YT video ID or one or more search terms. " +
       "To get a particular video ID, open the video on youtube.com and get its ID " +
       "from the browser's address bar.";
@@ -398,7 +398,7 @@ var contextHelp = function(t) {
     localStorage.setItem(help, "unchecked");
 
     t.title="Enable context-sensitive help.";
-	aonly.title =
+    aonly.title =
     inputYT.title =
     searchButtonYT.title =
     inputVT.title =
@@ -532,7 +532,30 @@ var onPlayerStateChange = function(e, id){ //event object, video id
     return;
   }
 
-  if(id != vidId && e.data==YT.PlayerState.PLAYING) {//the video has changed
+  //prepend search terms to the list of valid and already visited video IDs
+  //if the playlist has multiple items
+  var query = inputYT.value.trim().replace(/\s+/g, ' ');
+  if(
+    e.target.getPlaylist() && e.target.getPlaylist().length>1 &&
+    e.data==-1 && query.length && typeof knownIDsHash[query]==='undefined'
+  ) {
+    knownIDsHash[query]='';
+    knownIDs.unshift(query);
+
+    var z = document.createElement('OPTION');
+    z.setAttribute('value', query);
+    YTids.insertBefore(z, YTids.firstChild);
+
+    while(knownIDs.length>100) {
+      knownIDs.pop();
+      YTids.removeChild(YTids.lastChild);
+    }
+
+    localStorage.setItem('knownIDs', knownIDs.join());
+  }
+
+  //the video has changed by selecting a video from the playlist
+  if(id != vidId && e.data==YT.PlayerState.PLAYING) {
     $("#scrub").slider("option", "max", myGetDuration()).show();
     scrubTimer.push(setInterval(
       function(e){
@@ -579,7 +602,7 @@ var onPlayerStateChange = function(e, id){ //event object, video id
       annotButton.disabled=true;
     }
 
-    //append to the list of valid and already visited video IDs
+    //prepend ID to the list of valid and already visited video IDs
     if(typeof knownIDsHash[id]==='undefined'){
       knownIDsHash[id]='';
       knownIDs.unshift(id);
@@ -604,7 +627,7 @@ var onPlayerStateChange = function(e, id){ //event object, video id
 }
 
 var searchYT = function(qu) {
-  loadYT(qu, "search");
+  loadYT(qu.trim(), "search");
 }
 
 var mySetPlaybackRateYT = function(r){
@@ -848,10 +871,10 @@ var initResizableVT = function(){
     resize: function(event,ui){
       myVideo.width=ui.size.width;
       if(aonly.checked) {
-		ui.size.height = initHeight;
-	  } else {
-		myVideo.height=ui.size.height;
-	  }
+        ui.size.height = initHeight;
+      } else {
+        myVideo.height=ui.size.height;
+      }
       $("#slider").width(ui.size.width);
       $("#scrub").width(ui.size.width);
     }
