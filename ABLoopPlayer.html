@@ -52,7 +52,7 @@ A-B repeat, loop bookmarking, YT video search and slow/fast motion.
 <div style="margin-top: 0.5em;">Firefox or Chrome recommended.</div>
 
 <hr class="double" style="margin-bottom: 0px;"/>
-<div id="topElements" style="margin-bottom: 3px; padding: 5px; background-color: #ddd;">
+<div style="margin-bottom: 3px; padding: 5px; background-color: #ddd;">
   <div style="display: flex;">
   YT ID / search terms:
   <input id="inputYT" list="YTids" value="so what miles davis solo"  onfocus="this.select();"
@@ -65,11 +65,10 @@ A-B repeat, loop bookmarking, YT video search and slow/fast motion.
     </span>
   </div>
   Media file: <input id="inputVT" accept="video/*,audio/*" type="file" onchange="playSelectedFile(this.files[0])"/>
-  <input type="checkbox" onchange="toggleAudio()" id="aonly"/>audio only
+  <input type="checkbox" onchange="toggleAudio(this, help)" id="aonly"/>audio only
 </div>
 
-<!-- takes one of the players -->
-<div id="myResizable" style="background: #ddd;"></div>
+<div id="myResizable" style="background: #ddd;"></div><!-- takes one of the players -->
 <div id="scrub" style="margin-top: 4px;"></div>
 
 <div id="timeInputs" style="margin: 3px 0px 0px 0px;">
