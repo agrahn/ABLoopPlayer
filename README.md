@@ -1,4 +1,4 @@
-# ABLoopPlayer
+# AB Loop Player
 
 © 2016 Alexander Grahn
 
