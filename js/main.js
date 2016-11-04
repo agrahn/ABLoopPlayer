@@ -769,7 +769,7 @@ var playSelectedFile = function (f) {
 
   myResizable.appendChild(myVideo);
 
-  if(f) { //a video file was selected
+  if(f) { //a media file was selected
     myVideo.autoplay = "autoplay";
 
     //add speed options
