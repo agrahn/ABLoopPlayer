@@ -18,8 +18,8 @@
 */
 
 var vidId;  // YT ID or file name + size
-var YTids;  //data list with visited YT IDs
-var help;   //check box
+var YTids;
+var help;
 var inputVT, aonly;
 var timeA, timeB;
 var isTimeASet=false;
@@ -33,12 +33,12 @@ var menuItem0, menuItem1;
 var ctrlPressed=false;
 var bmkHash;
 var bmkArr;
-var loopTimer=new Array();
-var scrubTimer = new Array();
+var loopTimer=[];
+var scrubTimer=[];
 
 $(document).ready(function() {
   $("#introText").width($("#test").width()+1);
-  //if we are online, asynchronously load youtube iframe player api
+  //if we are online, asynchronously load YT player api
   if(navigator.onLine) {
     var scripts = document.getElementsByTagName('script');
     var scriptTag1 = scripts[scripts.length-1];
@@ -187,7 +187,7 @@ var myConfirm = function(onclose, msg) {
   })
 }
 
-//pretty printing the current media time
+//pretty printing the media time
 var secToTimeString = function(t) {
   var h=Math.floor(t/3600);
   var s=t % 3600;
@@ -243,7 +243,7 @@ var onSliderSlide = function(e, ui) {
 }
 
 var onInputTime = function(whichInput, sliderIdx) {
-  var time=whichInput.value.match(
+  var time=whichInput.value.match(  //validate user input
         /^\s*(?:\d+:[0-5][0-9]|[0-5]?[0-9]):[0-5][0-9](?:\.\d+)?\s*$/
       );
   if(!time){
@@ -335,7 +335,7 @@ var onClickTrash = function(idx){
           for(var i=1; i<myBookmarks.options.length; i++){
             localStorage.removeItem(vidId+'-'+myBookmarks.options[i].text);
           }
-          //then delete the bookmarked loops themselves
+          //then delete the bookmarked loops altogether
           bmkDelete(0);
           localStorage.removeItem(vidId);
         }
@@ -430,12 +430,10 @@ var resetUI = function() {
 
   loopButton.disabled = true;
 
-  //clear list of playback rates
   while(mySpeed.options.length) mySpeed.remove(mySpeed.options.length-1);
   mySpeed.disabled=true;
 
-  //clear current bookmark list
-  bmkDelete(0);
+  bmkDelete(0);//clear current bookmark list
 }
 
 ///////////////////////////
@@ -444,8 +442,8 @@ var resetUI = function() {
 var inputYT;
 var singleId;
 var ytPlayer;
-var knownIDs=new Array();
-var knownIDsHash=new Array();
+var knownIDs=[];
+var knownIDsHash=[];
 
 //function for loading YT player
 //arg 1: input (video id | query string), arg 2: type ("singleId" | "search")
@@ -484,7 +482,7 @@ var loadYT = function (input, type) {
         autoplay: 1,
         autohide: 2, //controls
         rel: 0,      //no related videos at the end
-        showinfo: 1,
+        showinfo: 1, //displaying current video info might be useful
       },
       events: {
         onStateChange: function(e) {
@@ -501,12 +499,17 @@ var loadYT = function (input, type) {
         listType: "search",
         list: input,
         autoplay: 0,
-        autohide: 2, //controls
-        rel: 0,      //no related videos at the end
-        showinfo: 1, //displaying current video info might be useful
+        autohide: 2,
+        rel: 0,
+        showinfo: 1,
       },
       events: {
         onStateChange: function(e) {
+          //empty playlist, but user clicks red play btn
+          if(!e.target.getPlaylist()) {
+            searchYT("");
+            return;
+          }
           onPlayerStateChange(e,
             e.target.getPlaylist()[e.target.getPlaylistIndex()]);
         },
@@ -560,7 +563,7 @@ var onPlayerStateChange = function(e, id){ //event object, video id
     scrubTimer.push(setInterval(
       function(e){
         $("#scrub").slider("option", "value", myGetCurrentTimeYT());
-      } , 0.025
+      } , 25
     ));
 
     loopButton.disabled=false;
