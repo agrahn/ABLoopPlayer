@@ -32,7 +32,6 @@ hr.double {
   height: 3px; border: 1px solid #888;
 }
 
-
 #slider .ui-slider-handle {
   text-align: center;
   height: 1em; width: 1em; top: 0px;
@@ -56,3 +55,6 @@ hr.double {
 #scrub .ui-slider-handle {
   display: none;
 }
+
+/* remove rounded corners */
+.ui-corner-all {border-radius: 0px;}
