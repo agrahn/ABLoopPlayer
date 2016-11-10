@@ -103,7 +103,7 @@ A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown
   --><button id="trashButton" style="width:1.5em; padding: 0px;"
     onclick="onClickTrash(myBookmarks.selectedIndex)"
   ><span class="ui-icon ui-icon-trash"></span></button>
-</span><br/>
+</span> <input type="checkbox" onchange="toggleIntro(this, help)" id="intro"/>play intro<br/>
 Speed: <select id="mySpeed" onchange="mySetPlaybackRate(this.value)"
          style="margin-top: 5px;" disabled></select>
 </div>
