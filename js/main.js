@@ -20,7 +20,7 @@
 var vidId;  // YT ID or file name + size
 var YTids;
 var help;
-var inputVT, aonly;
+var inputVT, aonly, intro;
 var timeA, timeB;
 var isTimeASet=false;
 var isTimeBSet=false;
@@ -53,6 +53,7 @@ $(document).ready(function() {
   searchButtonYT = document.getElementById("searchButtonYT");
   inputVT = document.getElementById("inputVT");
   aonly = document.getElementById("aonly");
+  intro = document.getElementById("intro");
   myTimeA = document.getElementById("myTimeA");
   myTimeB = document.getElementById("myTimeB");
   loopButton = document.getElementById("loopButton");
@@ -98,6 +99,9 @@ $(document).ready(function() {
 
   if(localStorage.getItem(help)!="unchecked") help.checked=true;
   contextHelp(help);
+
+  if(localStorage.getItem(intro)!="unchecked") intro.checked=true;
+  toggleIntro(intro, help);
 
   playSelectedFile("");
 });
@@ -219,7 +223,7 @@ var onSliderChange = function(event, ui) {
 }
 
 var onTimeUpdate = function () {
-  if(myGetCurrentTime()<timeA || myGetCurrentTime()>=timeB)
+  if(myGetCurrentTime()<timeA && !intro.checked || myGetCurrentTime()>=timeB)
     mySetCurrentTime(timeA);
 }
 
@@ -379,6 +383,12 @@ var contextHelp = function(t) {
       aonly.title = "Uncheck to enable video display.";
     else
       aonly.title = "Suppress video display.";
+
+    if(intro.checked)
+      intro.title = "Uncheck to always skip media section up to \"A\".";
+    else
+      intro.title = "If checked, media section up to \"A\" is played before starting the loop.";
+
     inputYT.title = "Enter a valid YT video ID or one or more search terms. " +
       "To get a particular video ID, open the video on youtube.com and get its ID " +
       "from the browser's address bar.";
@@ -399,6 +409,7 @@ var contextHelp = function(t) {
 
     t.title="Enable context-sensitive help.";
     aonly.title =
+    intro.title =
     inputYT.title =
     searchButtonYT.title =
     inputVT.title =
@@ -919,9 +930,19 @@ var toggleAudio = function(t,h) {
   if(myVideo.readyState) playSelectedFile(inputVT.files[0]);
   if(h.checked) {
     if(t.checked)
-      aonly.title = "Uncheck to enable video display.";
+      t.title = "Uncheck to enable video display.";
     else
-      aonly.title = "Suppress video display.";
+      t.title = "Suppress video display.";
+  }
+}
+
+var toggleIntro = function(t,h) {
+  if(t.checked) {
+    localStorage.setItem(intro, "checked");
+    if(h.checked) t.title = "Uncheck to always skip media section up to \"A\".";
+  }else{
+    localStorage.setItem(intro, "unchecked");
+    if(h.checked) t.title = "Media section up to \"A\" is played before starting the loop.";
   }
 }
 
