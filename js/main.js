@@ -108,6 +108,7 @@ $(document).ready(function() {
 
 window.addEventListener( "keydown", function(e) {
   if (e.which == 17) ctrlPressed=true;
+  else if (e.which == 27) onLoopDown();
 });
 
 window.addEventListener( "keyup", function(e) {
@@ -387,14 +388,16 @@ var contextHelp = function(t) {
     if(intro.checked)
       intro.title = "Uncheck to always skip media section up to \"A\".";
     else
-      intro.title = "If checked, media section up to \"A\" is played before starting the loop.";
+      t.title = "If checked, media section up to \"A\""
+              + " is played before starting the loop.";
 
     inputYT.title = "Enter a valid YT video ID or one or more search terms. " +
       "To get a particular video ID, open the video on youtube.com and get its ID " +
       "from the browser's address bar.";
     searchButtonYT.title = "Look up matching videos on YouTube.";
     inputVT.title = "Browse the hard disk for media files (mp4/H.264, webm, ogg, mp3, wav, ...).";
-    loopButton.title = "Click twice to mark loop range / click to cancel current loop.";
+    loopButton.title = "Click twice to mark loop range / click to cancel current loop."
+		             + " Hotkey: [Esc]";
     myBookmarks.title = "Choose from previously saved loops.";
     bmkAddButton.title = "Save current loop range to the list of bookmarks.";
     myTimeA.title = myTimeB.title = "Fine-tune loop range. Input format: [hh:]mm:ss[.sss]";
@@ -939,10 +942,13 @@ var toggleAudio = function(t,h) {
 var toggleIntro = function(t,h) {
   if(t.checked) {
     localStorage.setItem(intro, "checked");
-    if(h.checked) t.title = "Uncheck to always skip media section up to \"A\".";
+    if(h.checked)
+        t.title = "Uncheck to always skip media section up to \"A\".";
   }else{
     localStorage.setItem(intro, "unchecked");
-    if(h.checked) t.title = "Media section up to \"A\" is played before starting the loop.";
+    if(h.checked)
+        t.title = "If checked, media section up to \"A\""
+                + " is played before starting the loop.";
   }
 }
 
