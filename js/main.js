@@ -106,8 +106,17 @@ $(document).ready(function() {
   playSelectedFile("");
 });
 
+//add some hotkeys
 window.addEventListener( "keydown", function(e) {
   if (e.which == 17) ctrlPressed=true;
+  else if (e.which == 27 && !loopButton.disabled) onLoopDown();
+  else if (e.which == 36) { try{mySetCurrentTime(0);}catch(err){} }
+  else if (e.which == 35) { try{mySetCurrentTime(myGetDuration());}catch(err){} }
+  else if (e.which == 37 && !$("#slider .ui-slider-handle").is(":focus")) {
+    try{mySetCurrentTime(myGetCurrentTime()-15);}catch(err){} }
+  else if (e.which == 39 && !$("#slider .ui-slider-handle").is(":focus")) {
+	try{mySetCurrentTime(myGetCurrentTime()+15);}catch(err){} }
+  else if (e.which == 32) { try{myPlayPause();}catch(err){} }
 });
 
 window.addEventListener( "keyup", function(e) {
@@ -387,14 +396,16 @@ var contextHelp = function(t) {
     if(intro.checked)
       intro.title = "Uncheck to always skip media section up to \"A\".";
     else
-      intro.title = "If checked, media section up to \"A\" is played before starting the loop.";
+      t.title = "If checked, media section up to \"A\""
+              + " is played before starting the loop.";
 
     inputYT.title = "Enter a valid YT video ID or one or more search terms. " +
       "To get a particular video ID, open the video on youtube.com and get its ID " +
       "from the browser's address bar.";
     searchButtonYT.title = "Look up matching videos on YouTube.";
     inputVT.title = "Browse the hard disk for media files (mp4/H.264, webm, ogg, mp3, wav, ...).";
-    loopButton.title = "Click twice to mark loop range / click to cancel current loop.";
+    loopButton.title = "Click twice to mark loop range / click to cancel current loop."
+		             + " Hotkey: [Esc]";
     myBookmarks.title = "Choose from previously saved loops.";
     bmkAddButton.title = "Save current loop range to the list of bookmarks.";
     myTimeA.title = myTimeB.title = "Fine-tune loop range. Input format: [hh:]mm:ss[.sss]";
@@ -939,10 +950,13 @@ var toggleAudio = function(t,h) {
 var toggleIntro = function(t,h) {
   if(t.checked) {
     localStorage.setItem(intro, "checked");
-    if(h.checked) t.title = "Uncheck to always skip media section up to \"A\".";
+    if(h.checked)
+        t.title = "Uncheck to always skip media section up to \"A\".";
   }else{
     localStorage.setItem(intro, "unchecked");
-    if(h.checked) t.title = "Media section up to \"A\" is played before starting the loop.";
+    if(h.checked)
+        t.title = "If checked, media section up to \"A\""
+                + " is played before starting the loop.";
   }
 }
 
@@ -953,6 +967,7 @@ var mySetCurrentTime;
 var myGetDuration;
 var mySetPlaybackRate;
 var onLoopDown;
+var myPlayPause;
 
 //initialization functions
 var initYT = function () { // YT
@@ -962,6 +977,12 @@ var initYT = function () { // YT
   myGetDuration = myGetDurationYT;
   mySetPlaybackRate = mySetPlaybackRateYT;
   onLoopDown = onLoopDownYT;
+  myPlayPause = function () {
+    if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING)
+      ytPlayer.pauseVideo();
+	else
+	  ytPlayer.playVideo();
+  }
 }
 
 var initVT = function () { // <video> tag
@@ -971,4 +992,7 @@ var initVT = function () { // <video> tag
   myGetDuration = myGetDurationVT;
   mySetPlaybackRate = mySetPlaybackRateVT;
   onLoopDown = onLoopDownVT;
+  myPlayPause = function () {
+    if(myVideo.paused) myVideo.play(); else myVideo.pause();
+  }
 }
