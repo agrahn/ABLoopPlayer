@@ -106,9 +106,17 @@ $(document).ready(function() {
   playSelectedFile("");
 });
 
+//add some hotkeys
 window.addEventListener( "keydown", function(e) {
   if (e.which == 17) ctrlPressed=true;
   else if (e.which == 27 && !loopButton.disabled) onLoopDown();
+  else if (e.which == 36) { try{mySetCurrentTime(0);}catch(err){} }
+  else if (e.which == 35) { try{mySetCurrentTime(myGetDuration());}catch(err){} }
+  else if (e.which == 37 && !$("#slider .ui-slider-handle").is(":focus")) {
+    try{mySetCurrentTime(myGetCurrentTime()-15);}catch(err){} }
+  else if (e.which == 39 && !$("#slider .ui-slider-handle").is(":focus")) {
+	try{mySetCurrentTime(myGetCurrentTime()+15);}catch(err){} }
+  else if (e.which == 32) { try{myPlayPause();}catch(err){} }
 });
 
 window.addEventListener( "keyup", function(e) {
@@ -959,6 +967,7 @@ var mySetCurrentTime;
 var myGetDuration;
 var mySetPlaybackRate;
 var onLoopDown;
+var myPlayPause;
 
 //initialization functions
 var initYT = function () { // YT
@@ -968,6 +977,12 @@ var initYT = function () { // YT
   myGetDuration = myGetDurationYT;
   mySetPlaybackRate = mySetPlaybackRateYT;
   onLoopDown = onLoopDownYT;
+  myPlayPause = function () {
+    if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING)
+      ytPlayer.pauseVideo();
+	else
+	  ytPlayer.playVideo();
+  }
 }
 
 var initVT = function () { // <video> tag
@@ -977,4 +992,7 @@ var initVT = function () { // <video> tag
   myGetDuration = myGetDurationVT;
   mySetPlaybackRate = mySetPlaybackRateVT;
   onLoopDown = onLoopDownVT;
+  myPlayPause = function () {
+    if(myVideo.paused) myVideo.play(); else myVideo.pause();
+  }
 }
