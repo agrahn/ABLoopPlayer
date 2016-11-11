@@ -108,7 +108,7 @@ $(document).ready(function() {
 
 window.addEventListener( "keydown", function(e) {
   if (e.which == 17) ctrlPressed=true;
-  else if (e.which == 27) onLoopDown();
+  else if (e.which == 27 && !loopButton.disabled) onLoopDown();
 });
 
 window.addEventListener( "keyup", function(e) {
