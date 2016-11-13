@@ -115,8 +115,8 @@ window.addEventListener( "keydown", function(e) {
   else if (e.which == 37 && !$("#slider .ui-slider-handle").is(":focus")) {
     try{mySetCurrentTime(myGetCurrentTime()-15);}catch(err){} }
   else if (e.which == 39 && !$("#slider .ui-slider-handle").is(":focus")) {
-	try{mySetCurrentTime(myGetCurrentTime()+15);}catch(err){} }
-  else if (e.which == 32) { try{myPlayPause();}catch(err){} }
+    try{mySetCurrentTime(myGetCurrentTime()+15);}catch(err){} }
+  else if (e.which == 32  && !$("input").is(":focus")) { try{myPlayPause();}catch(err){} }
 });
 
 window.addEventListener( "keyup", function(e) {
@@ -405,7 +405,7 @@ var contextHelp = function(t) {
     searchButtonYT.title = "Look up matching videos on YouTube.";
     inputVT.title = "Browse the hard disk for media files (mp4/H.264, webm, ogg, mp3, wav, ...).";
     loopButton.title = "Click twice to mark loop range / click to cancel current loop."
-		             + " Hotkey: [Esc]";
+                     + " Hotkey: [Esc]";
     myBookmarks.title = "Choose from previously saved loops.";
     bmkAddButton.title = "Save current loop range to the list of bookmarks.";
     myTimeA.title = myTimeB.title = "Fine-tune loop range. Input format: [hh:]mm:ss[.sss]";
@@ -980,8 +980,8 @@ var initYT = function () { // YT
   myPlayPause = function () {
     if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING)
       ytPlayer.pauseVideo();
-	else
-	  ytPlayer.playVideo();
+    else
+      ytPlayer.playVideo();
   }
 }
 
