@@ -58,3 +58,6 @@ hr.double {
 
 /* remove rounded corners */
 .ui-corner-all {border-radius: 0px;}
+
+input {border-radius: 0px;}
+button {border-radius: 0px;}
