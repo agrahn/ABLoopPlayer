@@ -66,6 +66,10 @@ $(document).ready(function() {
   menuItem1 = document.getElementById("menuItem1");
 
   inputYT.disabled = searchButtonYT.disabled = true;
+  if(localStorage.getItem("lastSearch"))
+	inputYT.value = localStorage.getItem("lastSearch");
+  else
+	inputYT.value = "giant steps animated";  
 
   //get already watched YT IDs
   if(localStorage.getItem('knownIDs')){
@@ -569,6 +573,11 @@ var onError = function(e){
 }
 
 var onPlayerStateChange = function(e, id){ //event object, video id
+  //store last search terms	
+  var query = inputYT.value.trim().replace(/\s+/g, ' ');
+  if(e.target.getPlaylist() && e.data==-1 && query.length)
+	localStorage.setItem("lastSearch", query);
+
   //restart player if playlist contains only one ID
   if(e.target.getPlaylist() && e.target.getPlaylist().length==1 && e.data==-1) {
     loadYT(e.target.getPlaylist()[0], "singleid");
@@ -577,7 +586,6 @@ var onPlayerStateChange = function(e, id){ //event object, video id
 
   //prepend search terms to the list of valid and already visited video IDs
   //if the playlist has multiple items
-  var query = inputYT.value.trim().replace(/\s+/g, ' ');
   if(
     e.target.getPlaylist() && e.target.getPlaylist().length>1 &&
     e.data==-1 && query.length && typeof knownIDsHash[query]==='undefined'
@@ -670,7 +678,7 @@ var onPlayerStateChange = function(e, id){ //event object, video id
 }
 
 var searchYT = function(qu) {
-  loadYT(qu.trim(), "search");
+  loadYT(qu.trim().replace(/\s+/g, ' '), "search");
 }
 
 var mySetPlaybackRateYT = function(r){
