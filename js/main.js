@@ -108,16 +108,33 @@ $(document).ready(function() {
 
 //add some hotkeys
 window.addEventListener( "keydown", function(e) {
-	console.log("pressed "+e.which);
   if (e.which == 17) ctrlPressed=true;
-  else if (e.which == 27 && !loopButton.disabled) onLoopDown();
-  else if (e.which == 36) { try{mySetCurrentTime(0);}catch(err){} }
-  else if (e.which == 35) { try{mySetCurrentTime(myGetDuration());}catch(err){} }
-  else if (e.which == 37 && !$("#slider .ui-slider-handle").is(":focus")) {
-    try{mySetCurrentTime(myGetCurrentTime()-15);}catch(err){} }
-  else if (e.which == 39 && !$("#slider .ui-slider-handle").is(":focus")) {
-    try{mySetCurrentTime(myGetCurrentTime()+15);}catch(err){} }
-  else if (e.which == 32  && !$("input").is(":focus")) { try{myPlayPause();}catch(err){} }
+  else if (e.which == 27
+    && !loopButton.disabled
+  ) onLoopDown();
+  else if (e.which == 36
+    && !$("#slider .ui-slider-handle").is(":focus")
+    && !$("input").is(":focus")
+    && !$("select").is(":focus")
+  ) { try{mySetCurrentTime(0);}catch(err){} }
+  else if (e.which == 35
+    && !$("#slider .ui-slider-handle").is(":focus")
+    && !$("input").is(":focus")
+    && !$("select").is(":focus")
+  ) { try{mySetCurrentTime(myGetDuration());}catch(err){} }
+  else if (e.which == 37
+    && !$("#slider .ui-slider-handle").is(":focus")
+    && !$("input").is(":focus")
+    && !$("select").is(":focus")
+  ) { try{mySetCurrentTime(myGetCurrentTime()-15);}catch(err){} }
+  else if (e.which == 39
+    && !$("#slider .ui-slider-handle").is(":focus")
+    && !$("input").is(":focus")
+    && !$("select").is(":focus")
+  ) { try{mySetCurrentTime(myGetCurrentTime()+15);}catch(err){} }
+  else if (e.which == 32
+    && !$("input").is(":focus")
+  ) { try{myPlayPause();}catch(err){} }
 });
 
 window.addEventListener( "keyup", function(e) {
