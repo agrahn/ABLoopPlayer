@@ -488,12 +488,14 @@ var singleId;
 var ytPlayer;
 var knownIDs=[];
 var knownIDsHash=[];
+var query;
 
 //function for loading YT player
 //arg 1: input (video id | query string), arg 2: type ("singleId" | "search")
 var loadYT = function (input, type) {
   initYT(); //initialize player-specific functions
   resetUI();
+  query="";
 
   //remove previous player, if there is one
   try{ytPlayer.destroy();}catch(e){}
@@ -519,7 +521,7 @@ var loadYT = function (input, type) {
   if(type=="singleid") {  //play a single video ID
     singleId = input;
     ytPlayer = new YT.Player('ytDiv', {
-      videoId: input,
+      videoId: singleId,
       width: playerWidth,
       height: $("#myResizable").height(),
       playerVars: {
@@ -536,12 +538,13 @@ var loadYT = function (input, type) {
       }
     });
   } else { //video search resulting in a playlist
+	query = input;
     ytPlayer = new YT.Player('ytDiv', {
       width: playerWidth,
       height: $("#myResizable").height(),
       playerVars: {
         listType: "search",
-        list: input,
+        list: query,
         autoplay: 0,
         autohide: 2,
         rel: 0,
@@ -574,8 +577,7 @@ var onError = function(e){
 
 var onPlayerStateChange = function(e, id){ //event object, video id
   //store last search terms	
-  var query = inputYT.value.trim().replace(/\s+/g, ' ');
-  if(e.target.getPlaylist() && e.data==-1 && query.length)
+  if(e.target.getPlaylist() && query.length)
 	localStorage.setItem("lastSearch", query);
 
   //restart player if playlist contains only one ID
