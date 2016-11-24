@@ -101,10 +101,11 @@ $(document).ready(function() {
   $("#slider .ui-slider-handle").first().css("margin-left", "-1em").text("A");
   $("#slider .ui-slider-handle").last().css("margin-left", "0em").text("B");
 
-  if(localStorage.getItem(help)!="unchecked") help.checked=true;
+  if(localStorage.getItem("help")!="unchecked") help.checked=true;
   contextHelp(help);
 
-  if(localStorage.getItem(intro)!="unchecked") intro.checked=true;
+  console.log("intro: " + localStorage.getItem("intro"));
+  if(localStorage.getItem("intro")!="unchecked") intro.checked=true;
   toggleIntro(intro, help);
 
   playSelectedFile("");
@@ -407,9 +408,10 @@ var onClickAddNote = function(idx){
 
 var contextHelp = function(t) {
   if(t.checked) {
-    localStorage.setItem(help, "checked");
+    localStorage.setItem("help", "checked");
 
     t.title = "Uncheck to disable context-sensitive help.";
+
     if(aonly.checked)
       aonly.title = "Uncheck to enable video display.";
     else
@@ -418,7 +420,7 @@ var contextHelp = function(t) {
     if(intro.checked)
       intro.title = "Uncheck to always skip media section up to \"A\".";
     else
-      t.title = "If checked, media section up to \"A\""
+      intro.title = "If checked, media section up to \"A\""
               + " is played before starting the loop.";
 
     inputYT.title = "Enter a valid YT video ID or one or more search terms. " +
@@ -438,7 +440,7 @@ var contextHelp = function(t) {
         + "Press [Ctrl] while moving a handle to shift the entire loop window. "
         + "Also, handles can be moved with the arrow keys [←] , [→].");
   } else {
-    localStorage.setItem(help, "unchecked");
+    localStorage.setItem("help", "unchecked");
 
     t.title="Enable context-sensitive help.";
     aonly.title =
@@ -977,15 +979,16 @@ var toggleAudio = function(t,h) {
 
 var toggleIntro = function(t,h) {
   if(t.checked) {
-    localStorage.setItem(intro, "checked");
+    localStorage.setItem("intro", "checked");
     if(h.checked)
         t.title = "Uncheck to always skip media section up to \"A\".";
   }else{
-    localStorage.setItem(intro, "unchecked");
+    localStorage.setItem("intro", "unchecked");
     if(h.checked)
         t.title = "If checked, media section up to \"A\""
                 + " is played before starting the loop.";
   }
+  console.log("toggle intro: " + localStorage.getItem("intro"));
 }
 
 //functions with player specific implementation
