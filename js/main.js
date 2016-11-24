@@ -104,7 +104,6 @@ $(document).ready(function() {
   if(localStorage.getItem("help")!="unchecked") help.checked=true;
   contextHelp(help);
 
-  console.log("intro: " + localStorage.getItem("intro"));
   if(localStorage.getItem("intro")!="unchecked") intro.checked=true;
   toggleIntro(intro, help);
 
@@ -988,7 +987,6 @@ var toggleIntro = function(t,h) {
         t.title = "If checked, media section up to \"A\""
                 + " is played before starting the loop.";
   }
-  console.log("toggle intro: " + localStorage.getItem("intro"));
 }
 
 //functions with player specific implementation
