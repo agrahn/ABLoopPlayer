@@ -115,6 +115,7 @@ window.addEventListener( "keydown", function(e) {
   if (e.which == 17) ctrlPressed=true;
   else if (e.which == 27
     && !loopButton.disabled
+    && !$("input").is(":focus")
   ) onLoopDown();
   else if (e.which == 36
     && !$("#slider .ui-slider-handle").is(":focus")
