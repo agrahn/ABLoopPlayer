@@ -406,6 +406,9 @@ var onClickAddNote = function(idx){
   );
 }
 
+var aonlyTitleChecked = "Uncheck to enable video display.";
+var aonlyTitleUnChecked = "Suppress video display.";
+
 var contextHelp = function(t) {
   if(t.checked) {
     localStorage.setItem("help", "checked");
@@ -413,9 +416,9 @@ var contextHelp = function(t) {
     t.title = "Uncheck to disable context-sensitive help.";
 
     if(aonly.checked)
-      aonly.title = "Uncheck to enable video display.";
+      aonly.title = aonlyTitleChecked;
     else
-      aonly.title = "Suppress video display.";
+      aonly.title = aonlyTitleUnChecked;
 
     if(intro.checked)
       intro.title = "Uncheck to always skip media section up to \"A\".";
@@ -800,21 +803,21 @@ var playSelectedFile = function (f) {
     myVideo = document.createElement("video");
 
   myVideo.id="myVideo";
-  myVideo.autoplay = ""; //false;
-  myVideo.controls="controls";
+  myVideo.autoplay = false;
+  myVideo.controls = true;
   myVideo.width=$("#myResizable").width();
 
   myVideo.addEventListener("durationchange", function(e){
-    if (isFinite(myVideo.duration)){
+    if (isFinite(e.target.duration)){
       $("#slider").slider("option", "max", myGetDuration());
       $("#scrub").slider("option", "max", myGetDuration()).show();
-      //e.target.play();
+      aonly.disabled = false;
+      mySpeed.disabled = false;
     }else{
       //repeat setting media source until duration property is properly set;
-      //this is a workaround of a bug in FF on Windows
+      //this is a workaround of a bug in FFox on Windows
       e.target.src = e.target.currentSrc;
     }
-    console.log(isFinite(myVideo.duration)+":"+myVideo.duration);
   });
 
   myVideo.addEventListener("loadeddata", onLoadedData);
@@ -837,6 +840,7 @@ var playSelectedFile = function (f) {
 
   if(f) { //a media file was selected
     //add speed options
+    mySpeed.disabled = true;
     var rates = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
     for(var i=0; i<rates.length; i++) {
       var c = document.createElement('OPTION');
@@ -849,8 +853,8 @@ var playSelectedFile = function (f) {
         c.selected=true;
       }
     }
-    mySpeed.disabled=false;
     mySpeed.options.namedItem("normalSpeed").selected=true;
+    aonly.disabled = true;
 
     //set video source
     vidId = f.name+'-'+f.size; //some checksum would be better
@@ -982,9 +986,9 @@ var toggleAudio = function(t,h) {
   if(myVideo.readyState) playSelectedFile(inputVT.files[0]);
   if(h.checked) {
     if(t.checked)
-      t.title = "Uncheck to enable video display.";
+      t.title = aonlyTitleChecked;
     else
-      t.title = "Suppress video display.";
+      t.title = aonlyTitleUnChecked;
   }
 }
 
