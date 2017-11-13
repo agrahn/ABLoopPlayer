@@ -67,9 +67,9 @@ $(document).ready(function() {
 
   inputYT.disabled = searchButtonYT.disabled = true;
   if(localStorage.getItem("lastSearch"))
-	inputYT.value = localStorage.getItem("lastSearch");
+    inputYT.value = localStorage.getItem("lastSearch");
   else
-	inputYT.value = "giant steps animated";  
+    inputYT.value = "giant steps animated";
 
   //get already watched YT IDs
   if(localStorage.getItem('knownIDs')){
@@ -540,7 +540,7 @@ var loadYT = function (input, type) {
       }
     });
   } else { //video search resulting in a playlist
-	query = input;
+    query = input;
     ytPlayer = new YT.Player('ytDiv', {
       width: playerWidth,
       height: $("#myResizable").height(),
@@ -578,9 +578,9 @@ var onError = function(e){
 }
 
 var onPlayerStateChange = function(e, id){ //event object, video id
-  //store last search terms	
+  //store last search terms
   if(e.target.getPlaylist() && query.length)
-	localStorage.setItem("lastSearch", query);
+    localStorage.setItem("lastSearch", query);
 
   //restart player if playlist contains only one ID
   if(e.target.getPlaylist() && e.target.getPlaylist().length==1 && e.data==-1) {
@@ -800,20 +800,34 @@ var playSelectedFile = function (f) {
     myVideo = document.createElement("video");
 
   myVideo.id="myVideo";
+  myVideo.autoplay = ""; //false;
   myVideo.controls="controls";
   myVideo.width=$("#myResizable").width();
+
   myVideo.addEventListener("durationchange", function(e){
-    $("#slider").slider("option", "max", myGetDuration());
-    $("#scrub").slider("option", "max", myGetDuration()).show();
+    if (isFinite(myVideo.duration)){
+      $("#slider").slider("option", "max", myGetDuration());
+      $("#scrub").slider("option", "max", myGetDuration()).show();
+      //e.target.play();
+    }else{
+      //repeat setting media source until duration property is properly set;
+      //this is a workaround of a bug in FF on Windows
+      e.target.src = e.target.currentSrc;
+    }
+    console.log(isFinite(myVideo.duration)+":"+myVideo.duration);
   });
+
   myVideo.addEventListener("loadeddata", onLoadedData);
+
   myVideo.addEventListener("play", function(){
     mySetPlaybackRate(mySpeed.value);
     if (isTimeASet && isTimeBSet) loopTimer.push(setInterval(onTimeUpdate,25));
   });
+
   myVideo.addEventListener("pause", function(){
     while(loopTimer.length) clearInterval(loopTimer.pop());
   });
+
   myVideo.addEventListener("error", function(e){
     console.log("Error: " + e.target);
     resetUI();
@@ -822,8 +836,6 @@ var playSelectedFile = function (f) {
   myResizable.appendChild(myVideo);
 
   if(f) { //a media file was selected
-    myVideo.autoplay = "autoplay";
-
     //add speed options
     var rates = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
     for(var i=0; i<rates.length; i++) {
@@ -842,8 +854,7 @@ var playSelectedFile = function (f) {
 
     //set video source
     vidId = f.name+'-'+f.size; //some checksum would be better
-    var fileURL = URL.createObjectURL(f);
-    myVideo.src=fileURL;
+    myVideo.src = URL.createObjectURL(f);
   }
 }
 
