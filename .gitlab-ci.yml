@@ -3,7 +3,6 @@
 pages:
   stage: deploy
   script:
-  - echo 'nothing to do'    
   - mkdir .public
   - cp -r * .public
   - mv .public public
