@@ -25,6 +25,7 @@ var timeA, timeB;
 var isTimeASet=false;
 var isTimeBSet=false;
 var myTimeA, myTimeB;
+var currentRate = 1.0;
 var loopButton, mySpeed;
 var myBookmarks;
 var bmkAddButton;
@@ -479,10 +480,36 @@ var resetUI = function() {
 
   loopButton.disabled = true;
 
+  currentRate = 1;
+
   while(mySpeed.options.length) mySpeed.remove(mySpeed.options.length-1);
   mySpeed.disabled=true;
 
   bmkDelete(0);//clear current bookmark list
+}
+
+var onSpeedSelectChange = function (e) {
+  var newRate = e.target.value;
+  if(newRate == currentRate) return;
+  //temporarily reset <select> to old value
+  //new value set by onRateChange only on success
+  for(var i=0; i<e.target.length; i++){
+    if(e.target.options[i].value == currentRate) {
+      e.target.options[i].selected=true;
+      break;
+    }
+  }
+  mySetPlaybackRate(newRate);
+}
+
+var onRateChange = function (e) {
+  currentRate = myGetPlaybackRate();
+  for(var i=0; i<mySpeed.length; i++){
+    if(mySpeed.options[i].value == currentRate) {
+      mySpeed.options[i].selected=true;
+      break;
+    }
+  }
 }
 
 ///////////////////////////
@@ -569,6 +596,7 @@ var loadYT = function (input, type) {
       }
     });
   }
+  ytPlayer.addEventListener("onPlaybackRateChange", onRateChange);
 }
 
 var onYouTubeIframeAPIReady = function() {
@@ -649,6 +677,7 @@ var onPlayerStateChange = function(e, id){ //event object, video id
       }
     }
     mySpeed.disabled=false;
+    mySpeed.addEventListener("change", onSpeedSelectChange);
 
     //populate bookmark list with saved items for the current video ID
     if(localStorage.getItem(id)){
@@ -690,6 +719,10 @@ var searchYT = function(qu) {
 
 var mySetPlaybackRateYT = function(r){
   ytPlayer.setPlaybackRate(r);
+}
+
+var myGetPlaybackRateYT = function(){
+  return ytPlayer.getPlaybackRate();
 }
 
 var myGetDurationYT = function(){
@@ -836,6 +869,8 @@ var playSelectedFile = function (f) {
     resetUI();
   });
 
+  myVideo.addEventListener("ratechange", onRateChange);
+
   myResizable.appendChild(myVideo);
 
   if(f) { //a media file was selected
@@ -854,6 +889,7 @@ var playSelectedFile = function (f) {
       }
     }
     mySpeed.options.namedItem("normalSpeed").selected=true;
+    mySpeed.addEventListener("change", onSpeedSelectChange);
     aonly.disabled = true;
 
     //set video source
@@ -888,7 +924,7 @@ var onLoadedData = function (e) {
   }
 }
 
-var myGetPlaybackRate = function(){
+var myGetPlaybackRateVT = function(){
   return myVideo.playbackRate;
 }
 
@@ -1021,6 +1057,7 @@ var initYT = function () { // YT
   mySetCurrentTime = mySetCurrentTimeYT;
   myGetDuration = myGetDurationYT;
   mySetPlaybackRate = mySetPlaybackRateYT;
+  myGetPlaybackRate = myGetPlaybackRateYT;
   onLoopDown = onLoopDownYT;
   myPlayPause = function () {
     if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING)
@@ -1036,6 +1073,7 @@ var initVT = function () { // <video> tag
   mySetCurrentTime = mySetCurrentTimeVT;
   myGetDuration = myGetDurationVT;
   mySetPlaybackRate = mySetPlaybackRateVT;
+  myGetPlaybackRate = myGetPlaybackRateVT;
   onLoopDown = onLoopDownVT;
   myPlayPause = function () {
     if(myVideo.paused) myVideo.play(); else myVideo.pause();
