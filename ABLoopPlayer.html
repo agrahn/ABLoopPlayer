@@ -66,7 +66,7 @@ A-B repeat, loop bookmarking, YT video search and slow/fast motion.
       <input type="checkbox" onchange="contextHelp(this)" id="help"/>?
     </span>
   </div>
-  Media file: <input id="inputVT" accept="video/*,audio/*" type="file" onchange="playSelectedFile(this.files[0])"/>
+  Media file: <input id="inputVT" accept="video/*,audio/*" type="file"/>
   <input type="checkbox" onchange="toggleAudio(this, help)" id="aonly"/>audio only
 </div>
 
@@ -84,8 +84,8 @@ A-B repeat, loop bookmarking, YT video search and slow/fast motion.
   </div>
 </div>
 
-<div style="margin: 3px 0px 0px 0px; padding: 5px; background-color: #ddd;">
-A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown()"/>
+<div id="bottom" style="margin: 3px 0px 0px 0px; padding: 5px; background-color: #ddd;">
+A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown()" onmouseup="myBlur()"/>
 <span id="myBmkSpan" hidden>
   <style>select:invalid { color: gray; }</style>
   <select id="myBookmarks" size="1"

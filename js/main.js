@@ -66,7 +66,13 @@ $(document).ready(function() {
   menuItem0 = document.getElementById("menuItem0");
   menuItem1 = document.getElementById("menuItem1");
 
+  inputVT.addEventListener("change", function(e){
+    myBlur();
+    playSelectedFile(e.target.files[0]);
+  });
+
   inputYT.disabled = searchButtonYT.disabled = true;
+
   if(localStorage.getItem("lastSearch"))
     inputYT.value = localStorage.getItem("lastSearch");
   else
@@ -395,7 +401,6 @@ var onClickTrash = function(idx){
 
 var onClickAddNote = function(idx){
   var defaultNote = (localStorage.getItem(vidId+'-'+myBookmarks.options[idx].text) || "example text")
-
   myPrompt(
     function(note){
       if(note && note.trim().length) {
@@ -411,6 +416,7 @@ var aonlyTitleChecked = "Uncheck to enable video display.";
 var aonlyTitleUnChecked = "Suppress video display.";
 
 var contextHelp = function(t) {
+  myBlur();
   if(t.checked) {
     localStorage.setItem("help", "checked");
 
@@ -489,6 +495,7 @@ var resetUI = function() {
 }
 
 var onSpeedSelectChange = function (e) {
+  e.target.blur();
   var newRate = e.target.value;
   if(newRate == currentRate) return;
   //temporarily reset <select> to old value
@@ -503,12 +510,20 @@ var onSpeedSelectChange = function (e) {
 }
 
 var onRateChange = function (e) {
+  myBlur();
   currentRate = myGetPlaybackRate();
   for(var i=0; i<mySpeed.length; i++){
     if(mySpeed.options[i].value == currentRate) {
       mySpeed.options[i].selected=true;
       break;
     }
+  }
+}
+
+var myBlur = function() {
+  document.activeElement.focus();
+  while(document.activeElement.tagName!="BODY") {
+    document.activeElement.blur();
   }
 }
 
@@ -597,6 +612,7 @@ var loadYT = function (input, type) {
     });
   }
   ytPlayer.addEventListener("onPlaybackRateChange", onRateChange);
+  myBlur();
 }
 
 var onYouTubeIframeAPIReady = function() {
@@ -1019,6 +1035,7 @@ var onLoopDownVT = function () {
 }
 
 var toggleAudio = function(t,h) {
+  myBlur();
   if(myVideo.readyState) playSelectedFile(inputVT.files[0]);
   if(h.checked) {
     if(t.checked)
@@ -1029,6 +1046,7 @@ var toggleAudio = function(t,h) {
 }
 
 var toggleIntro = function(t,h) {
+  myBlur();
   if(t.checked) {
     localStorage.setItem("intro", "checked");
     if(h.checked)
