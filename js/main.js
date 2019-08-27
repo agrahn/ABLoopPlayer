@@ -573,9 +573,9 @@ var loadYT = function (input, type) {
       height: $("#myResizable").height(),
       playerVars: {
         autoplay: 1,
-        autohide: 2, //controls
-        rel: 0,      //no related videos at the end
-        showinfo: 1, //displaying current video info might be useful
+        fs: 0,          //no fullscreen button
+        modestbranding: 1,
+        rel: 0,         //no related videos at the end
       },
       events: {
         onStateChange: function(e) {
@@ -593,9 +593,9 @@ var loadYT = function (input, type) {
         listType: "search",
         list: query,
         autoplay: 0,
-        autohide: 2,
+        fs: 0,
+        modestbranding: 1,
         rel: 0,
-        showinfo: 1,
       },
       events: {
         onStateChange: function(e) {
