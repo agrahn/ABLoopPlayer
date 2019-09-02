@@ -114,6 +114,8 @@ $(document).ready(function() {
   if(localStorage.getItem("intro")!="unchecked") intro.checked=true;
   toggleIntro(intro, help);
 
+  mySpeed.addEventListener("change", onSpeedSelectChange);
+
   playSelectedFile("");
 });
 
@@ -496,12 +498,12 @@ var resetUI = function() {
 
 var onSpeedSelectChange = function (e) {
   e.target.blur();
-  var newRate = e.target.value;
+  var newRate = Number(e.target.value);
   if(newRate == currentRate) return;
   //temporarily reset <select> to old value
   //new value set by onRateChange only on success
   for(var i=0; i<e.target.length; i++){
-    if(e.target.options[i].value == currentRate) {
+    if(Number(e.target.options[i].value) == currentRate) {
       e.target.options[i].selected=true;
       break;
     }
@@ -511,13 +513,15 @@ var onSpeedSelectChange = function (e) {
 
 var onRateChange = function (e) {
   myBlur();
-  currentRate = myGetPlaybackRate();
+  var newRate = myGetPlaybackRate();
   for(var i=0; i<mySpeed.length; i++){
-    if(mySpeed.options[i].value == currentRate) {
+    if(Number(mySpeed.options[i].value) == newRate) {
       mySpeed.options[i].selected=true;
+      currentRate=newRate;
       break;
     }
   }
+  if(newRate!=currentRate) mySetPlaybackRate(currentRate);
 }
 
 var myBlur = function() {
@@ -693,7 +697,6 @@ var onPlayerStateChange = function(e, id){ //event object, video id
       }
     }
     mySpeed.disabled=false;
-    mySpeed.addEventListener("change", onSpeedSelectChange);
 
     //populate bookmark list with saved items for the current video ID
     if(localStorage.getItem(id)){
@@ -872,7 +875,7 @@ var playSelectedFile = function (f) {
   myVideo.addEventListener("loadeddata", onLoadedData);
 
   myVideo.addEventListener("play", function(){
-    mySetPlaybackRate(mySpeed.value);
+    mySetPlaybackRate(Number(mySpeed.value));
     if (isTimeASet && isTimeBSet) loopTimer.push(setInterval(onTimeUpdate,25));
   });
 
@@ -905,7 +908,6 @@ var playSelectedFile = function (f) {
       }
     }
     mySpeed.options.namedItem("normalSpeed").selected=true;
-    mySpeed.addEventListener("change", onSpeedSelectChange);
     aonly.disabled = true;
 
     //set video source
