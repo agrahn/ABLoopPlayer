@@ -519,6 +519,12 @@ var onRateChange = function (e) {
       mySpeed.options[i].selected=true;
       currentRate=newRate;
       break;
+    } else if (i+1<mySpeed.length && newRate < mySpeed.options[i+1].value) {
+      var c = document.createElement('OPTION');
+      mySpeed.add(c,i+1); //append as a child to selector
+      c.text = c.value = currentRate = newRate;
+      c.selected=true;
+      break;
     }
   }
   if(newRate!=currentRate) mySetPlaybackRate(currentRate);
@@ -689,7 +695,7 @@ var onPlayerStateChange = function(e, id){ //event object, video id
       var c = document.createElement('OPTION');
       mySpeed.add(c); //append as a child to selector
 
-      c.value = c.text = rates[i];
+      c.text = c.value = rates[i];
       if(rates[i] == 1.0) {
         c.text = "Normal";
         c.selected=true;
@@ -900,14 +906,13 @@ var playSelectedFile = function (f) {
       var c = document.createElement('OPTION');
       mySpeed.add(c); //append as a child to selector
 
-      c.value = c.text = rates[i];
+      c.text = c.value = rates[i];
       if(rates[i] == 1.0) {
         c.id = "normalSpeed";
         c.text = "Normal";
         c.selected=true;
       }
     }
-    mySpeed.options.namedItem("normalSpeed").selected=true;
     aonly.disabled = true;
 
     //set video source
