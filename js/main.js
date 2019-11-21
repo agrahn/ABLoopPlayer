@@ -63,8 +63,6 @@ $(document).ready(function() {
   bmkAddButton = document.getElementById("bmkAddButton");
   annotButton = document.getElementById("annotButton");
   trashButton = document.getElementById("trashButton");
-  menuItem0 = document.getElementById("menuItem0");
-  menuItem1 = document.getElementById("menuItem1");
 
   inputVT.addEventListener("change", function(e){
     myBlur();
@@ -81,6 +79,7 @@ $(document).ready(function() {
   //get already watched YT IDs
   if(localStorage.getItem('knownIDs')){
     knownIDs = localStorage.getItem('knownIDs').split(',');
+    console.log('known IDs : ' + knownIDs.length); 
     for(var i=0; i<knownIDs.length; i++){
       var z = document.createElement('OPTION');
       z.setAttribute('value', knownIDs[i]);
