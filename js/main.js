@@ -74,12 +74,11 @@ $(document).ready(function() {
   if(localStorage.getItem("lastSearch"))
     inputYT.value = localStorage.getItem("lastSearch");
   else
-    inputYT.value = "giant steps animated";
+    inputYT.value = "giant steps animated sheet music";
 
   //get already watched YT IDs
   if(localStorage.getItem('knownIDs')){
     knownIDs = localStorage.getItem('knownIDs').split(',');
-    console.log('known IDs : ' + knownIDs.length); 
     for(var i=0; i<knownIDs.length; i++){
       var z = document.createElement('OPTION');
       z.setAttribute('value', knownIDs[i]);
