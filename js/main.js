@@ -30,7 +30,6 @@ var loopButton, mySpeed;
 var myBookmarks;
 var bmkAddButton;
 var annotButton, trashButton;
-var menuItem0, menuItem1;
 var ctrlPressed=false;
 var bmkHash;
 var bmkArr;
@@ -74,7 +73,7 @@ $(document).ready(function() {
   if(localStorage.getItem("lastSearch"))
     inputYT.value = localStorage.getItem("lastSearch");
   else
-    inputYT.value = "giant steps animated sheet music";
+    inputYT.value = "2kotK9FNEYU";
 
   //get already watched YT IDs
   if(localStorage.getItem('knownIDs')){
@@ -433,10 +432,10 @@ var contextHelp = function(t) {
       intro.title = "If checked, media section up to \"A\""
               + " is played before starting the loop.";
 
-    inputYT.title = "Enter a valid YT video ID or one or more search terms. " +
+    inputYT.title = "Enter a valid YT video ID. " +
       "To get a particular video ID, open the video on youtube.com and get its ID " +
       "from the browser's address bar.";
-    searchButtonYT.title = "Look up matching videos on YouTube.";
+    searchButtonYT.title = "Look up matching video on YouTube.";
     inputVT.title = "Browse the hard disk for media files (mp4/H.264, webm, ogg, mp3, wav, ...).";
     loopButton.title = "Click twice to mark loop range / click to cancel current loop."
                      + " Hotkey: [Esc]";
@@ -546,7 +545,7 @@ var knownIDsHash=[];
 var query;
 
 //function for loading YT player
-//arg 1: input (video id | query string), arg 2: type ("singleId" | "search")
+//arg 1: input (video id | query string), arg 2: type ("singleid" | "search")
 var loadYT = function (input, type) {
   initYT(); //initialize player-specific functions
   resetUI();
@@ -737,7 +736,8 @@ var onPlayerStateChange = function(e, id){ //event object, video id
 }
 
 var searchYT = function(qu) {
-  loadYT(qu.trim().replace(/\s+/g, ' '), "search");
+//  loadYT(qu.trim().replace(/\s+/g, ' '), "search");
+  loadYT(qu.trim().replace(/\s+/g, ' '), "singleid");
 }
 
 var mySetPlaybackRateYT = function(r){
