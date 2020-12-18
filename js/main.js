@@ -1,7 +1,7 @@
 /*
   main.js
 
-  Copyright (C) 2016  Alexander Grahn
+  Copyright (C) 2016--2021 Alexander Grahn
 
   This file is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -17,15 +17,17 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-var vidId;  // YT ID or file name + size
+var vidId; // current YT video ID or file name + size
 var YTids;
+var inputYT;
+var ytPlayer;
 var help;
 var inputVT, aonly, intro;
 var timeA, timeB;
 var isTimeASet=false;
 var isTimeBSet=false;
 var myTimeA, myTimeB;
-var currentRate = 1.0;
+var currentRate=1.0;
 var loopButton, mySpeed;
 var myBookmarks;
 var bmkAddButton;
@@ -36,59 +38,58 @@ var bmkArr;
 var loopTimer=[];
 var scrubTimer=[];
 
-$(document).ready(function() {
+$(document).ready(function(){
   $("#introText").width($("#test").width()+1);
   //if we are online, asynchronously load YT player api
-  if(navigator.onLine) {
-    var scripts = document.getElementsByTagName('script');
-    var scriptTag1 = scripts[scripts.length-1];
-    var scriptTag2 = document.createElement('script');
-    scriptTag2.src = "https://www.youtube.com/iframe_api";
+  if(navigator.onLine){
+    let scripts=document.getElementsByTagName('script');
+    let scriptTag1=scripts[scripts.length-1];
+    let scriptTag2=document.createElement('script');
+    scriptTag2.src="https://www.youtube.com/iframe_api";
     scriptTag1.parentNode.insertBefore(scriptTag2, null);
   }
 
-  inputYT = document.getElementById("inputYT");
-  YTids = document.getElementById("YTids");
-  help = document.getElementById("help");
-  searchButtonYT = document.getElementById("searchButtonYT");
-  inputVT = document.getElementById("inputVT");
-  aonly = document.getElementById("aonly");
-  intro = document.getElementById("intro");
-  myTimeA = document.getElementById("myTimeA");
-  myTimeB = document.getElementById("myTimeB");
-  loopButton = document.getElementById("loopButton");
-  mySpeed = document.getElementById("mySpeed");
-  myBookmarks = document.getElementById("myBookmarks");
-  bmkAddButton = document.getElementById("bmkAddButton");
-  annotButton = document.getElementById("annotButton");
-  trashButton = document.getElementById("trashButton");
+  inputYT=document.getElementById("inputYT");
+  YTids=document.getElementById("YTids");
+  help=document.getElementById("help");
+  searchButtonYT=document.getElementById("searchButtonYT");
+  inputVT=document.getElementById("inputVT");
+  aonly=document.getElementById("aonly");
+  intro=document.getElementById("intro");
+  myTimeA=document.getElementById("myTimeA");
+  myTimeB=document.getElementById("myTimeB");
+  loopButton=document.getElementById("loopButton");
+  mySpeed=document.getElementById("mySpeed");
+  myBookmarks=document.getElementById("myBookmarks");
+  bmkAddButton=document.getElementById("bmkAddButton");
+  annotButton=document.getElementById("annotButton");
+  trashButton=document.getElementById("trashButton");
 
   inputVT.addEventListener("change", function(e){
     myBlur();
     playSelectedFile(e.target.files[0]);
   });
 
-  inputYT.disabled = searchButtonYT.disabled = true;
-
-  if(localStorage.getItem("lastSearch"))
-    inputYT.value = localStorage.getItem("lastSearch");
-  else
-    inputYT.value = "2kotK9FNEYU";
+  inputYT.disabled=searchButtonYT.disabled=true;
 
   //get already watched YT IDs
-  if(localStorage.getItem('knownIDs')){
-    knownIDs = localStorage.getItem('knownIDs').split(',');
-    for(var i=0; i<knownIDs.length; i++){
-      var z = document.createElement('OPTION');
-      z.setAttribute('value', knownIDs[i]);
+  //localStorage.setItem('knownIds', '');
+  let knownIds=[];
+  if(localStorage.getItem('knownIds')){
+    knownIds=localStorage.getItem('knownIds').split(',');
+    for(let i=0; i<knownIds.length; i++){
+      let z=document.createElement('OPTION');
+      z.setAttribute('value', knownIds[i]);
       YTids.appendChild(z);
-      knownIDsHash[knownIDs[i].toString()]='';
     }
   }
 
+  if(knownIds.length) inputYT.value=knownIds[0];
+  else inputYT.value="2kotK9FNEYU";
+
   $("#scrub").slider({
     min: 0, step: 0.001, range: "min",
-    slide: function(e, ui) {
+    slide: function(e, ui){
       mySetCurrentTime(ui.value);
     },
   })
@@ -96,10 +97,10 @@ $(document).ready(function() {
 
   $("#slider").slider({
     min: 0,
-    step: 0.025,
+    step: 0.020,
     range: true,
-    change: function(e, ui) {onSliderChange(e, ui);},
-    slide: function(e, ui) {onSliderSlide(e, ui);},
+    change: function(e, ui){onSliderChange(e, ui);},
+    slide: function(e, ui){onSliderSlide(e, ui);},
   });
   $("#slider").css("height", "1em");
   $("#slider .ui-slider-handle").first().css("margin-left", "-1em").text("A");
@@ -117,51 +118,52 @@ $(document).ready(function() {
 });
 
 //add some hotkeys
-window.addEventListener( "keydown", function(e) {
-  if (e.which == 17) ctrlPressed=true;
-  else if (e.which == 27
+window.addEventListener("keydown", function(e){
+  if (e.which==17) ctrlPressed=true;
+  else if (e.which==27
     && !loopButton.disabled
     && !$("input").is(":focus")
   ) onLoopDown();
-  else if (e.which == 36
+  else if (e.which==36
     && !$("#slider .ui-slider-handle").is(":focus")
     && !$("input").is(":focus")
     && !$("select").is(":focus")
-  ) { try{mySetCurrentTime(0);}catch(err){} }
-  else if (e.which == 35
+  ){ try{mySetCurrentTime(0);}catch(err){} }
+  else if (e.which==35
     && !$("#slider .ui-slider-handle").is(":focus")
     && !$("input").is(":focus")
     && !$("select").is(":focus")
-  ) { try{mySetCurrentTime(myGetDuration());}catch(err){} }
-  else if (e.which == 37
+  ){ try{mySetCurrentTime(myGetDuration());}catch(err){} }
+  else if (e.which==37
     && !$("#slider .ui-slider-handle").is(":focus")
     && !$("input").is(":focus")
     && !$("select").is(":focus")
-  ) { try{mySetCurrentTime(myGetCurrentTime()-15);}catch(err){} }
-  else if (e.which == 39
+  ){ try{mySetCurrentTime(myGetCurrentTime()-15);}catch(err){} }
+  else if (e.which==39
     && !$("#slider .ui-slider-handle").is(":focus")
     && !$("input").is(":focus")
     && !$("select").is(":focus")
-  ) { try{mySetCurrentTime(myGetCurrentTime()+15);}catch(err){} }
-  else if (e.which == 32
+  ){ try{mySetCurrentTime(myGetCurrentTime()+15);}catch(err){} }
+  else if (e.which==32
     && !$("input").is(":focus")
-  ) { try{myPlayPause();}catch(err){} }
+  ){ try{myPlayPause();}catch(err){} }
 });
 
-window.addEventListener( "keyup", function(e) {
-  if (e.which == 17) ctrlPressed=false;
+window.addEventListener("keyup", function(e){
+  if (e.which==17) ctrlPressed=false;
 });
 
 // a modal prompt dialog based on jQuery
 // Usage: myPrompt( <callback>(ret), <dialog title> [, <default text>] );
-var myPrompt = function(onclose, title, txt){
-  var z=$(
+var myPrompt=function(onclose, title, txt){
+  let z=$(
     '<div style="width: fit-content; display: inline-block;"><p>'
     +title+
-    '</p><input value="'+txt+'" size="40" onfocus="this.select();"></input></div>'
+    '</p><input value="'
+    +txt+'" size="40" onfocus="this.select();"></input></div>'
   );
   $(document.body).append(z);
-  var ret=null;
+  let ret=null;
   $(z).dialog({
     autoOpen: true,
     modal: true,
@@ -173,19 +175,19 @@ var myPrompt = function(onclose, title, txt){
     buttons: [
       {
         text: "Cancel",
-        click: function() {
+        click: function(){
           $(this).dialog( "close" );
         }
       },
       {
         text: "Ok",
-        click: function() {
+        click: function(){
           ret=$(this).find("input").prop("value");
           $(this).dialog( "close" );
         }
       },
     ],
-    close: function(e,ui) {
+    close: function(e,ui){
       onclose(ret);
       this.parentNode.removeChild(this);
     }
@@ -196,10 +198,10 @@ var myPrompt = function(onclose, title, txt){
 // Usage: myConfirm( <callback>(<ret>), <message text> );
 //   <callback> must accept one arg, which gets either "true" or "false",
 //   depending on the result of the user interaction
-var myConfirm = function(onclose, msg) {
-  var z=$("<div>"+msg+"</div>");
+var myConfirm=function(onclose, msg){
+  let z=$("<div>"+msg+"</div>");
   $(document.body).append(z);
-  var ret=false;
+  let ret=false;
   $(z).dialog({
     autoOpen: true,
     modal: true,
@@ -210,19 +212,19 @@ var myConfirm = function(onclose, msg) {
     buttons: [
       {
         text: "Cancel",
-        click: function() {
+        click: function(){
           $(this).dialog( "close" );
         }
       },
       {
         text: "Ok",
-        click: function() {
+        click: function(){
           ret=true;
           $(this).dialog( "close" );
         }
       },
     ],
-    close: function(e,ui) {
+    close: function(e,ui){
       onclose(ret);
       this.parentNode.removeChild(this);
     }
@@ -230,44 +232,44 @@ var myConfirm = function(onclose, msg) {
 }
 
 //pretty printing the media time
-var secToTimeString = function(t) {
-  var h=Math.floor(t/3600);
-  var s=t % 3600;
-  var m=Math.floor(s/60);
-  s = s % 60;
-  var ms = String(s % 1).substring(2,5);
-  s = Math.floor(s);
+var secToTimeString=function(t){
+  let h=Math.floor(t/3600);
+  let s=t % 3600;
+  let m=Math.floor(s/60);
+  s=s % 60;
+  let ms=String(s % 1).substring(2,5);
+  s=Math.floor(s);
   return ((h>0 ? h+':'+strPadLeft(m,0,2) : m) + ':' + strPadLeft(s,0,2)
       + (ms.length>0 ? '.'+ms :''));
 }
-var strPadLeft = function strPadLeft(string,pad,length) {
+var strPadLeft=function strPadLeft(string,pad,length){
   return (new Array(length+1).join(pad)+string).slice(-length);
 }
 
 // time string to seconds
-var timeStringToSec = function(ts) {
-  var ta=ts.trim().split(':');
-  var s=Number(ta[ta.length-1]);
+var timeStringToSec=function(ts){
+  let ta=ts.trim().split(':');
+  let s=Number(ta[ta.length-1]);
   s+=60*Number(ta[ta.length-2]);
   if(ta.length==3) s+=3600*Number(ta[0]);
   return s;
 }
 
-var onSliderChange = function(event, ui) {
+var onSliderChange=function(event, ui){
   timeA=ui.values[0];
   timeB=ui.values[1];
   myTimeA.value=secToTimeString(timeA);
   myTimeB.value=secToTimeString(timeB);
 }
 
-var onTimeUpdate = function () {
+var onTimeUpdate=function(){
   if(myGetCurrentTime()<timeA && !intro.checked || myGetCurrentTime()>=timeB)
     mySetCurrentTime(timeA);
 }
 
-var onSliderSlide = function(e, ui) {
+var onSliderSlide=function(e, ui){
   if(ctrlPressed){
-    var delta=timeB-timeA;
+    let delta=timeB-timeA;
     if(ui.handleIndex==0){
       timeA=ui.values[0];
       timeB=timeA+delta;
@@ -284,8 +286,8 @@ var onSliderSlide = function(e, ui) {
   }
 }
 
-var onInputTime = function(whichInput, sliderIdx) {
-  var time=whichInput.value.match(  //validate user input
+var onInputTime=function(whichInput, sliderIdx){
+  let time=whichInput.value.match(  //validate user input
         /^\s*(?:\d+:[0-5][0-9]|[0-5]?[0-9]):[0-5][0-9](?:\.\d+)?\s*$/
       );
   if(!time){
@@ -297,7 +299,7 @@ var onInputTime = function(whichInput, sliderIdx) {
     return;
   }
 
-  var sec=timeStringToSec(time[0]);
+  let sec=timeStringToSec(time[0]);
   if(sliderIdx==0){
     sec=Math.min(sec,timeB);
     $("#slider" ).slider("values", 0, sec);
@@ -307,26 +309,26 @@ var onInputTime = function(whichInput, sliderIdx) {
   }
 }
 
-var bmkAdd = function(bmkItem) {
-  var ta = timeStringToSec(bmkItem.split('--')[0]);
-  var tb = timeStringToSec(bmkItem.split('--')[1]);
-  var insIdx=-1;
+var bmkAdd=function(bmkItem){
+  let ta=timeStringToSec(bmkItem.split('--')[0]);
+  let tb=timeStringToSec(bmkItem.split('--')[1]);
+  let insIdx=-1;
   //insert current loop into bookmarks select object, sorted in ascending
   //order w.r.t. timeA & timeB
   if(typeof bmkHash[bmkItem]==='undefined'){
-    for(var i=1; i<myBookmarks.options.length && insIdx<0; i++) {
-      var a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
-      var b=timeStringToSec(myBookmarks.options[i].text.split('--')[1]);
+    for(let i=1; i<myBookmarks.options.length && insIdx<0; i++){
+      let a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
+      let b=timeStringToSec(myBookmarks.options[i].text.split('--')[1]);
       if(ta<a || ta==a && tb<b) insIdx=i;
     }
     if(insIdx<0) insIdx=myBookmarks.options.length;
 
-    var c = document.createElement('OPTION');
-    c.title = "";
+    let c=document.createElement('OPTION');
+    c.title="";
     if(localStorage.getItem(vidId+'-'+bmkItem)){
-      c.title = localStorage.getItem(vidId+'-'+bmkItem);
+      c.title=localStorage.getItem(vidId+'-'+bmkItem);
     }
-    c.text = bmkItem;
+    c.text=bmkItem;
     c.addEventListener("mouseover", function(e){e.target.selected=true;});
     c.addEventListener("mouseup", function(e){
       onBmkSelect(e.target.index); e.target.parentNode.size=1;
@@ -349,7 +351,7 @@ var bmkAdd = function(bmkItem) {
   }
 }
 
-var bmkDelete = function(idx) {
+var bmkDelete=function(idx){
   if(idx==0){
     while(myBookmarks.options.length>1)
       myBookmarks.remove(myBookmarks.options.length-1);
@@ -368,13 +370,13 @@ var bmkDelete = function(idx) {
   }
 }
 
-var onClickTrash = function(idx){
+var onClickTrash=function(idx){
   if(idx==0){ //all items
     myConfirm(
       function(res){
         if(res){
           //first remove any note associated with bookmarked loops
-          for(var i=1; i<myBookmarks.options.length; i++){
+          for(let i=1; i<myBookmarks.options.length; i++){
             localStorage.removeItem(vidId+'-'+myBookmarks.options[i].text);
           }
           //then delete the bookmarked loops altogether
@@ -398,12 +400,13 @@ var onClickTrash = function(idx){
   }
 }
 
-var onClickAddNote = function(idx){
-  var defaultNote = (localStorage.getItem(vidId+'-'+myBookmarks.options[idx].text) || "example text")
+var onClickAddNote=function(idx){
+  let defaultNote=(localStorage.getItem(
+    vidId+'-'+myBookmarks.options[idx].text) || "example text")
   myPrompt(
     function(note){
-      if(note && note.trim().length) {
-        myBookmarks.options[idx].title = note;
+      if(note && note.trim().length){
+        myBookmarks.options[idx].title=note;
         localStorage.setItem(vidId+'-'+myBookmarks.options[idx].text, note);
       }
     },
@@ -411,40 +414,38 @@ var onClickAddNote = function(idx){
   );
 }
 
-var aonlyTitleChecked = "Uncheck to enable video display.";
-var aonlyTitleUnChecked = "Suppress video display.";
+var aonlyTitleChecked="Uncheck to enable video display.";
+var aonlyTitleUnChecked="Suppress video display.";
 
-var contextHelp = function(t) {
+var contextHelp=function(t){
   myBlur();
-  if(t.checked) {
+  if(t.checked){
     localStorage.setItem("help", "checked");
 
-    t.title = "Uncheck to disable context-sensitive help.";
+    t.title="Uncheck to disable context-sensitive help.";
 
     if(aonly.checked)
-      aonly.title = aonlyTitleChecked;
+      aonly.title=aonlyTitleChecked;
     else
-      aonly.title = aonlyTitleUnChecked;
+      aonly.title=aonlyTitleUnChecked;
 
     if(intro.checked)
-      intro.title = "Uncheck to always skip media section up to \"A\".";
+      intro.title="Uncheck to always skip media section up to \"A\".";
     else
-      intro.title = "If checked, media section up to \"A\""
+      intro.title="If checked, media section up to \"A\""
               + " is played before starting the loop.";
 
-    inputYT.title = "Enter a valid YT video ID. " +
-      "To get a particular video ID, open the video on youtube.com and get its ID " +
-      "from the browser's address bar.";
-    searchButtonYT.title = "Look up matching video on YouTube.";
-    inputVT.title = "Browse the hard disk for media files (mp4/H.264, webm, ogg, mp3, wav, ...).";
-    loopButton.title = "Click twice to mark loop range / click to cancel current loop."
+    inputYT.title="Enter a valid YouTube URL, video or playlist ID.";
+    searchButtonYT.title="Look up matching video on YouTube.";
+    inputVT.title="Browse the hard disk for media files (mp4/H.264, webm, ogg, mp3, wav, ...).";
+    loopButton.title="Click twice to mark loop range / click to cancel current loop."
                      + " Hotkey: [Esc]";
-    myBookmarks.title = "Choose from previously saved loops.";
-    bmkAddButton.title = "Save current loop range to the list of bookmarks.";
-    myTimeA.title = myTimeB.title = "Fine-tune loop range. Input format: [hh:]mm:ss[.sss]";
-    annotButton.title = "Add a note to the currently selected bookmark.";
-    trashButton.title = "Delete currently selected / delete all bookmarked loops.";
-    mySpeed.title = "Select playback rate.";
+    myBookmarks.title="Choose from previously saved loops.";
+    bmkAddButton.title="Save current loop range to the list of bookmarks.";
+    myTimeA.title=myTimeB.title="Fine-tune loop range. Input format: [hh:]mm:ss[.sss]";
+    annotButton.title="Add a note to the currently selected bookmark.";
+    trashButton.title="Delete currently selected / delete all bookmarked loops.";
+    mySpeed.title="Select playback rate.";
     $("#slider").attr("title", "Move slider handles to adjust the loop range. "
         + "Press [Ctrl] while moving a handle to shift the entire loop window. "
         + "Also, handles can be moved with the arrow keys [←] , [→].");
@@ -452,40 +453,40 @@ var contextHelp = function(t) {
     localStorage.setItem("help", "unchecked");
 
     t.title="Enable context-sensitive help.";
-    aonly.title =
-    intro.title =
-    inputYT.title =
-    searchButtonYT.title =
-    inputVT.title =
-    loopButton.title =
-    myBookmarks.title =
-    myTimeA.title = myTimeB.title =
-    bmkAddButton.title =
-    annotButton.title =
-    trashButton.title =
-    mySpeed.title =
+    aonly.title=
+    intro.title=
+    inputYT.title=
+    searchButtonYT.title=
+    inputVT.title=
+    loopButton.title=
+    myBookmarks.title=
+    myTimeA.title=myTimeB.title=
+    bmkAddButton.title=
+    annotButton.title=
+    trashButton.title=
+    mySpeed.title=
     "";
     $("#slider").attr("title", "");
   }
 }
 
-var cancelABLoop = function () {
+var cancelABLoop=function(){
   while(loopTimer.length) clearInterval(loopTimer.pop());
   isTimeASet=isTimeBSet=false;
   loopButton.value="A";
 }
 
-var resetUI = function() {
-  vidId = "undefined";
+var resetUI=function(){
+  vidId="undefined";
 
   $("#timeInputs").hide();
   cancelABLoop();
   while(scrubTimer.length) clearInterval(scrubTimer.pop());
   $("#scrub").slider("option", "value", 0).hide();
 
-  loopButton.disabled = true;
+  loopButton.disabled=true;
 
-  currentRate = 1;
+  currentRate=1;
 
   while(mySpeed.options.length) mySpeed.remove(mySpeed.options.length-1);
   mySpeed.disabled=true;
@@ -493,14 +494,14 @@ var resetUI = function() {
   bmkDelete(0);//clear current bookmark list
 }
 
-var onSpeedSelectChange = function (e) {
+var onSpeedSelectChange=function (e){
   e.target.blur();
-  var newRate = Number(e.target.value);
-  if(newRate == currentRate) return;
+  let newRate=Number(e.target.value);
+  if(newRate==currentRate) return;
   //temporarily reset <select> to old value
   //new value set by onRateChange only on success
-  for(var i=0; i<e.target.length; i++){
-    if(Number(e.target.options[i].value) == currentRate) {
+  for(let i=0; i<e.target.length; i++){
+    if(Number(e.target.options[i].value)==currentRate){
       e.target.options[i].selected=true;
       break;
     }
@@ -508,18 +509,18 @@ var onSpeedSelectChange = function (e) {
   mySetPlaybackRate(newRate);
 }
 
-var onRateChange = function (e) {
+var onRateChange=function (e){
   myBlur();
-  var newRate = myGetPlaybackRate();
-  for(var i=0; i<mySpeed.length; i++){
-    if(Number(mySpeed.options[i].value) == newRate) {
+  let newRate=myGetPlaybackRate();
+  for(let i=0; i<mySpeed.length; i++){
+    if(Number(mySpeed.options[i].value)==newRate){
       mySpeed.options[i].selected=true;
       currentRate=newRate;
       break;
-    } else if (i+1<mySpeed.length && newRate < mySpeed.options[i+1].value) {
-      var c = document.createElement('OPTION');
+    } else if (i+1<mySpeed.length && newRate < mySpeed.options[i+1].value){
+      let c=document.createElement('OPTION');
       mySpeed.add(c,i+1); //append as a child to selector
-      c.text = c.value = currentRate = newRate;
+      c.text=c.value=currentRate=newRate;
       c.selected=true;
       break;
     }
@@ -527,9 +528,9 @@ var onRateChange = function (e) {
   if(newRate!=currentRate) mySetPlaybackRate(currentRate);
 }
 
-var myBlur = function() {
+var myBlur=function(){
   document.activeElement.focus();
-  while(document.activeElement.tagName!="BODY") {
+  while(document.activeElement.tagName!="BODY"){
     document.activeElement.blur();
   }
 }
@@ -537,144 +538,90 @@ var myBlur = function() {
 ///////////////////////////
 // YT player specific code
 ///////////////////////////
-var inputYT;
-var singleId;
-var ytPlayer;
-var knownIDs=[];
-var knownIDsHash=[];
-var query;
 
 //function for loading YT player
-//arg 1: input (video id | query string), arg 2: type ("singleid" | "search")
-var loadYT = function (input, type) {
+//arg 1: video id, arg 2:  list id
+var loadYT=function (vid,lid){
   initYT(); //initialize player-specific functions
   resetUI();
-  query="";
 
   //remove previous player, if there is one
   try{ytPlayer.destroy();}catch(e){}
 
   //replace #myResizable container
-  var myResizable = document.getElementById("myResizable");
-  var parent = myResizable.parentNode;
-  var myResizableOld=myResizable;
-  myResizable = document.createElement("div");
+  let myResizable=document.getElementById("myResizable");
+  let parent=myResizable.parentNode;
+  let myResizableOld=myResizable;
+  myResizable=document.createElement("div");
   myResizable.id="myResizable";
-  myResizable.style.backgroundColor = '#ddd';
+  myResizable.style.backgroundColor='#ddd';
   parent.replaceChild(myResizable, myResizableOld);
-  var playerWidth=$("#myResizable").width();
+  let playerWidth=$("#myResizable").width();
   $("#myResizable").height(playerWidth*9/16);
   initResizableYT();
 
   //create and append <div> as a container for YT iframe
-  var ytDiv = document.createElement("div");
-  ytDiv.id = "ytDiv";
+  let ytDiv=document.createElement("div");
+  ytDiv.id="ytDiv";
   myResizable.appendChild(ytDiv);
 
   //create new YT player iframe, replacing ytDiv
-  if(type=="singleid") {  //play a single video ID
-    singleId = input;
-    ytPlayer = new YT.Player('ytDiv', {
-      videoId: singleId,
-      width: playerWidth,
-      height: $("#myResizable").height(),
-      playerVars: {
-        autoplay: 1,
-        fs: 0,          //no fullscreen button
-        modestbranding: 1,
-        rel: 0,         //no related videos at the end
-      },
-      events: {
-        onStateChange: function(e) {
-          onPlayerStateChange(e, singleId);
-        },
-        onError: onError
-      }
-    });
-  } else { //video search resulting in a playlist
-    query = input;
-    ytPlayer = new YT.Player('ytDiv', {
-      width: playerWidth,
-      height: $("#myResizable").height(),
-      playerVars: {
-        listType: "search",
-        list: query,
-        autoplay: 0,
-        fs: 0,
-        modestbranding: 1,
-        rel: 0,
-      },
-      events: {
-        onStateChange: function(e) {
-          //empty playlist, but user clicks red play btn
-          if(!e.target.getPlaylist()) {
-            searchYT("");
-            return;
-          }
+  ytPlayer=new YT.Player('ytDiv', {
+    videoId: vid,
+    width: playerWidth,
+    height: $("#myResizable").height(),
+    playerVars: {
+      listType: 'playlist',
+      list: lid,
+      autoplay: (vid ? 1 : 0),
+      fs: 0,  //no fullscreen button
+      modestbranding: 1,
+      rel: 0, //no related videos at the end
+    },
+    events: {
+      'onReady': function(e){if(e.target.getPlaylist()){saveId(lid);}},
+      'onStateChange': function(e){
+        if(e.target.getPlaylist()){
           onPlayerStateChange(e,
-            e.target.getPlaylist()[e.target.getPlaylistIndex()]);
-        },
-        onError: onError
+            e.target.getPlaylist()[e.target.getPlaylistIndex()].toString());
+        } else {
+          onPlayerStateChange(e,vid);
+        }
+      },
+      'onError': function(e){
+        console.log("Error: " + e.data);
+        resetUI();
+        loadYT(null,null);
       }
-    });
-  }
+    }
+  });
   ytPlayer.addEventListener("onPlaybackRateChange", onRateChange);
   myBlur();
 }
 
-var onYouTubeIframeAPIReady = function() {
-  inputYT.disabled = searchButtonYT.disabled = false;
+var onYouTubeIframeAPIReady=function(){
+  inputYT.disabled=searchButtonYT.disabled=false;
 }
 
-var onError = function(e){
-  console.log("Error: " + e.data);
-  resetUI();
-}
-
-var onPlayerStateChange = function(e, id){ //event object, video id
-  //store last search terms
-  if(e.target.getPlaylist() && query.length)
-    localStorage.setItem("lastSearch", query);
-
+var onPlayerStateChange=function(e, id){ //event object, video id
   //restart player if playlist contains only one ID
-  if(e.target.getPlaylist() && e.target.getPlaylist().length==1 && e.data==-1) {
-    loadYT(e.target.getPlaylist()[0], "singleid");
+  if(e.target.getPlaylist() && e.target.getPlaylist().length==1 && e.data==-1){
+    loadYT(e.target.getPlaylist()[0].toString(), null);
     return;
   }
 
-  //prepend search terms to the list of valid and already visited video IDs
-  //if the playlist has multiple items
-  if(
-    e.target.getPlaylist() && e.target.getPlaylist().length>1 &&
-    e.data==-1 && query.length && typeof knownIDsHash[query]==='undefined'
-  ) {
-    knownIDsHash[query]='';
-    knownIDs.unshift(query);
-
-    var z = document.createElement('OPTION');
-    z.setAttribute('value', query);
-    YTids.insertBefore(z, YTids.firstChild);
-
-    while(knownIDs.length>100) {
-      knownIDs.pop();
-      YTids.removeChild(YTids.lastChild);
-    }
-
-    localStorage.setItem('knownIDs', knownIDs.join());
-  }
-
-  //the video has changed by selecting a video from the playlist
-  if(id != vidId && e.data==YT.PlayerState.PLAYING) {
+  //the video has changed
+  if(id!=vidId && e.data==YT.PlayerState.PLAYING){
     $("#scrub").slider("option", "max", myGetDuration()).show();
     scrubTimer.push(setInterval(
       function(e){
         $("#scrub").slider("option", "value", myGetCurrentTimeYT());
-      } , 25
+      } , 20
     ));
 
     loopButton.disabled=false;
 
-    vidId = id;
+    vidId=id;
 
     $("#timeInputs").hide();
     cancelABLoop();
@@ -687,14 +634,14 @@ var onPlayerStateChange = function(e, id){ //event object, video id
     bmkDelete(0);
 
     //determine available playback rates and populate the #mySpeed element
-    var rates = e.target.getAvailablePlaybackRates();
-    for(var i=0; i<rates.length; i++) {
-      var c = document.createElement('OPTION');
+    let rates=e.target.getAvailablePlaybackRates();
+    for(let i=0; i<rates.length; i++){
+      let c=document.createElement('OPTION');
       mySpeed.add(c); //append as a child to selector
 
-      c.text = c.value = rates[i];
-      if(rates[i] == 1.0) {
-        c.text = "Normal";
+      c.text=c.value=rates[i];
+      if(rates[i]==1.0){
+        c.text="Normal";
         c.selected=true;
         mySetPlaybackRate(1);
       }
@@ -703,64 +650,80 @@ var onPlayerStateChange = function(e, id){ //event object, video id
 
     //populate bookmark list with saved items for the current video ID
     if(localStorage.getItem(id)){
-      var bmks = localStorage.getItem(id).split(',');
-      for(var i=0; i<bmks.length; i++){
+      let bmks=localStorage.getItem(id).split(',');
+      for(let i=0; i<bmks.length; i++){
         bmkAdd(bmks[i]);
         myBookmarks.options[0].selected=true;
       }
       annotButton.disabled=true;
     }
-
-    //prepend ID to the list of valid and already visited video IDs
-    if(typeof knownIDsHash[id]==='undefined'){
-      knownIDsHash[id]='';
-      knownIDs.unshift(id);
-
-      var z = document.createElement('OPTION');
-      z.setAttribute('value', id);
-      YTids.insertBefore(z, YTids.firstChild);
-
-      while(knownIDs.length>100) {
-        knownIDs.pop();
-        YTids.removeChild(YTids.lastChild);
-      }
-
-      localStorage.setItem('knownIDs', knownIDs.join());
-    }
-
+    saveId(id);
   }
 
   while(loopTimer.length) clearInterval(loopTimer.pop());
   if (isTimeASet && isTimeBSet && e.data==YT.PlayerState.PLAYING)
-    loopTimer.push(setInterval(onTimeUpdate,25));
+    loopTimer.push(setInterval(onTimeUpdate,20));
 }
 
-var searchYT = function(qu) {
-//  loadYT(qu.trim().replace(/\s+/g, ' '), "search");
-  loadYT(qu.trim().replace(/\s+/g, ' '), "singleid");
+var saveId=function(id){
+  //prepend ID to/move ID to front of the list of valid and already
+  //visited video/playlist IDs and of the datalist object
+  let knownIds=[];
+  if(localStorage.getItem('knownIds')){
+    knownIds=localStorage.getItem('knownIds').split(',');
+    let idx=knownIds.indexOf(id);
+    if(idx>=0){
+      knownIds.splice(idx,1);
+      YTids.removeChild(YTids.childNodes[idx]);
+    }
+  }
+
+  knownIds.unshift(id);
+  let z=document.createElement('OPTION');
+  z.setAttribute('value', id);
+  YTids.insertBefore(z, YTids.firstChild);
+
+  while(knownIds.length>100){
+    knownIds.pop();
+    YTids.removeChild(YTids.lastChild);
+  }
+  localStorage.setItem('knownIds', knownIds.join());
 }
 
-var mySetPlaybackRateYT = function(r){
+var queryYT=function(qu){
+  let vid=qu.match(/(?<=youtu\.be\/|\/embed\/|\/v\/|[?&]v=)[0-9a-zA-Z_-]{11}/);
+  let lid=qu.match(/(?<=[?&]list=)[0-9a-zA-Z_-]{12,}/);
+  if(!(vid||lid)){
+    vid=qu.trim().match(/^[0-9a-zA-Z_-]{11}$/);
+    lid=qu.trim().match(/^[0-9a-zA-Z_-]{12,}$/);
+  }
+  if(!(vid||lid)) return;
+  loadYT(
+    vid ? vid.toString() : null , lid ? lid.toString() : null
+  );
+}
+
+var mySetPlaybackRateYT=function(r){
   ytPlayer.setPlaybackRate(r);
 }
 
-var myGetPlaybackRateYT = function(){
+var myGetPlaybackRateYT=function(){
   return ytPlayer.getPlaybackRate();
 }
 
-var myGetDurationYT = function(){
+var myGetDurationYT=function(){
   return ytPlayer.getDuration();
 }
 
-var myGetCurrentTimeYT = function(){
+var myGetCurrentTimeYT=function(){
   return ytPlayer.getCurrentTime();
 }
 
-var mySetCurrentTimeYT = function(t){
+var mySetCurrentTimeYT=function(t){
   ytPlayer.seekTo(t,true);
 }
 
-var initResizableYT = function(){
+var initResizableYT=function(){
   $("#myResizable" ).resizable({
     aspectRatio: false,
     minWidth: 160,
@@ -783,16 +746,16 @@ var initResizableYT = function(){
   });
 }
 
-var onBmkSelectYT = function(i){
+var onBmkSelectYT=function(i){
   cancelABLoop();
 
   //needs to be reset for some reason
-  if(help.checked) myBookmarks.title = "Choose from previously saved loops.";
+  if(help.checked) myBookmarks.title="Choose from previously saved loops.";
 
   if(i==0) return;
 
-  var a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
-  var b=timeStringToSec(myBookmarks.options[i].text.split('--')[1]);
+  let a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
+  let b=timeStringToSec(myBookmarks.options[i].text.split('--')[1]);
   $("#slider").slider("option", "values", [ a, b ]);
   $("#slider").slider("option", "max", myGetDuration());
   isTimeASet=isTimeBSet=true;
@@ -800,10 +763,10 @@ var onBmkSelectYT = function(i){
   loopButton.value="Cancel";
   annotButton.disabled=false;
   if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING)
-    loopTimer.push(setInterval(onTimeUpdate,25));
+    loopTimer.push(setInterval(onTimeUpdate,20));
 }
 
-var onLoopDownYT = function () {
+var onLoopDownYT=function(){
   if(isTimeBSet){
     cancelABLoop();
     $("#timeInputs").hide();
@@ -825,7 +788,7 @@ var onLoopDownYT = function () {
         $("#timeInputs").show();
 
         if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING)
-          loopTimer.push(setInterval(onTimeUpdate,25));
+          loopTimer.push(setInterval(onTimeUpdate,20));
       }
     }else{
       timeA=myGetCurrentTimeYT();
@@ -838,41 +801,41 @@ var onLoopDownYT = function () {
 /////////////////////////
 // <video> specific code
 /////////////////////////
-var URL = window.URL || window.webkitURL;
+var URL=window.URL || window.webkitURL;
 var myVideo;
 
-var playSelectedFile = function (f) {
+var playSelectedFile=function (f){
   initVT(); //initialize player-specific functions
   resetUI();
 
   //replace #myResizable container and its #myVideo child
-  var myResizable = document.getElementById("myResizable");
-  var parent = myResizable.parentNode;
-  var myResizableOld=myResizable;
-  myResizable = document.createElement("div");
+  let myResizable=document.getElementById("myResizable");
+  let parent=myResizable.parentNode;
+  let myResizableOld=myResizable;
+  myResizable=document.createElement("div");
   myResizable.id="myResizable";
   parent.replaceChild(myResizable, myResizableOld);
 
   if(aonly.checked)
-    myVideo = document.createElement("audio");
+    myVideo=document.createElement("audio");
   else
-    myVideo = document.createElement("video");
+    myVideo=document.createElement("video");
 
   myVideo.id="myVideo";
-  myVideo.autoplay = false;
-  myVideo.controls = true;
+  myVideo.autoplay=false;
+  myVideo.controls=true;
   myVideo.width=$("#myResizable").width();
 
   myVideo.addEventListener("durationchange", function(e){
     if (isFinite(e.target.duration)){
       $("#slider").slider("option", "max", myGetDuration());
       $("#scrub").slider("option", "max", myGetDuration()).show();
-      aonly.disabled = false;
-      mySpeed.disabled = false;
+      aonly.disabled=false;
+      mySpeed.disabled=false;
     }else{
       //repeat setting media source until duration property is properly set;
       //this is a workaround of a bug in FFox on Windows
-      e.target.src = e.target.currentSrc;
+      e.target.src=e.target.currentSrc;
     }
   });
 
@@ -880,7 +843,7 @@ var playSelectedFile = function (f) {
 
   myVideo.addEventListener("play", function(){
     mySetPlaybackRate(Number(mySpeed.value));
-    if (isTimeASet && isTimeBSet) loopTimer.push(setInterval(onTimeUpdate,25));
+    if (isTimeASet && isTimeBSet) loopTimer.push(setInterval(onTimeUpdate,20));
   });
 
   myVideo.addEventListener("pause", function(){
@@ -896,31 +859,31 @@ var playSelectedFile = function (f) {
 
   myResizable.appendChild(myVideo);
 
-  if(f) { //a media file was selected
+  if(f){ //a media file was selected
     //add speed options
-    mySpeed.disabled = true;
-    var rates = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
-    for(var i=0; i<rates.length; i++) {
-      var c = document.createElement('OPTION');
+    mySpeed.disabled=true;
+    let rates=[0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+    for(let i=0; i<rates.length; i++){
+      let c=document.createElement('OPTION');
       mySpeed.add(c); //append as a child to selector
 
-      c.text = c.value = rates[i];
-      if(rates[i] == 1.0) {
-        c.id = "normalSpeed";
-        c.text = "Normal";
+      c.text=c.value=rates[i];
+      if(rates[i]==1.0){
+        c.id="normalSpeed";
+        c.text="Normal";
         c.selected=true;
       }
     }
-    aonly.disabled = true;
+    aonly.disabled=true;
 
     //set video source
-    vidId = f.name+'-'+f.size; //some checksum would be better
-    myVideo.src = URL.createObjectURL(f);
+    vidId=f.name+'-'+f.size; //some checksum would be better
+    myVideo.src=URL.createObjectURL(f);
   }
 }
 
-var onLoadedData = function (e) {
-  if(!aonly.checked) {
+var onLoadedData=function (e){
+  if(!aonly.checked){
     e.target.addEventListener("mouseover", function(e){e.target.controls=true;});
     e.target.addEventListener("mouseout", function(e){e.target.controls=false;});
   }
@@ -929,15 +892,15 @@ var onLoadedData = function (e) {
   scrubTimer.push(setInterval(
     function(){
       $("#scrub").slider("option", "value", myGetCurrentTimeVT());
-    } , 0.025
+    }, 0.020
   ));
 
   initResizableVT();
 
   //look for bookmark items with the current video ID
   if(localStorage.getItem(vidId)){
-    var bmks = localStorage.getItem(vidId).split(',');
-    for(var i=0; i<bmks.length; i++){
+    let bmks=localStorage.getItem(vidId).split(',');
+    for(let i=0; i<bmks.length; i++){
       bmkAdd(bmks[i]);
       myBookmarks.options[0].selected=true;
     }
@@ -945,60 +908,60 @@ var onLoadedData = function (e) {
   }
 }
 
-var myGetPlaybackRateVT = function(){
+var myGetPlaybackRateVT=function(){
   return myVideo.playbackRate;
 }
 
-var mySetPlaybackRateVT = function(r){
+var mySetPlaybackRateVT=function(r){
   myVideo.playbackRate=r;
 }
 
-var onBmkSelectVT = function(i){
+var onBmkSelectVT=function(i){
   cancelABLoop();
 
   //needs to be reset for some reason
-  if(help.checked) myBookmarks.title = "Choose from previously saved loops.";
+  if(help.checked) myBookmarks.title="Choose from previously saved loops.";
 
   if(i==0) return;
 
-  var a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
-  var b=timeStringToSec(myBookmarks.options[i].text.split('--')[1]);
+  let a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
+  let b=timeStringToSec(myBookmarks.options[i].text.split('--')[1]);
   $("#slider").slider("option", "values", [ a, b ]);
   isTimeASet=isTimeBSet=true;
   $("#timeInputs").show();
   loopButton.value="Cancel";
   annotButton.disabled=false;
   if(!myVideo.paused)
-    loopTimer.push(setInterval(onTimeUpdate,25));
+    loopTimer.push(setInterval(onTimeUpdate,20));
 }
 
-var myGetDurationVT = function(){
+var myGetDurationVT=function(){
   return myVideo.duration;
 }
 
-var myGetCurrentTimeVT = function(){
+var myGetCurrentTimeVT=function(){
   return myVideo.currentTime;
 }
 
-var mySetCurrentTimeVT = function(t){
+var mySetCurrentTimeVT=function(t){
   myVideo.currentTime=t;
 }
 
 var initHeight;
-var initResizableVT = function(){
+var initResizableVT=function(){
   $("#myResizable").resizable({
     aspectRatio: (aonly.checked ? false : true),
     minWidth: (aonly.checked ? $("#myResizable").width() : 160),
     create: function(e,ui){
-      myVideo.width = $("#myResizable").width();
-      initHeight = $("#myResizable").height();
+      myVideo.width=$("#myResizable").width();
+      initHeight=$("#myResizable").height();
       $("#slider").width($("#myResizable").width());
       $("#scrub").width($("#myResizable").width());
     },
     resize: function(event,ui){
       myVideo.width=ui.size.width;
-      if(aonly.checked) {
-        ui.size.height = initHeight;
+      if(aonly.checked){
+        ui.size.height=initHeight;
       } else {
         myVideo.height=ui.size.height;
       }
@@ -1008,7 +971,7 @@ var initResizableVT = function(){
   });
 };
 
-var onLoopDownVT = function () {
+var onLoopDownVT=function(){
   if(isTimeBSet){
     cancelABLoop();
     $("#timeInputs").hide();
@@ -1029,7 +992,7 @@ var onLoopDownVT = function () {
         $("#timeInputs").show();
 
         if(!myVideo.paused)
-          loopTimer.push(setInterval(onTimeUpdate,25));
+          loopTimer.push(setInterval(onTimeUpdate,20));
       }
     }else{
       timeA=myGetCurrentTimeVT();
@@ -1039,27 +1002,25 @@ var onLoopDownVT = function () {
   }
 }
 
-var toggleAudio = function(t,h) {
+var toggleAudio=function(t,h){
   myBlur();
   if(myVideo.readyState) playSelectedFile(inputVT.files[0]);
-  if(h.checked) {
-    if(t.checked)
-      t.title = aonlyTitleChecked;
-    else
-      t.title = aonlyTitleUnChecked;
+  if(h.checked){
+    if(t.checked) t.title=aonlyTitleChecked;
+    else t.title=aonlyTitleUnChecked;
   }
 }
 
-var toggleIntro = function(t,h) {
+var toggleIntro=function(t,h){
   myBlur();
-  if(t.checked) {
+  if(t.checked){
     localStorage.setItem("intro", "checked");
     if(h.checked)
-        t.title = "Uncheck to always skip media section up to \"A\".";
+        t.title="Uncheck to always skip media section up to \"A\".";
   }else{
     localStorage.setItem("intro", "unchecked");
     if(h.checked)
-        t.title = "If checked, media section up to \"A\""
+        t.title="If checked, media section up to \"A\""
                 + " is played before starting the loop.";
   }
 }
@@ -1074,15 +1035,15 @@ var onLoopDown;
 var myPlayPause;
 
 //initialization functions
-var initYT = function () { // YT
-  onBmkSelect = onBmkSelectYT;
-  myGetCurrentTime = myGetCurrentTimeYT;
-  mySetCurrentTime = mySetCurrentTimeYT;
-  myGetDuration = myGetDurationYT;
-  mySetPlaybackRate = mySetPlaybackRateYT;
-  myGetPlaybackRate = myGetPlaybackRateYT;
-  onLoopDown = onLoopDownYT;
-  myPlayPause = function () {
+var initYT=function(){ // YT
+  onBmkSelect=onBmkSelectYT;
+  myGetCurrentTime=myGetCurrentTimeYT;
+  mySetCurrentTime=mySetCurrentTimeYT;
+  myGetDuration=myGetDurationYT;
+  mySetPlaybackRate=mySetPlaybackRateYT;
+  myGetPlaybackRate=myGetPlaybackRateYT;
+  onLoopDown=onLoopDownYT;
+  myPlayPause=function(){
     if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING)
       ytPlayer.pauseVideo();
     else
@@ -1090,15 +1051,15 @@ var initYT = function () { // YT
   }
 }
 
-var initVT = function () { // <video> tag
-  onBmkSelect = onBmkSelectVT;
-  myGetCurrentTime = myGetCurrentTimeVT;
-  mySetCurrentTime = mySetCurrentTimeVT;
-  myGetDuration = myGetDurationVT;
-  mySetPlaybackRate = mySetPlaybackRateVT;
-  myGetPlaybackRate = myGetPlaybackRateVT;
-  onLoopDown = onLoopDownVT;
-  myPlayPause = function () {
+var initVT=function(){ // <video> tag
+  onBmkSelect=onBmkSelectVT;
+  myGetCurrentTime=myGetCurrentTimeVT;
+  mySetCurrentTime=mySetCurrentTimeVT;
+  myGetDuration=myGetDurationVT;
+  mySetPlaybackRate=mySetPlaybackRateVT;
+  myGetPlaybackRate=myGetPlaybackRateVT;
+  onLoopDown=onLoopDownVT;
+  myPlayPause=function(){
     if(myVideo.paused) myVideo.play(); else myVideo.pause();
   }
 }
