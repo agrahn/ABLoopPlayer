@@ -73,10 +73,10 @@ $(document).ready(function(){
   inputYT.disabled=searchButtonYT.disabled=true;
 
   //get already watched YT IDs
-  //localStorage.setItem('knownIds', '');
+  //localStorage.setItem('knownIDs', '');
   let knownIds=[];
-  if(localStorage.getItem('knownIds')){
-    knownIds=localStorage.getItem('knownIds').split(',');
+  if(localStorage.getItem('knownIDs')){
+    knownIds=localStorage.getItem('knownIDs').split(',');
     for(let i=0; i<knownIds.length; i++){
       let z=document.createElement('OPTION');
       z.setAttribute('value', knownIds[i]);
@@ -669,8 +669,8 @@ var saveId=function(id){
   //prepend ID to/move ID to front of the list of valid and already
   //visited video/playlist IDs and of the datalist object
   let knownIds=[];
-  if(localStorage.getItem('knownIds')){
-    knownIds=localStorage.getItem('knownIds').split(',');
+  if(localStorage.getItem('knownIDs')){
+    knownIds=localStorage.getItem('knownIDs').split(',');
     let idx=knownIds.indexOf(id);
     if(idx>=0){
       knownIds.splice(idx,1);
@@ -687,7 +687,7 @@ var saveId=function(id){
     knownIds.pop();
     YTids.removeChild(YTids.lastChild);
   }
-  localStorage.setItem('knownIds', knownIds.join());
+  localStorage.setItem('knownIDs', knownIds.join());
 }
 
 var queryYT=function(qu){
