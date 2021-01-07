@@ -446,6 +446,7 @@ var onClickExport=function(){
 var onClickImport=function(){
   myPrompt(
     function(data){
+	  if(data===null||data.trim()=="") return;
       try{
         Object.entries(JSON.parse(data)).forEach(
           ([k,v])=>localStorage.setItem(k,v)
