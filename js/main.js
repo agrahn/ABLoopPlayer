@@ -33,7 +33,6 @@ var myBookmarks;
 var bmkAddButton;
 var annotButton, trashButton;
 var ctrlPressed=false;
-var bmkHash;
 var bmkArr;
 var loopTimer=[];
 var scrubTimer=[];
@@ -68,8 +67,8 @@ $(document).ready(function(){
     playSelectedFile(e.target.files[0]);
   });
   inputYT.disabled=searchButtonYT.disabled=true;
+  localStorage.removeItem('lastSearch'); //obsolete, hence delete it
   //get already watched YT IDs
-  //localStorage.setItem('knownIDs', '');
   let knownIds=[];
   if(localStorage.getItem('knownIDs')){
     knownIds=localStorage.getItem('knownIDs').split(',');
@@ -100,6 +99,11 @@ $(document).ready(function(){
   $("#slider .ui-slider-handle").last().css("margin-left", "0em").text("B");
   if(localStorage.getItem("help")!="unchecked") help.checked=true;
   contextHelp(help);
+  if(localStorage.getItem("aonly")!="unchecked") aonly.checked=true;
+  if(help.checked){
+    if(aonly.checked) aonly.title=aonlyTitleChecked;
+    else aonly.title=aonlyTitleUnChecked;
+  }
   if(localStorage.getItem("intro")!="unchecked") intro.checked=true;
   toggleIntro(intro, help);
   mySpeed.addEventListener("change", onSpeedSelectChange);
@@ -143,20 +147,23 @@ window.addEventListener("keyup", function(e){
 });
 
 // a modal prompt dialog based on jQuery
-// Usage: myPrompt( <callback>(ret), <dialog title> [, <default text>] );
-var myPrompt=function(onclose, title, txt){
+// Usage: myPrompt( <callback>(ret), <title>, <text> [, <default input>] );
+var myPrompt=function(onclose, title, text, placeholder, input){
   let z=$(
     '<div style="width: fit-content; display: inline-block;"><p>'
-    +title+
-    '</p><input value="'
-    +txt+'" size="40" onfocus="this.select();"></input></div>'
+    +text+
+    '</p><input '+
+    (placeholder ? ' placeholder="'+placeholder+'"' : "") +
+    (input ? ' value="'+input+'"' : "") +
+    '" size="50" onfocus="this.select();"></input></div>'
   );
   $(document.body).append(z);
   let ret=null;
   $(z).dialog({
     autoOpen: true,
     modal: true,
-    dialogClass: "noTitlebar",
+    classes: {"ui-dialog": (title ? "" : "noTitlebar")},
+    title: title,
     closeOnEscape: false,
     closeText: "hide",
     width: "auto",
@@ -194,7 +201,7 @@ var myConfirm=function(onclose, msg){
   $(z).dialog({
     autoOpen: true,
     modal: true,
-    dialogClass: "noTitlebar",
+    classes: {"ui-dialog": "noTitlebar"},
     closeOnEscape: false,
     minHeight: 0,
     width: "auto",
@@ -215,6 +222,26 @@ var myConfirm=function(onclose, msg){
     ],
     close: function(e,ui){
       onclose(ret);
+      this.parentNode.removeChild(this);
+    }
+  })
+}
+
+// a modal message box
+// Usage: myMessage( <title>, <message text> );
+var myMessage=function(title, msg){
+  let z=$("<div>"+msg+"</div>");
+  $(document.body).append(z);
+  $(z).dialog({
+    title: title,
+    autoOpen: true,
+    modal: true,
+    buttons: {
+      Ok: function() {
+        $( this ).dialog( "close" );
+      }
+    },
+    close: function(e,ui){
       this.parentNode.removeChild(this);
     }
   })
@@ -303,7 +330,7 @@ var bmkAdd=function(bmkItem){
   let insIdx=-1;
   //insert current loop into bookmarks select object, sorted in ascending
   //order w.r.t. timeA & timeB
-  if(typeof bmkHash[bmkItem]==='undefined'){
+  if(bmkArr.indexOf(bmkItem)<0){
     for(let i=1; i<myBookmarks.options.length && insIdx<0; i++){
       let a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
       let b=timeStringToSec(myBookmarks.options[i].text.split('--')[1]);
@@ -330,7 +357,6 @@ var bmkAdd=function(bmkItem){
         collision: "none"
       }
     });
-    bmkHash[c.text]='';
     bmkArr.splice(insIdx, 0, bmkItem);
     localStorage.setItem(vidId, bmkArr.join());
     $("#myBmkSpan").show();
@@ -342,11 +368,9 @@ var bmkDelete=function(idx){
   if(idx==0){
     while(myBookmarks.options.length>1)
       myBookmarks.remove(myBookmarks.options.length-1);
-    bmkHash=[];
     bmkArr=[];
   }else{
     bmkArr.splice(idx-1,1);
-    bmkHash[myBookmarks.options[idx].text]=undefined;
     myBookmarks.remove(idx);
   }
   if(myBookmarks.options.length==1){
@@ -388,16 +412,54 @@ var onClickTrash=function(idx){
 }
 
 var onClickAddNote=function(idx){
-  let defaultNote=(localStorage.getItem(
-    vidId+'-'+myBookmarks.options[idx].text) || "example text")
+  let currentNote=(localStorage.getItem(
+    vidId+'-'+myBookmarks.options[idx].text) || null);
   myPrompt(
     function(note){
-      if(note && note.trim().length){
-        myBookmarks.options[idx].title=note;
-        localStorage.setItem(vidId+'-'+myBookmarks.options[idx].text, note);
+      if(note===null) return;
+      note=myBookmarks.options[idx].title=note.trim();
+      if(note=="")
+        localStorage.removeItem(vidId+'-'+myBookmarks.options[idx].text);
+      else
+        localStorage.setItem(vidId+'-'+myBookmarks.options[idx].text,note);
+    },
+    null, "Enter description", (currentNote ? null : "example text"), currentNote
+  );
+}
+
+var onClickExport=function(){
+  let appData=JSON.parse(JSON.stringify(localStorage));
+  delete appData.knownIDs;
+  navigator.clipboard.writeText(JSON.stringify(appData)).then(function() {
+    myMessage("Export",
+      "<p>Loop data and player settings successfully copied to the <b>clipboard</b>.</p><p>"+
+      "<span style='content:url(png/import.png);float:left;margin:0px 10px 30px 0px'></span>"+
+      "Use the Player's <b>Import</b> dialog on another computer or in a different browser to transfer loop data and app settings.</p>"
+    );
+  }, function(err) {
+    myMessage("Error",
+      "<p>Loop data and app settings could not be copied to the clipboard.</p>"+
+      err.name+': '+err.message);
+  });
+}
+
+var onClickImport=function(){
+  myPrompt(
+    function(data){
+      try{
+        Object.entries(JSON.parse(data)).forEach(
+          ([k,v])=>localStorage.setItem(k,v)
+        );
+        myMessage("Import",
+          "Loop data and app settings successfully imported.");
+      }catch(err){
+        myMessage("Error",
+          "<p>Loop data and app settings could not be imported.</p>"+
+          err.name+': '+err.message);
       }
     },
-    "Enter description", defaultNote
+    "Import", "Paste exported loop data and app settings in the text field:",
+    "<Paste here>", null
   );
 }
 
@@ -427,6 +489,8 @@ var contextHelp=function(t){
     annotButton.title="Add a note to the currently selected bookmark.";
     trashButton.title="Delete currently selected / delete all bookmarked loops.";
     mySpeed.title="Select playback rate.";
+    exportButton.title="Export loop data and player settings.";
+    importButton.title="Import loop data and player settings from another computer or browser.";
     $("#slider").attr("title", "Move slider handles to adjust the loop range. "
         + "Press [Ctrl] while moving a handle to shift the entire loop window. "
         + "Also, handles can be moved with the arrow keys [←] , [→].");
@@ -445,6 +509,8 @@ var contextHelp=function(t){
     annotButton.title=
     trashButton.title=
     mySpeed.title=
+    exportButton.title=
+    importButton.title=
     "";
     $("#slider").attr("title", "");
   }
@@ -714,7 +780,7 @@ var onBmkSelectYT=function(i){
   $("#slider").slider("option", "max", myGetDuration());
   let a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
   let b=timeStringToSec(myBookmarks.options[i].text.split('--')[1]);
-  $("#slider").slider("option", "values", [ a, b ]);
+  $("#slider").slider("option", "values", [a, b]);
   isTimeASet=isTimeBSet=true;
   $("#timeInputs").show();
   loopButton.value="Cancel";
@@ -946,6 +1012,8 @@ var toggleAudio=function(t,h){
     if(t.checked) t.title=aonlyTitleChecked;
     else t.title=aonlyTitleUnChecked;
   }
+  if(t.checked) localStorage.setItem("aonly", "checked");
+  else localStorage.setItem("aonly", "unchecked");
 }
 
 var toggleIntro=function(t,h){
