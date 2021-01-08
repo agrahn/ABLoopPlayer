@@ -72,7 +72,7 @@ $(document).ready(function(){
   let knownIds=[];
   if(localStorage.getItem('knownIDs')){
     knownIds=localStorage.getItem('knownIDs').split(',');
-    for(let i=0; i<knownIds.length; i++){
+    for(let i=0; i<knownIds.length && i<100; i++){
       let z=document.createElement('OPTION');
       z.setAttribute('value', knownIds[i]);
       YTids.appendChild(z);
@@ -696,22 +696,27 @@ var onPlayerStateChange=function(e, id){ //event object, video id
 var saveId=function(id){
   //prepend ID to/move ID to front of the list of valid and already
   //visited video/playlist IDs and of the datalist object
+  //at first, remove all occurrences
   let knownIds=[];
   if(localStorage.getItem('knownIDs')){
     knownIds=localStorage.getItem('knownIDs').split(',');
     let idx=knownIds.indexOf(id);
     while(idx>=0){
       knownIds.splice(idx,1);
-      YTids.removeChild(YTids.childNodes[idx]);
       idx=knownIds.indexOf(id);
     }
   }
+  for(let i=0;i<YTids.childNodes.length;i++){
+    if(YTids.childNodes[i].getAttribute('value')==id)
+	  YTids.removeChild(YTids.childNodes[i]);
+  }
+  //now add to the head
   knownIds.unshift(id);
   let z=document.createElement('OPTION');
   z.setAttribute('value', id);
   YTids.insertBefore(z, YTids.firstChild);
-  while(knownIds.length>100){
-    knownIds.pop();
+  //truncate input list to 100 elements
+  while(YTids.childNodes.length>100){
     YTids.removeChild(YTids.lastChild);
   }
   localStorage.setItem('knownIDs', knownIds.join());
@@ -913,6 +918,24 @@ var onLoadedData=function (e){
     }
     annotButton.disabled=true;
   }
+  saveMediaId(vidId);
+}
+
+var saveMediaId=function(id){
+  //prepend ID to/move ID to front of the visited media files list
+  //at first, remove all occurrences
+  let knownIds=[];
+  if(localStorage.getItem('knownMedia')){
+    knownIds=localStorage.getItem('knownMedia').split(',');
+    let idx=knownIds.indexOf(id);
+    while(idx>=0){
+      knownIds.splice(idx,1);
+      idx=knownIds.indexOf(id);
+    }
+  }
+  //now add to the head
+  knownIds.unshift(id);
+  localStorage.setItem('knownMedia', knownIds.join());
 }
 
 var myGetPlaybackRateVT=function(){
