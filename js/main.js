@@ -17,33 +17,33 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-var vidId; // current YT video ID or file name + size
-var YTids;
-var inputYT;
-var ytPlayer;
-var help;
-var inputVT, aonly, intro;
+var appversion="1.0";
+
+var storage=window.localStorage;
+var vidId; //current YT video ID or file name + size
 var timeA, timeB;
 var isTimeASet=false;
 var isTimeBSet=false;
-var myTimeA, myTimeB;
 var currentRate=1.0;
-var loopButton, mySpeed;
-var myBookmarks;
-var bmkAddButton;
-var annotButton, trashButton;
-var ctrlPressed=false;
-var bmkArr;
 var loopTimer=[];
 var scrubTimer=[];
+var ctrlPressed=false;
+
+//HTML elements
+var YTids;
+var inputYT, inputVT;
+var ytPlayer;
+var help, aonly, intro;
+var myTimeA, myTimeB, mySpeed, myBookmarks;
+var loopButton, bmkAddButton, annotButton, trashButton;
 
 $(document).ready(function(){
   $("#introText").width($("#test").width()+1);
   //if we are online, asynchronously load YT player api
   if(navigator.onLine){
-    let scripts=document.getElementsByTagName('script');
+    let scripts=document.getElementsByTagName("script");
     let scriptTag1=scripts[scripts.length-1];
-    let scriptTag2=document.createElement('script');
+    let scriptTag2=document.createElement("script");
     scriptTag2.src="https://www.youtube.com/iframe_api";
     scriptTag1.parentNode.insertBefore(scriptTag2, null);
   }
@@ -67,19 +67,25 @@ $(document).ready(function(){
     playSelectedFile(e.target.files[0]);
   });
   inputYT.disabled=searchButtonYT.disabled=true;
-  localStorage.removeItem('lastSearch'); //obsolete, hence delete it
+  //convert saved bookmarks from previous version
+  if(storage.getItem("knownIDs")){
+    let appData=convertData(JSON.parse(JSON.stringify(storage)));
+    storage.clear();
+    mergeData(appData);
+  }
+  mergeData({"ab.version": appversion});
   //get already watched YT IDs
   let knownIds=[];
-  if(localStorage.getItem('knownIDs')){
-    knownIds=localStorage.getItem('knownIDs').split(',');
+  if(storage.getItem("ab.knownIDs")){
+    knownIds=JSON.parse(storage.getItem("ab.knownIDs"));
     for(let i=0; i<knownIds.length && i<100; i++){
-      let z=document.createElement('OPTION');
-      z.setAttribute('value', knownIds[i]);
+      let z=document.createElement("OPTION");
+      z.setAttribute("value", knownIds[i]);
       YTids.appendChild(z);
     }
   }
   if(knownIds.length) inputYT.value=knownIds[0];
-  else inputYT.value="2kotK9FNEYU";
+  else inputYT.value="https://youtu.be/2kotK9FNEYU";
   $("#scrub").slider({
     min: 0, step: 0.001, range: "min",
     slide: function(e, ui){
@@ -97,16 +103,18 @@ $(document).ready(function(){
   $("#slider").css("height", "1em");
   $("#slider .ui-slider-handle").first().css("margin-left", "-1em").text("A");
   $("#slider .ui-slider-handle").last().css("margin-left", "0em").text("B");
-  if(localStorage.getItem("help")!="unchecked") help.checked=true;
+  if(storage.getItem("ab.help")!="unchecked") help.checked=true;
   contextHelp(help);
-  if(localStorage.getItem("aonly")!="unchecked") aonly.checked=true;
+  if(storage.getItem("ab.aonly")=="checked") aonly.checked=true;
+  else aonly.checked=false;
   if(help.checked){
     if(aonly.checked) aonly.title=aonlyTitleChecked;
     else aonly.title=aonlyTitleUnChecked;
   }
-  if(localStorage.getItem("intro")!="unchecked") intro.checked=true;
+  if(storage.getItem("ab.intro")!="unchecked") intro.checked=true;
   toggleIntro(intro, help);
   mySpeed.addEventListener("change", onSpeedSelectChange);
+  bmkAddButton.addEventListener("mouseup", function(e){bmkAdd();});
   playSelectedFile("");
 });
 
@@ -255,8 +263,8 @@ var secToTimeString=function(t){
   s=s % 60;
   let ms=String(s % 1).substring(2,5);
   s=Math.floor(s);
-  return ((h>0 ? h+':'+strPadLeft(m,0,2) : m) + ':' + strPadLeft(s,0,2)
-      + (ms.length>0 ? '.'+ms :''));
+  return ((h>0 ? h+":"+strPadLeft(m,0,2) : m) + ":" + strPadLeft(s,0,2)
+      + (ms.length>0 ? "."+ms :''));
 }
 var strPadLeft=function strPadLeft(string,pad,length){
   return (new Array(length+1).join(pad)+string).slice(-length);
@@ -264,7 +272,7 @@ var strPadLeft=function strPadLeft(string,pad,length){
 
 // time string to seconds
 var timeStringToSec=function(ts){
-  let ta=ts.trim().split(':');
+  let ta=ts.trim().split(":");
   let s=Number(ta[ta.length-1]);
   s+=60*Number(ta[ta.length-2]);
   if(ta.length==3) s+=3600*Number(ta[0]);
@@ -304,8 +312,8 @@ var onSliderSlide=function(e, ui){
 
 var onInputTime=function(whichInput, sliderIdx){
   let time=whichInput.value.match(  //validate user input
-        /^\s*(?:\d+:[0-5][0-9]|[0-5]?[0-9]):[0-5][0-9](?:\.\d+)?\s*$/
-      );
+    /^\s*(?:\d+:[0-5][0-9]|[0-5]?[0-9]):[0-5][0-9](?:\.\d+)?\s*$/
+  );
   if(!time){
     if(sliderIdx==0){
       $("#slider" ).slider("values", 0, timeA);
@@ -324,60 +332,86 @@ var onInputTime=function(whichInput, sliderIdx){
   }
 }
 
-var bmkAdd=function(bmkItem){
-  let ta=timeStringToSec(bmkItem.split('--')[0]);
-  let tb=timeStringToSec(bmkItem.split('--')[1]);
-  let insIdx=-1;
-  //insert current loop into bookmarks select object, sorted in ascending
-  //order w.r.t. timeA & timeB
-  if(bmkArr.indexOf(bmkItem)<0){
-    for(let i=1; i<myBookmarks.options.length && insIdx<0; i++){
-      let a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
-      let b=timeStringToSec(myBookmarks.options[i].text.split('--')[1]);
-      if(ta<a || ta==a && tb<b) insIdx=i;
-    }
-    if(insIdx<0) insIdx=myBookmarks.options.length;
-    let c=document.createElement('OPTION');
-    c.title="";
-    if(localStorage.getItem(vidId+'-'+bmkItem)){
-      c.title=localStorage.getItem(vidId+'-'+bmkItem);
-    }
-    c.text=bmkItem;
-    c.addEventListener("mouseover", function(e){e.target.selected=true;});
-    c.addEventListener("mouseup", function(e){
-      onBmkSelect(e.target.index); e.target.parentNode.size=1;
-    });
-    myBookmarks.add(c,insIdx); //append as a child to selector
-    c.selected=true;
-    //enable tooltip for current <option> element
-    $(c).tooltip({
-      position: {
-        my: "left bottom",
-        at: "right+5px bottom",
-        collision: "none"
-      }
-    });
-    bmkArr.splice(insIdx, 0, bmkItem);
-    localStorage.setItem(vidId, bmkArr.join());
-    $("#myBmkSpan").show();
-    annotButton.disabled=false;
+var bmkAdd=function(note=null){
+  let bmk={ta: timeA, tb: timeB};
+  if(note) bmk.note=note;
+  let bmkArr=[];
+  if(storage.getItem("ab."+vidId))
+    bmkArr=JSON.parse(storage.getItem("ab."+vidId));
+  let idx=insertBmk(bmk, bmkArr);
+  if(bmkArr.length) storage.setItem("ab."+vidId,JSON.stringify(bmkArr));
+  myBookmarksUpdate(bmkArr,idx);
+}
+
+//insert a bookmark at its correct position into a bookmarks array
+var insertBmk=function(sbm, tbmArr){
+  let idx=tbmArr.findIndex(tbm => (sbm.ta==tbm.ta && sbm.tb==tbm.tb));
+  if(idx>-1) { //update existing
+    tbmArr.splice(idx, 1, sbm);
+    return idx;
   }
+  idx=tbmArr.findIndex(tbm =>
+    (sbm.ta<tbm.ta || sbm.ta==tbm.ta && sbm.tb<tbm.tb));
+  if(idx>-1){ //insert as new
+    tbmArr.splice(idx, 0, sbm);
+    return idx;
+  }
+  idx=tbmArr.length; //append as new
+  tbmArr.push(sbm);
+  return idx;
+}
+
+var myBookmarksUpdate=function(bmkArr,idx){//selected idx
+  while(myBookmarks.options.length>1)
+    myBookmarks.remove(myBookmarks.options.length-1);
+  bmkArr.forEach((bmk,i) => {
+    let c=document.createElement("OPTION");
+    c.text=secToTimeString(bmk.ta)+"--"+secToTimeString(bmk.tb);
+    c.addEventListener("mouseover", e => e.target.selected=true);
+    c.addEventListener("mouseup", e => {
+      onBmkSelect(e.target.index);
+      e.target.parentNode.size=1;
+    });
+    if(bmk.note){
+      c.title=bmk.note;
+      //enable tooltip for current <option> element
+      $(c).tooltip({
+        position: {
+          my: "left bottom",
+          at: "right+5px bottom",
+          collision: "none"
+        }
+      });
+    }
+    myBookmarks.appendChild(c);
+    if(i==idx){
+      c.selected=true;
+      onBmkSelect(c.index);
+    }
+  });
+  if(idx<0) myBookmarks.options[0].selected=true;
+  if(myBookmarks.options.length>1) $("#myBmkSpan").show();
+  else $("#myBmkSpan").hide();
 }
 
 var bmkDelete=function(idx){
   if(idx==0){
-    while(myBookmarks.options.length>1)
-      myBookmarks.remove(myBookmarks.options.length-1);
-    bmkArr=[];
-  }else{
-    bmkArr.splice(idx-1,1);
-    myBookmarks.remove(idx);
+    storage.removeItem("ab."+vidId);
+    myBookmarksUpdate([],-1);
   }
-  if(myBookmarks.options.length==1){
-    $("#myBmkSpan").hide();
-    myBookmarks.options[0].selected=true;
-  }else{
-    onBmkSelect(1);
+  else{
+    let bmkArr=JSON.parse(storage.getItem("ab."+vidId));
+    if(!bmkArr) bmkArr=[];
+    let i = bmkArr.findIndex(bmk => (timeA==bmk.ta && timeB==bmk.tb));
+    if(i>-1) {
+      bmkArr.splice(i,1);
+      if(bmkArr.length>0) storage.setItem("ab."+vidId,JSON.stringify(bmkArr));
+      else storage.removeItem("ab."+vidId);
+      myBookmarksUpdate(bmkArr,Math.min(i,bmkArr.length-1));
+    }
+    else{
+      myBookmarksUpdate(bmkArr,Math.min(idx-1,bmkArr.length-1));
+    }
   }
 }
 
@@ -385,26 +419,14 @@ var onClickTrash=function(idx){
   if(idx==0){ //all items
     myConfirm(
       function(res){
-        if(res){
-          //first remove any note associated with bookmarked loops
-          for(let i=1; i<myBookmarks.options.length; i++){
-            localStorage.removeItem(vidId+'-'+myBookmarks.options[i].text);
-          }
-          //then delete the bookmarked loops altogether
-          bmkDelete(0);
-          localStorage.removeItem(vidId);
-        }
+        if(res) bmkDelete(0);
       },
-      "Really delete ALL bookmarked loops?"
+      "Really delete <b>ALL</b> bookmarked loops?"
     );
   }else{ //selected item
     myConfirm(
       function(res){
-        if(res){
-          localStorage.removeItem(vidId+'-'+myBookmarks.options[idx].text);
-          bmkDelete(idx);
-          localStorage.setItem(vidId, bmkArr.join());
-        }
+        if(res) bmkDelete(idx);
       },
       "Delete this loop?"
     );
@@ -412,23 +434,15 @@ var onClickTrash=function(idx){
 }
 
 var onClickAddNote=function(idx){
-  let currentNote=(localStorage.getItem(
-    vidId+'-'+myBookmarks.options[idx].text) || null);
+  let currentNote=myBookmarks.options[idx].title;
   myPrompt(
-    function(note){
-      if(note===null) return;
-      note=myBookmarks.options[idx].title=note.trim();
-      if(note=="")
-        localStorage.removeItem(vidId+'-'+myBookmarks.options[idx].text);
-      else
-        localStorage.setItem(vidId+'-'+myBookmarks.options[idx].text,note);
-    },
+    note => bmkAdd(note),
     null, "Enter description", (currentNote ? null : "example text"), currentNote
   );
 }
 
 var onClickExport=function(){
-  let appData=JSON.parse(JSON.stringify(localStorage));
+  let appData=JSON.parse(JSON.stringify(storage));
   delete appData.knownIDs;
   navigator.clipboard.writeText(JSON.stringify(appData)).then(function() {
     myMessage("Export",
@@ -439,24 +453,22 @@ var onClickExport=function(){
   }, function(err) {
     myMessage("Error",
       "<p>Loop data and app settings could not be copied to the clipboard.</p>"+
-      err.name+': '+err.message);
+      err.name+": "+err.message);
   });
 }
 
 var onClickImport=function(){
   myPrompt(
     function(data){
-	  if(data===null||data.trim()=="") return;
+      if(data==null||data.trim()=="") return;
       try{
-        Object.entries(JSON.parse(data)).forEach(
-          ([k,v])=>localStorage.setItem(k,v)
-        );
+        mergeData(convertData(JSON.parse(data)));
         myMessage("Import",
           "Loop data and app settings successfully imported.");
       }catch(err){
         myMessage("Error",
           "<p>Loop data and app settings could not be imported.</p>"+
-          err.name+': '+err.message);
+          err.name+": "+err.message);
       }
     },
     "Import", "Paste exported loop data and app settings in the text field:",
@@ -470,7 +482,7 @@ var aonlyTitleUnChecked="Suppress video display.";
 var contextHelp=function(t){
   myBlur();
   if(t.checked){
-    localStorage.setItem("help", "checked");
+    storage.setItem("ab.help", "checked");
     t.title="Uncheck to disable context-sensitive help.";
     if(aonly.checked) aonly.title=aonlyTitleChecked;
     else aonly.title=aonlyTitleUnChecked;
@@ -496,7 +508,7 @@ var contextHelp=function(t){
         + "Press [Ctrl] while moving a handle to shift the entire loop window. "
         + "Also, handles can be moved with the arrow keys [←] , [→].");
   } else {
-    localStorage.setItem("help", "unchecked");
+    storage.setItem("ab.help", "unchecked");
     t.title="Enable context-sensitive help.";
     aonly.title=
     intro.title=
@@ -524,7 +536,7 @@ var cancelABLoop=function(){
 }
 
 var resetUI=function(){
-  vidId="undefined";
+  vidId=undefined;
   $("#timeInputs").hide();
   cancelABLoop();
   while(scrubTimer.length) clearInterval(scrubTimer.pop());
@@ -533,10 +545,10 @@ var resetUI=function(){
   currentRate=1;
   while(mySpeed.options.length) mySpeed.remove(mySpeed.options.length-1);
   mySpeed.disabled=true;
-  bmkDelete(0);//clear current bookmark list
+  myBookmarksUpdate([],-1);
 }
 
-var onSpeedSelectChange=function (e){
+var onSpeedSelectChange=function(e){
   e.target.blur();
   let newRate=Number(e.target.value);
   if(newRate==currentRate) return;
@@ -551,7 +563,7 @@ var onSpeedSelectChange=function (e){
   mySetPlaybackRate(newRate);
 }
 
-var onRateChange=function (e){
+var onRateChange=function(e){
   myBlur();
   let newRate=myGetPlaybackRate();
   for(let i=0; i<mySpeed.length; i++){
@@ -560,7 +572,7 @@ var onRateChange=function (e){
       currentRate=newRate;
       break;
     } else if (i+1<mySpeed.length && newRate < mySpeed.options[i+1].value){
-      let c=document.createElement('OPTION');
+      let c=document.createElement("OPTION");
       mySpeed.add(c,i+1); //append as a child to selector
       c.text=c.value=currentRate=newRate;
       c.selected=true;
@@ -577,13 +589,108 @@ var myBlur=function(){
   }
 }
 
+//loop & app data conversion to new format "1.0"
+var convertData=function(data){
+  let storageFormat=data["ab.version"];
+  if(storageFormat==="1.0") return data;
+  //YouTube data
+  let ytubeids=[];
+  if(data.knownIDs){
+    ytubeids=data.knownIDs.split(',');
+    delete data.knownIDs;
+  }
+  else{
+    Object.entries(data).forEach(([k,v])=>{
+      let id=k.match(/^[0-9a-zA-Z_-]{11}$/);
+      if(id) ytubeids.push(id[0]);
+    });
+  }
+  //media files >= 100 Bytes
+  let mediaids=[];
+  delete data.knownMedia;
+  Object.entries(data).forEach(([k,v])=>{
+    let id=k.match(/^.+\.[a-zA-Z0-9]{3,4}-\d{3,}$/);
+    if(id) mediaids.push(id[0]);
+  });
+  //now, process both lists
+  let knownIds, knownMedia;
+  [knownIds, knownMedia] = [ytubeids, mediaids].map(ids => {
+    let known=[];
+    if(ids.length){
+      ids.forEach(id => {
+        known.push(id);
+        let bmks=data[id];
+        delete data[id];
+        if(bmks && bmks.match(/--/)){
+          let bmkArr=[];
+          bmks=bmks.split(",");
+          bmks.forEach(bmk => {
+            let ta,tb;
+            [ta,tb]=bmk.split("--").map(t => timeStringToSec(t));
+            let note=data[id+"-"+bmk];
+            delete data[id+"-"+bmk];
+            let idx=bmkArr.findIndex(
+              bm => ta<bm.ta || ta==bm.ta && tb<bm.tb
+            )
+            if(idx<0) idx=bmkArr.length; //append bookmark
+            bmkArr.splice(idx, 0, {ta: ta, tb: tb});
+            if(note) bmkArr[idx].note=note;
+          });
+          data["ab."+id]=JSON.stringify(bmkArr);
+        }
+      });
+    }
+    return known;
+  });
+  if(knownIds.length); data["ab.knownIDs"]=JSON.stringify(knownIds);
+  if(knownMedia.length); data["ab.knownMedia"]=JSON.stringify(knownMedia);
+  if(data.help)  data["ab.help"] =data.help;
+  if(data.aonly) data["ab.aonly"]=data.aonly;
+  if(data.intro) data["ab.intro"]=data.intro;
+  delete data.help;
+  delete data.aonly;
+  delete data.intro;
+  data["ab.version"]=appversion;
+  return data;
+}
+
+//merge converted/imported data into localStorage
+var mergeData=function(data){
+  let ytSrcIds=[], mmSrcIds=[], knownIds=[], knownMedia=[];
+  if(data["ab.knownIDs"]) ytSrcIds=JSON.parse(data["ab.knownIDs"]);
+  if(data["ab.knownMedia"]) mmSrcIds=JSON.parse(data["ab.knownMedia"]);
+  if(storage.getItem("ab.knownIDs"))
+    knownIds=JSON.parse(storage.getItem("ab.knownIDs"));
+  if(storage.getItem("ab.knownMedia"))
+    knownMedia=JSON.parse(storage.getItem("ab.knownMedia"));
+  [[ytSrcIds, knownIds], [mmSrcIds, knownMedia]].forEach(([src,trg]) => {
+    src.forEach(id => {
+      if(trg.indexOf(id)==-1) trg.push(id);
+      let srcBmks=[], trgBmks=[];
+      if(data["ab."+id]) srcBmks=JSON.parse(data["ab."+id]);
+      if(storage.getItem("ab."+id))
+        trgBmks=JSON.parse(storage.getItem("ab."+id));
+      srcBmks.forEach(sbm => insertBmk(sbm, trgBmks));
+      if(trgBmks.length) storage.setItem("ab."+id,JSON.stringify(trgBmks));
+    });
+  });
+  if(knownIds.length) storage.setItem("ab.knownIDs",JSON.stringify(knownIds));
+  else storage.removeItem("ab.knownIDs");
+  if(knownMedia.length) storage.setItem("ab.knownMedia",JSON.stringify(knownMedia));
+  else storage.removeItem("ab.knownMedia");
+  if(data["ab.help"]) storage.setItem("ab.help", data["ab.help"]);
+  if(data["ab.aonly"]) storage.setItem("ab.aonly", data["ab.aonly"]);
+  if(data["ab.intro"]) storage.setItem("ab.intro", data["ab.intro"]);
+  if(data["ab.version"]) storage.setItem("ab.version", data["ab.version"]);
+}
+
 ///////////////////////////
 // YT player specific code
 ///////////////////////////
 
 //function for loading YT player
 //arg 1: video id, arg 2:  list id
-var loadYT=function (vid,lid){
+var loadYT=function(vid,lid){
   initYT(); //initialize player-specific functions
   resetUI();
   //remove previous player, if there is one
@@ -594,7 +701,7 @@ var loadYT=function (vid,lid){
   let myResizableOld=myResizable;
   myResizable=document.createElement("div");
   myResizable.id="myResizable";
-  myResizable.style.backgroundColor='#ddd';
+  myResizable.style.backgroundColor="#ddd";
   parent.replaceChild(myResizable, myResizableOld);
   let playerWidth=$("#myResizable").width();
   $("#myResizable").height(playerWidth*9/16);
@@ -604,12 +711,12 @@ var loadYT=function (vid,lid){
   ytDiv.id="ytDiv";
   myResizable.appendChild(ytDiv);
   //create new YT player iframe, replacing ytDiv
-  ytPlayer=new YT.Player('ytDiv', {
+  ytPlayer=new YT.Player("ytDiv", {
     videoId: vid,
     width: playerWidth,
     height: $("#myResizable").height(),
     playerVars: {
-      listType: 'playlist',
+      listType: "playlist",
       list: lid,
       autoplay: (vid ? 1 : 0),
       fs: 0,  //no fullscreen button
@@ -617,8 +724,8 @@ var loadYT=function (vid,lid){
       rel: 0, //no related videos at the end
     },
     events: {
-      'onReady': function(e){if(e.target.getPlaylist()){saveId(lid);}},
-      'onStateChange': function(e){
+      "onReady": function(e){if(e.target.getPlaylist()){saveId(lid);}},
+      "onStateChange": function(e){
         if(e.target.getPlaylist()){
           onPlayerStateChange(e,
             e.target.getPlaylist()[e.target.getPlaylistIndex()].toString());
@@ -626,7 +733,7 @@ var loadYT=function (vid,lid){
           onPlayerStateChange(e,vid);
         }
       },
-      'onError': function(e){
+      "onError": function(e){
         console.log("Error: " + e.data);
         resetUI();
         loadYT(null,null);
@@ -642,11 +749,6 @@ var onYouTubeIframeAPIReady=function(){
 }
 
 var onPlayerStateChange=function(e, id){ //event object, video id
-  //restart player if playlist contains only one ID
-  if(e.target.getPlaylist() && e.target.getPlaylist().length==1 && e.data==-1){
-    loadYT(e.target.getPlaylist()[0].toString(), null);
-    return;
-  }
   //the video has changed
   if(id!=vidId && e.data==YT.PlayerState.PLAYING){
     $("#scrub").slider("option", "max", myGetDuration()).show();
@@ -662,30 +764,23 @@ var onPlayerStateChange=function(e, id){ //event object, video id
     //clear list of playback rates
     while(mySpeed.options.length) mySpeed.remove(mySpeed.options.length-1);
     mySpeed.disabled=true;
-    //clear current bookmark list
-    bmkDelete(0);
     //determine available playback rates and populate the #mySpeed element
     let rates=e.target.getAvailablePlaybackRates();
-    for(let i=0; i<rates.length; i++){
-      let c=document.createElement('OPTION');
+    rates.forEach(r => {
+      let c=document.createElement("OPTION");
       mySpeed.add(c); //append as a child to selector
-      c.text=c.value=rates[i];
-      if(rates[i]==1.0){
+      c.text=c.value=r;
+      if(r==1.0){
         c.text="Normal";
         c.selected=true;
         mySetPlaybackRate(1);
       }
-    }
+    });
     mySpeed.disabled=false;
     //populate bookmark list with saved items for the current video ID
-    if(localStorage.getItem(id)){
-      let bmks=localStorage.getItem(id).split(',');
-      for(let i=0; i<bmks.length; i++){
-        bmkAdd(bmks[i]);
-        myBookmarks.options[0].selected=true;
-      }
-      annotButton.disabled=true;
-    }
+    let bmkArr=JSON.parse(storage.getItem("ab."+vidId));
+    myBookmarksUpdate((bmkArr ? bmkArr : []),-1);
+    annotButton.disabled=true;
     saveId(id);
   }
   while(loopTimer.length) clearInterval(loopTimer.pop());
@@ -698,8 +793,8 @@ var saveId=function(id){
   //visited video/playlist IDs and of the datalist object
   //at first, remove all occurrences
   let knownIds=[];
-  if(localStorage.getItem('knownIDs')){
-    knownIds=localStorage.getItem('knownIDs').split(',');
+  if(storage.getItem("ab.knownIDs")){
+    knownIds=JSON.parse(storage.getItem("ab.knownIDs"));
     let idx=knownIds.indexOf(id);
     while(idx>=0){
       knownIds.splice(idx,1);
@@ -707,19 +802,18 @@ var saveId=function(id){
     }
   }
   for(let i=0;i<YTids.childNodes.length;i++){
-    if(YTids.childNodes[i].getAttribute('value')==id)
-	  YTids.removeChild(YTids.childNodes[i]);
+    if(YTids.childNodes[i].getAttribute("value")==id)
+      YTids.removeChild(YTids.childNodes[i]);
   }
   //now add to the head
   knownIds.unshift(id);
-  let z=document.createElement('OPTION');
-  z.setAttribute('value', id);
+  let z=document.createElement("OPTION");
+  z.setAttribute("value", id);
   YTids.insertBefore(z, YTids.firstChild);
   //truncate input list to 100 elements
-  while(YTids.childNodes.length>100){
+  while(YTids.childNodes.length>100)
     YTids.removeChild(YTids.lastChild);
-  }
-  localStorage.setItem('knownIDs', knownIds.join());
+  storage.setItem("ab.knownIDs",JSON.stringify(knownIds));
 }
 
 var queryYT=function(qu){
@@ -731,7 +825,7 @@ var queryYT=function(qu){
   }
   if(!(vid||lid)) return;
   loadYT(
-    vid ? vid.toString() : null , lid ? lid.toString() : null
+    vid ? vid[0] : null , lid ? lid[0] : null
   );
 }
 
@@ -784,8 +878,8 @@ var onBmkSelectYT=function(i){
   if(help.checked) myBookmarks.title="Choose from previously saved loops.";
   if(i==0) return;
   $("#slider").slider("option", "max", myGetDuration());
-  let a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
-  let b=timeStringToSec(myBookmarks.options[i].text.split('--')[1]);
+  let a,b;
+  [a,b]=myBookmarks.options[i].text.split("--").map(t => timeStringToSec(t));
   $("#slider").slider("option", "values", [a, b]);
   isTimeASet=isTimeBSet=true;
   $("#timeInputs").show();
@@ -797,10 +891,10 @@ var onBmkSelectYT=function(i){
 
 var onLoopDownYT=function(){
   if(isTimeBSet){
-    cancelABLoop();
     $("#timeInputs").hide();
     annotButton.disabled=true;
     myBookmarks.options[0].selected=true;
+    cancelABLoop();
   }else{
     if(isTimeASet){
       if(myGetCurrentTimeYT()!=timeA){
@@ -812,8 +906,8 @@ var onLoopDownYT=function(){
         }
         isTimeBSet=true;
         loopButton.value="Cancel";
-        $("#slider").slider("option", "values", [ timeA, timeB ]);
         $("#slider").slider("option", "max", myGetDuration());
+        $("#slider").slider("option", "values", [ timeA, timeB ]);
         $("#timeInputs").show();
         if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING)
           loopTimer.push(setInterval(onTimeUpdate,20));
@@ -832,7 +926,7 @@ var onLoopDownYT=function(){
 var URL=window.URL || window.webkitURL;
 var myVideo;
 
-var playSelectedFile=function (f){
+var playSelectedFile=function(f){
   initVT(); //initialize player-specific functions
   resetUI();
   //replace #myResizable container and its #myVideo child
@@ -879,25 +973,24 @@ var playSelectedFile=function (f){
   if(f){ //a media file was selected
     //add speed options
     mySpeed.disabled=true;
-    let rates=[0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
-    for(let i=0; i<rates.length; i++){
-      let c=document.createElement('OPTION');
+    [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0].forEach(r => {
+      let c=document.createElement("OPTION");
       mySpeed.add(c); //append as a child to selector
-      c.text=c.value=rates[i];
-      if(rates[i]==1.0){
+      c.text=c.value=r;
+      if(r==1.0){
         c.id="normalSpeed";
         c.text="Normal";
         c.selected=true;
       }
-    }
+    });
     aonly.disabled=true;
     //set video source
-    vidId=f.name+'-'+f.size; //some checksum would be better
+    vidId=f.name+"-"+f.size; //some checksum would be better
     myVideo.src=URL.createObjectURL(f);
   }
 }
 
-var onLoadedData=function (e){
+var onLoadedData=function(e){
   if(!aonly.checked){
     e.target.addEventListener("mouseover", function(e){e.target.controls=true;});
     e.target.addEventListener("mouseout", function(e){e.target.controls=false;});
@@ -910,14 +1003,9 @@ var onLoadedData=function (e){
   ));
   initResizableVT();
   //look for bookmark items with the current video ID
-  if(localStorage.getItem(vidId)){
-    let bmks=localStorage.getItem(vidId).split(',');
-    for(let i=0; i<bmks.length; i++){
-      bmkAdd(bmks[i]);
-      myBookmarks.options[0].selected=true;
-    }
-    annotButton.disabled=true;
-  }
+  let bmkArr=JSON.parse(storage.getItem("ab."+vidId));
+  myBookmarksUpdate((bmkArr ? bmkArr : []),-1);
+  annotButton.disabled=true;
   saveMediaId(vidId);
 }
 
@@ -925,8 +1013,8 @@ var saveMediaId=function(id){
   //prepend ID to/move ID to front of the visited media files list
   //at first, remove all occurrences
   let knownIds=[];
-  if(localStorage.getItem('knownMedia')){
-    knownIds=localStorage.getItem('knownMedia').split(',');
+  if(storage.getItem("ab.knownMedia")){
+    knownIds=JSON.parse(storage.getItem("ab.knownMedia"));
     let idx=knownIds.indexOf(id);
     while(idx>=0){
       knownIds.splice(idx,1);
@@ -935,7 +1023,7 @@ var saveMediaId=function(id){
   }
   //now add to the head
   knownIds.unshift(id);
-  localStorage.setItem('knownMedia', knownIds.join());
+  storage.setItem("ab.knownMedia",JSON.stringify(knownIds));
 }
 
 var myGetPlaybackRateVT=function(){
@@ -951,9 +1039,9 @@ var onBmkSelectVT=function(i){
   //needs to be reset for some reason
   if(help.checked) myBookmarks.title="Choose from previously saved loops.";
   if(i==0) return;
-  let a=timeStringToSec(myBookmarks.options[i].text.split('--')[0]);
-  let b=timeStringToSec(myBookmarks.options[i].text.split('--')[1]);
-  $("#slider").slider("option", "values", [ a, b ]);
+  let a,b;
+  [a,b]=myBookmarks.options[i].text.split("--").map(t => timeStringToSec(t));
+  $("#slider").slider("option", "values", [a, b]);
   isTimeASet=isTimeBSet=true;
   $("#timeInputs").show();
   loopButton.value="Cancel";
@@ -1000,10 +1088,10 @@ var initResizableVT=function(){
 
 var onLoopDownVT=function(){
   if(isTimeBSet){
-    cancelABLoop();
     $("#timeInputs").hide();
     annotButton.disabled=true;
     myBookmarks.options[0].selected=true;
+    cancelABLoop();
   }else{
     if(isTimeASet){
       if(myGetCurrentTimeVT()!=timeA){
@@ -1015,9 +1103,9 @@ var onLoopDownVT=function(){
         }
         isTimeBSet=true;
         loopButton.value="Cancel";
+        $("#slider").slider("option", "max", myGetDuration());
         $("#slider").slider("option", "values", [ timeA, timeB ]);
         $("#timeInputs").show();
-
         if(!myVideo.paused)
           loopTimer.push(setInterval(onTimeUpdate,20));
       }
@@ -1036,18 +1124,18 @@ var toggleAudio=function(t,h){
     if(t.checked) t.title=aonlyTitleChecked;
     else t.title=aonlyTitleUnChecked;
   }
-  if(t.checked) localStorage.setItem("aonly", "checked");
-  else localStorage.setItem("aonly", "unchecked");
+  if(t.checked) storage.setItem("ab.aonly", "checked");
+  else storage.setItem("ab.aonly", "unchecked");
 }
 
 var toggleIntro=function(t,h){
   myBlur();
   if(t.checked){
-    localStorage.setItem("intro", "checked");
+    storage.setItem("ab.intro", "checked");
     if(h.checked)
         t.title="Uncheck to always skip media section up to \"A\".";
   }else{
-    localStorage.setItem("intro", "unchecked");
+    storage.setItem("ab.intro", "unchecked");
     if(h.checked)
         t.title="If checked, media section up to \"A\""
                 + " is played before starting the loop.";

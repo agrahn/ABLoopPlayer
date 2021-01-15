@@ -1,4 +1,4 @@
-# AB Loop Player
+# [AB Loop Player](https://agrahn.gitlab.io/ABLoopPlayer/)
 
 © 2016--2021 Alexander Grahn
 
@@ -9,9 +9,9 @@ Firefox or Chrome recommended.
 **Features:**
 - The A-B loop window can be adjusted using a double-handled slider, <kbd>&larr;</kbd> & <kbd>&rarr;</kbd> on the keyboard, or, more accurately, via two time input fields.
 - The entire A-B loop window can be moved pressing <kbd>Ctrl</kbd> and moving one of the slider handles.
-- A-B loops can be saved as bookmarks for the current or for later sessions on the same computer and in the same browser.
+- A-B loops can be saved as bookmarks for the current and for later sessions.
 - Bookmarked A-B loops can be annotated individually with short description texts.
-- Bookmarks and player settings can be transferred between computers and different web browsers via copy & paste. Use <kbd><img src="https://agrahn.gitlab.io/ABLoopPlayer/png/export.png" width="20px"/></kbd> and <kbd><img src="https://agrahn.gitlab.io/ABLoopPlayer/png/import.png" width="20px"/></kbd> buttons for this.
+- Bookmarks and player settings can be exported and transferred between computers and different web browsers via copy & paste (buttons <kbd><img src="https://agrahn.gitlab.io/ABLoopPlayer/png/export.png" width="16px"/></kbd> and <kbd><img src="https://agrahn.gitlab.io/ABLoopPlayer/png/import.png" width="16px"/></kbd>).
 - Playback rates from slow to fast motion
 - Resizable video display
 
