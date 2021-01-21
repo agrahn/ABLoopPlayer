@@ -345,13 +345,19 @@ var bmkAdd=function(note=null){
 
 //insert a bookmark at its correct position into a bookmarks array
 var insertBmk=function(sbm, tbmArr){
-  let idx=tbmArr.findIndex(tbm => (sbm.ta==tbm.ta && sbm.tb==tbm.tb));
+  let idx=tbmArr.findIndex(tbm => (
+    toNearest5ms(sbm.ta)==toNearest5ms(tbm.ta) &&
+    toNearest5ms(sbm.tb)==toNearest5ms(tbm.tb)
+  ));
   if(idx>-1) { //update existing
     tbmArr.splice(idx, 1, sbm);
     return idx;
   }
-  idx=tbmArr.findIndex(tbm =>
-    (sbm.ta<tbm.ta || sbm.ta==tbm.ta && sbm.tb<tbm.tb));
+  idx=tbmArr.findIndex(tbm => (
+    toNearest5ms(sbm.ta)< toNearest5ms(tbm.ta) ||
+    toNearest5ms(sbm.ta)==toNearest5ms(tbm.ta) &&
+    toNearest5ms(sbm.tb)< toNearest5ms(tbm.tb)
+  ));
   if(idx>-1){ //insert as new
     tbmArr.splice(idx, 0, sbm);
     return idx;
@@ -360,6 +366,8 @@ var insertBmk=function(sbm, tbmArr){
   tbmArr.push(sbm);
   return idx;
 }
+
+const toNearest5ms = t => Math.round(t*200)/200;
 
 var myBookmarksUpdate=function(bmkArr,idx){//selected idx
   while(myBookmarks.options.length>1)
@@ -402,7 +410,10 @@ var bmkDelete=function(idx){
   else{
     let bmkArr=JSON.parse(storage.getItem("ab."+vidId));
     if(!bmkArr) bmkArr=[];
-    let i = bmkArr.findIndex(bmk => (timeA==bmk.ta && timeB==bmk.tb));
+    let i = bmkArr.findIndex(bmk => (
+      toNearest5ms(timeA)==toNearest5ms(bmk.ta) &&
+      toNearest5ms(timeB)==toNearest5ms(bmk.tb)
+    ));
     if(i>-1) {
       bmkArr.splice(i,1);
       if(bmkArr.length>0) storage.setItem("ab."+vidId,JSON.stringify(bmkArr));
@@ -628,8 +639,10 @@ var convertData=function(data){
             [ta,tb]=bmk.split("--").map(t => timeStringToSec(t));
             let note=data[id+"-"+bmk];
             delete data[id+"-"+bmk];
-            let idx=bmkArr.findIndex(
-              bm => ta<bm.ta || ta==bm.ta && tb<bm.tb
+            let idx=bmkArr.findIndex( bm =>
+              toNearest5ms(ta)< toNearest5ms(bm.ta) ||
+              toNearest5ms(ta)==toNearest5ms(bm.ta) &&
+              toNearest5ms(tb)< toNearest5ms(bm.tb)
             )
             if(idx<0) idx=bmkArr.length; //append bookmark
             bmkArr.splice(idx, 0, {ta: ta, tb: tb});
