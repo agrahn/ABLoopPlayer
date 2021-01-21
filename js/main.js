@@ -443,7 +443,6 @@ var onClickAddNote=function(idx){
 
 var onClickExport=function(){
   let appData=JSON.parse(JSON.stringify(storage));
-  delete appData.knownIDs;
   navigator.clipboard.writeText(JSON.stringify(appData)).then(function() {
     myMessage("Export",
       "<p>Loop data and player settings successfully copied to the <b>clipboard</b>.</p><p>"+
