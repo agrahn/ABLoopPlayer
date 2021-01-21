@@ -95,7 +95,7 @@ $(document).ready(function(){
   $("#scrub").css("height", "6px").hide();
   $("#slider").slider({
     min: 0,
-    step: 0.020,
+    step: 0.005,
     range: true,
     change: function(e, ui){onSliderChange(e, ui);},
     slide: function(e, ui){onSliderSlide(e, ui);},
@@ -754,7 +754,7 @@ var onPlayerStateChange=function(e, id){ //event object, video id
     scrubTimer.push(setInterval(
       function(e){
         $("#scrub").slider("option", "value", myGetCurrentTimeYT());
-      } , 20
+      } , 05
     ));
     loopButton.disabled=false;
     vidId=id;
@@ -784,7 +784,7 @@ var onPlayerStateChange=function(e, id){ //event object, video id
   }
   while(loopTimer.length) clearInterval(loopTimer.pop());
   if (isTimeASet && isTimeBSet && e.data==YT.PlayerState.PLAYING)
-    loopTimer.push(setInterval(onTimeUpdate,20));
+    loopTimer.push(setInterval(onTimeUpdate,05));
 }
 
 var saveId=function(id){
@@ -885,7 +885,7 @@ var onBmkSelectYT=function(i){
   loopButton.value="Cancel";
   annotButton.disabled=false;
   if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING)
-    loopTimer.push(setInterval(onTimeUpdate,20));
+    loopTimer.push(setInterval(onTimeUpdate,05));
 }
 
 var onLoopDownYT=function(){
@@ -909,7 +909,7 @@ var onLoopDownYT=function(){
         $("#slider").slider("option", "values", [ timeA, timeB ]);
         $("#timeInputs").show();
         if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING)
-          loopTimer.push(setInterval(onTimeUpdate,20));
+          loopTimer.push(setInterval(onTimeUpdate,05));
       }
     }else{
       timeA=myGetCurrentTimeYT();
@@ -958,7 +958,7 @@ var playSelectedFile=function(f){
   myVideo.addEventListener("loadeddata", onLoadedData);
   myVideo.addEventListener("play", function(){
     mySetPlaybackRate(Number(mySpeed.value));
-    if (isTimeASet && isTimeBSet) loopTimer.push(setInterval(onTimeUpdate,20));
+    if (isTimeASet && isTimeBSet) loopTimer.push(setInterval(onTimeUpdate,05));
   });
   myVideo.addEventListener("pause", function(){
     while(loopTimer.length) clearInterval(loopTimer.pop());
@@ -998,7 +998,7 @@ var onLoadedData=function(e){
   scrubTimer.push(setInterval(
     function(){
       $("#scrub").slider("option", "value", myGetCurrentTimeVT());
-    }, 0.020
+    }, 0.025
   ));
   initResizableVT();
   //look for bookmark items with the current video ID
@@ -1046,7 +1046,7 @@ var onBmkSelectVT=function(i){
   loopButton.value="Cancel";
   annotButton.disabled=false;
   if(!myVideo.paused)
-    loopTimer.push(setInterval(onTimeUpdate,20));
+    loopTimer.push(setInterval(onTimeUpdate,05));
 }
 
 var myGetDurationVT=function(){
@@ -1106,7 +1106,7 @@ var onLoopDownVT=function(){
         $("#slider").slider("option", "values", [ timeA, timeB ]);
         $("#timeInputs").show();
         if(!myVideo.paused)
-          loopTimer.push(setInterval(onTimeUpdate,20));
+          loopTimer.push(setInterval(onTimeUpdate,05));
       }
     }else{
       timeA=myGetCurrentTimeVT();
