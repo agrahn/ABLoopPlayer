@@ -68,7 +68,7 @@ $(document).ready(function(){
   });
   inputYT.disabled=searchButtonYT.disabled=true;
   //convert saved bookmarks from previous version
-  if(storage.getItem("knownIDs")){
+  if(storage.getItem("help")){ //indicates old storage format
     let appData=convertData(JSON.parse(JSON.stringify(storage)));
     storage.clear();
     mergeData(appData);
@@ -345,19 +345,19 @@ var bmkAdd=function(note=null){
 
 //insert a bookmark at its correct position into a bookmarks array
 var insertBmk=function(sbm, tbmArr){
-  let idx=tbmArr.findIndex(tbm => (
+  let idx=tbmArr.findIndex(tbm =>
     toNearest5ms(sbm.ta)==toNearest5ms(tbm.ta) &&
     toNearest5ms(sbm.tb)==toNearest5ms(tbm.tb)
-  ));
+  );
   if(idx>-1) { //update existing
     tbmArr.splice(idx, 1, sbm);
     return idx;
   }
-  idx=tbmArr.findIndex(tbm => (
+  idx=tbmArr.findIndex(tbm =>
     toNearest5ms(sbm.ta)< toNearest5ms(tbm.ta) ||
     toNearest5ms(sbm.ta)==toNearest5ms(tbm.ta) &&
     toNearest5ms(sbm.tb)< toNearest5ms(tbm.tb)
-  ));
+  );
   if(idx>-1){ //insert as new
     tbmArr.splice(idx, 0, sbm);
     return idx;
@@ -410,10 +410,10 @@ var bmkDelete=function(idx){
   else{
     let bmkArr=JSON.parse(storage.getItem("ab."+vidId));
     if(!bmkArr) bmkArr=[];
-    let i = bmkArr.findIndex(bmk => (
+    let i = bmkArr.findIndex(bmk =>
       toNearest5ms(timeA)==toNearest5ms(bmk.ta) &&
       toNearest5ms(timeB)==toNearest5ms(bmk.tb)
-    ));
+    );
     if(i>-1) {
       bmkArr.splice(i,1);
       if(bmkArr.length>0) storage.setItem("ab."+vidId,JSON.stringify(bmkArr));
@@ -453,7 +453,10 @@ var onClickAddNote=function(idx){
 }
 
 var onClickExport=function(){
-  let appData=JSON.parse(JSON.stringify(storage));
+  let appData={};
+  Object.entries(JSON.parse(JSON.stringify(storage))).forEach(([k,v])=>{
+    if(k.match(/^ab\./)) appData[k]=v;
+  });
   navigator.clipboard.writeText(JSON.stringify(appData)).then(function() {
     myMessage("Export",
       "<p>Loop data and player settings successfully copied to the <b>clipboard</b>.</p><p>"+
