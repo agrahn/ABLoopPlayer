@@ -448,7 +448,7 @@ var onClickAddNote=function(idx){
   let currentNote=myBookmarks.options[idx].title;
   myPrompt(
     note => bmkAdd(note),
-    null, "Enter description", (currentNote ? null : "example text"), currentNote
+    null, "Enter description:", (currentNote ? null : "<What's going on here?>"), currentNote
   );
 }
 
@@ -495,7 +495,7 @@ var aonlyTitleUnChecked="Suppress video display.";
 var contextHelp=function(t){
   myBlur();
   if(t.checked){
-    storage.setItem("ab.help", "checked");
+    storageWriteKeyVal("ab.help", "checked");
     t.title="Uncheck to disable context-sensitive help.";
     if(aonly.checked) aonly.title=aonlyTitleChecked;
     else aonly.title=aonlyTitleUnChecked;
@@ -521,7 +521,7 @@ var contextHelp=function(t){
         + "Press [Ctrl] while moving a handle to shift the entire loop window. "
         + "Also, handles can be moved with the arrow keys [←] , [→].");
   } else {
-    storage.setItem("ab.help", "unchecked");
+    storageWriteKeyVal("ab.help", "unchecked");
     t.title="Enable context-sensitive help.";
     aonly.title=
     intro.title=
@@ -693,10 +693,10 @@ var mergeData=function(data){
   else storage.removeItem("ab.knownIDs");
   if(knownMedia.length) storage.setItem("ab.knownMedia",JSON.stringify(knownMedia));
   else storage.removeItem("ab.knownMedia");
-  if(data["ab.help"]) storage.setItem("ab.help", data["ab.help"]);
-  if(data["ab.aonly"]) storage.setItem("ab.aonly", data["ab.aonly"]);
-  if(data["ab.intro"]) storage.setItem("ab.intro", data["ab.intro"]);
-  if(data["ab.version"]) storage.setItem("ab.version", data["ab.version"]);
+  if(data["ab.help"]) storageWriteKeyVal("ab.help", data["ab.help"]);
+  if(data["ab.aonly"]) storageWriteKeyVal("ab.aonly", data["ab.aonly"]);
+  if(data["ab.intro"]) storageWriteKeyVal("ab.intro", data["ab.intro"]);
+  if(data["ab.version"]) storageWriteKeyVal("ab.version", data["ab.version"]);
 }
 
 ///////////////////////////
@@ -1139,18 +1139,18 @@ var toggleAudio=function(t,h){
     if(t.checked) t.title=aonlyTitleChecked;
     else t.title=aonlyTitleUnChecked;
   }
-  if(t.checked) storage.setItem("ab.aonly", "checked");
-  else storage.setItem("ab.aonly", "unchecked");
+  if(t.checked) storageWriteKeyVal("ab.aonly", "checked");
+  else storageWriteKeyVal("ab.aonly", "unchecked");
 }
 
 var toggleIntro=function(t,h){
   myBlur();
   if(t.checked){
-    storage.setItem("ab.intro", "checked");
+    storageWriteKeyVal("ab.intro", "checked");
     if(h.checked)
         t.title="Uncheck to always skip media section up to \"A\".";
   }else{
-    storage.setItem("ab.intro", "unchecked");
+    storageWriteKeyVal("ab.intro", "unchecked");
     if(h.checked)
         t.title="If checked, media section up to \"A\""
                 + " is played before starting the loop.";
@@ -1193,5 +1193,40 @@ var initVT=function(){ // <video> tag
   onLoopDown=onLoopDownVT;
   myPlayPause=function(){
     if(myVideo.paused) myVideo.play(); else myVideo.pause();
+  }
+}
+
+var storageWriteKeyVal=function(k,v){
+  try {
+    storage.setItem(k, v);
+  }
+  catch(e) {
+    // test for full storage and delete old entries
+    if(e instanceof DOMException && (
+      e.code === 22 ||   // everything except Firefox
+      e.code === 1014 || // Firefox
+      e.name === "QuotaExceededError" ||  // everything except Firefox
+      e.name === "NS_ERROR_DOM_QUOTA_REACHED") && // Firefox
+      // acknowledge QuotaExceededError only if there's something already stored
+      storage && storage.length!==0
+    ) {
+      let knownIds=[];
+      let knownMedia=[];
+      if(storage.getItem("ab.knownIDs"))
+        knownIds=JSON.parse(storage.getItem("ab.knownIDs"));
+      if(storage.getItem("ab.knownMedia"))
+        knownMedia=JSON.parse(storage.getItem("ab.knownMedia"));
+      let id;
+      if(knownIds.length>knownMedia.length){
+        id=knownIds.pop();
+        storage.setItem("ab.knownIDs", JSON.stringify(knownIds));
+      }
+      else{
+        id=knownMedia.pop();
+        storage.setItem("ab.knownMedia", JSON.stringify(knownMedia));
+      }
+      storage.removeItem("ab."+id);
+      storageWriteKeyVal(k,v); //try again
+    }
   }
 }
