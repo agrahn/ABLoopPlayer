@@ -19,7 +19,6 @@
 
 var appversion="1.0";
 
-var storage=window.localStorage;
 var vidId; //current YT video ID or file name + size
 var timeA, timeB;
 var isTimeASet=false;
@@ -28,6 +27,44 @@ var currentRate=1.0;
 var loopTimer=[];
 var scrubTimer=[];
 var ctrlPressed=false;
+
+var knownIDs=[];
+var knownMedia=[];
+var storage=window.localStorage;
+// triggered when another player instance writes to storage
+window.onstorage = () => {
+  if(storage.getItem("ab.knownIDs"))
+    knownIDs=JSON.parse(storage.getItem("ab.knownIDs"));
+  if(storage.getItem("ab.knownMedia"))
+    knownMedia=JSON.parse(storage.getItem("ab.knownMedia"));
+};
+
+var storageWriteKeyVal=function(k,v){
+  try{
+    storage.setItem(k,v);
+  }
+  catch(e){
+    // test for storage full and delete old entries
+    if(
+      e instanceof DOMException && (
+        e.code === 22 ||   // everything except Firefox
+        e.name === "QuotaExceededError" ||
+        e.code === 1014 || // Firefox
+        e.name === "NS_ERROR_DOM_QUOTA_REACHED"
+      ) && storage && storage.length!==0
+    ){
+      if(knownIDs.length>knownMedia.length){
+        storage.removeItem("ab."+knownIDs.pop());
+        storageWriteKeyVal("ab.knownIDs", JSON.stringify(knownIDs));
+      }
+      else{
+        storage.removeItem("ab."+knownMedia.pop());
+        storageWriteKeyVal("ab.knownMedia", JSON.stringify(knownMedia));
+      }
+      storageWriteKeyVal(k,v); //try again
+    }
+  }
+}
 
 //HTML elements
 var YTids;
@@ -73,18 +110,17 @@ $(document).ready(function(){
     storage.clear();
     mergeData(appData);
   }
-  mergeData({"ab.version": appversion});
+  storageWriteKeyVal("ab.version", appversion);
   //get already watched YT IDs
-  let knownIds=[];
   if(storage.getItem("ab.knownIDs")){
-    knownIds=JSON.parse(storage.getItem("ab.knownIDs"));
-    for(let i=0; i<knownIds.length && i<100; i++){
+    knownIDs=JSON.parse(storage.getItem("ab.knownIDs"));
+    for(let i=0; i<knownIDs.length && i<100; i++){
       let z=document.createElement("OPTION");
-      z.setAttribute("value", knownIds[i]);
+      z.setAttribute("value", knownIDs[i]);
       YTids.appendChild(z);
     }
   }
-  if(knownIds.length) inputYT.value=knownIds[0];
+  if(knownIDs.length) inputYT.value=knownIDs[0];
   else inputYT.value="https://youtu.be/2kotK9FNEYU";
   $("#scrub").slider({
     min: 0, step: 0.001, range: "min",
@@ -339,7 +375,7 @@ var bmkAdd=function(note=null){
   if(storage.getItem("ab."+vidId))
     bmkArr=JSON.parse(storage.getItem("ab."+vidId));
   let idx=insertBmk(bmk, bmkArr);
-  if(bmkArr.length) storage.setItem("ab."+vidId,JSON.stringify(bmkArr));
+  if(bmkArr.length) storageWriteKeyVal("ab."+vidId,JSON.stringify(bmkArr));
   myBookmarksUpdate(bmkArr,idx);
 }
 
@@ -416,7 +452,7 @@ var bmkDelete=function(idx){
     );
     if(i>-1) {
       bmkArr.splice(i,1);
-      if(bmkArr.length>0) storage.setItem("ab."+vidId,JSON.stringify(bmkArr));
+      if(bmkArr.length>0) storageWriteKeyVal("ab."+vidId,JSON.stringify(bmkArr));
       else storage.removeItem("ab."+vidId);
       myBookmarksUpdate(bmkArr,Math.min(i,bmkArr.length-1));
     }
@@ -626,8 +662,8 @@ var convertData=function(data){
     if(id) mediaids.push(id[0]);
   });
   //now, process both lists
-  let knownIds, knownMedia;
-  [knownIds, knownMedia] = [ytubeids, mediaids].map(ids => {
+  let knownIDs, knownMedia;
+  [knownIDs, knownMedia] = [ytubeids, mediaids].map(ids => {
     let known=[];
     if(ids.length){
       ids.forEach(id => {
@@ -657,7 +693,7 @@ var convertData=function(data){
     }
     return known;
   });
-  if(knownIds.length); data["ab.knownIDs"]=JSON.stringify(knownIds);
+  if(knownIDs.length); data["ab.knownIDs"]=JSON.stringify(knownIDs);
   if(knownMedia.length); data["ab.knownMedia"]=JSON.stringify(knownMedia);
   if(data.help)  data["ab.help"] =data.help;
   if(data.aonly) data["ab.aonly"]=data.aonly;
@@ -671,14 +707,10 @@ var convertData=function(data){
 
 //merge converted/imported data into localStorage
 var mergeData=function(data){
-  let ytSrcIds=[], mmSrcIds=[], knownIds=[], knownMedia=[];
+  let ytSrcIds=[], mmSrcIds=[];
   if(data["ab.knownIDs"]) ytSrcIds=JSON.parse(data["ab.knownIDs"]);
   if(data["ab.knownMedia"]) mmSrcIds=JSON.parse(data["ab.knownMedia"]);
-  if(storage.getItem("ab.knownIDs"))
-    knownIds=JSON.parse(storage.getItem("ab.knownIDs"));
-  if(storage.getItem("ab.knownMedia"))
-    knownMedia=JSON.parse(storage.getItem("ab.knownMedia"));
-  [[ytSrcIds, knownIds], [mmSrcIds, knownMedia]].forEach(([src,trg]) => {
+  [[ytSrcIds, knownIDs], [mmSrcIds, knownMedia]].forEach(([src,trg]) => {
     src.forEach(id => {
       if(trg.indexOf(id)==-1) trg.push(id);
       let srcBmks=[], trgBmks=[];
@@ -686,12 +718,12 @@ var mergeData=function(data){
       if(storage.getItem("ab."+id))
         trgBmks=JSON.parse(storage.getItem("ab."+id));
       srcBmks.forEach(sbm => insertBmk(sbm, trgBmks));
-      if(trgBmks.length) storage.setItem("ab."+id,JSON.stringify(trgBmks));
+      if(trgBmks.length) storageWriteKeyVal("ab."+id,JSON.stringify(trgBmks));
     });
   });
-  if(knownIds.length) storage.setItem("ab.knownIDs",JSON.stringify(knownIds));
+  if(knownIDs.length) storageWriteKeyVal("ab.knownIDs",JSON.stringify(knownIDs));
   else storage.removeItem("ab.knownIDs");
-  if(knownMedia.length) storage.setItem("ab.knownMedia",JSON.stringify(knownMedia));
+  if(knownMedia.length) storageWriteKeyVal("ab.knownMedia",JSON.stringify(knownMedia));
   else storage.removeItem("ab.knownMedia");
   if(data["ab.help"]) storageWriteKeyVal("ab.help", data["ab.help"]);
   if(data["ab.aonly"]) storageWriteKeyVal("ab.aonly", data["ab.aonly"]);
@@ -807,13 +839,11 @@ var saveId=function(id){
   //prepend ID to/move ID to front of the list of valid and already
   //visited video/playlist IDs and of the datalist object
   //at first, remove all occurrences
-  let knownIds=[];
-  if(storage.getItem("ab.knownIDs")){
-    knownIds=JSON.parse(storage.getItem("ab.knownIDs"));
-    let idx=knownIds.indexOf(id);
+  if(knownIDs.length){
+    let idx=knownIDs.indexOf(id);
     while(idx>=0){
-      knownIds.splice(idx,1);
-      idx=knownIds.indexOf(id);
+      knownIDs.splice(idx,1);
+      idx=knownIDs.indexOf(id);
     }
   }
   for(let i=0;i<YTids.childNodes.length;i++){
@@ -821,14 +851,14 @@ var saveId=function(id){
       YTids.removeChild(YTids.childNodes[i]);
   }
   //now add to the head
-  knownIds.unshift(id);
+  knownIDs.unshift(id);
   let z=document.createElement("OPTION");
   z.setAttribute("value", id);
   YTids.insertBefore(z, YTids.firstChild);
   //truncate input list to 100 elements
   while(YTids.childNodes.length>100)
     YTids.removeChild(YTids.lastChild);
-  storage.setItem("ab.knownIDs",JSON.stringify(knownIds));
+  storageWriteKeyVal("ab.knownIDs",JSON.stringify(knownIDs));
 }
 
 var queryYT=function(qu){
@@ -1027,18 +1057,16 @@ var onLoadedData=function(e){
 var saveMediaId=function(id){
   //prepend ID to/move ID to front of the visited media files list
   //at first, remove all occurrences
-  let knownIds=[];
-  if(storage.getItem("ab.knownMedia")){
-    knownIds=JSON.parse(storage.getItem("ab.knownMedia"));
-    let idx=knownIds.indexOf(id);
+  if(knownMedia.length){
+    let idx=knownMedia.indexOf(id);
     while(idx>=0){
-      knownIds.splice(idx,1);
-      idx=knownIds.indexOf(id);
+      knownMedia.splice(idx,1);
+      idx=knownMedia.indexOf(id);
     }
   }
   //now add to the head
-  knownIds.unshift(id);
-  storage.setItem("ab.knownMedia",JSON.stringify(knownIds));
+  knownMedia.unshift(id);
+  storageWriteKeyVal("ab.knownMedia",JSON.stringify(knownMedia));
 }
 
 var myGetPlaybackRateVT=function(){
@@ -1193,40 +1221,5 @@ var initVT=function(){ // <video> tag
   onLoopDown=onLoopDownVT;
   myPlayPause=function(){
     if(myVideo.paused) myVideo.play(); else myVideo.pause();
-  }
-}
-
-var storageWriteKeyVal=function(k,v){
-  try {
-    storage.setItem(k, v);
-  }
-  catch(e) {
-    // test for full storage and delete old entries
-    if(e instanceof DOMException && (
-      e.code === 22 ||   // everything except Firefox
-      e.code === 1014 || // Firefox
-      e.name === "QuotaExceededError" ||  // everything except Firefox
-      e.name === "NS_ERROR_DOM_QUOTA_REACHED") && // Firefox
-      // acknowledge QuotaExceededError only if there's something already stored
-      storage && storage.length!==0
-    ) {
-      let knownIds=[];
-      let knownMedia=[];
-      if(storage.getItem("ab.knownIDs"))
-        knownIds=JSON.parse(storage.getItem("ab.knownIDs"));
-      if(storage.getItem("ab.knownMedia"))
-        knownMedia=JSON.parse(storage.getItem("ab.knownMedia"));
-      let id;
-      if(knownIds.length>knownMedia.length){
-        id=knownIds.pop();
-        storage.setItem("ab.knownIDs", JSON.stringify(knownIds));
-      }
-      else{
-        id=knownMedia.pop();
-        storage.setItem("ab.knownMedia", JSON.stringify(knownMedia));
-      }
-      storage.removeItem("ab."+id);
-      storageWriteKeyVal(k,v); //try again
-    }
   }
 }
