@@ -26,7 +26,6 @@ var isTimeBSet=false;
 var currentRate=1.0;
 var loopTimer=[];
 var scrubTimer=[];
-var ctrlPressed=false;
 
 var knownIDs=[];
 var knownMedia=[];
@@ -124,7 +123,7 @@ $(document).ready(function(){
   else inputYT.value="https://youtu.be/2kotK9FNEYU";
   $("#scrub").slider({
     min: 0, step: 0.001, range: "min",
-    slide: function(e, ui){
+    slide: function(e,ui){
       mySetCurrentTime(ui.value);
     },
   })
@@ -133,8 +132,8 @@ $(document).ready(function(){
     min: 0,
     step: 0.005,
     range: true,
-    change: function(e, ui){onSliderChange(e, ui);},
-    slide: function(e, ui){onSliderSlide(e, ui);},
+    change: function(e,ui){onSliderChange(e,ui);},
+    slide: function(e,ui){onSliderSlide(e,ui);},
   });
   $("#slider").css("height", "1em");
   $("#slider .ui-slider-handle").first().css("margin-left", "-1em").text("A");
@@ -156,8 +155,7 @@ $(document).ready(function(){
 
 //add some hotkeys
 window.addEventListener("keydown", function(e){
-  if (e.which==17) ctrlPressed=true;
-  else if (e.which==27
+  if (e.which==27
     && !loopButton.disabled
     && !$("input").is(":focus")
   ) onLoopDown();
@@ -184,10 +182,6 @@ window.addEventListener("keydown", function(e){
   else if (e.which==32
     && !$("input").is(":focus")
   ){ try{myPlayPause();}catch(err){} }
-});
-
-window.addEventListener("keyup", function(e){
-  if (e.which==17) ctrlPressed=false;
 });
 
 // a modal prompt dialog based on jQuery
@@ -315,20 +309,15 @@ var timeStringToSec=function(ts){
   return s;
 }
 
-var onSliderChange=function(event, ui){
+var onSliderChange=function(e,ui){
   timeA=ui.values[0];
   timeB=ui.values[1];
   myTimeA.value=secToTimeString(timeA);
   myTimeB.value=secToTimeString(timeB);
 }
 
-var onTimeUpdate=function(){
-  if(myGetCurrentTime()<timeA && !intro.checked || myGetCurrentTime()>=timeB)
-    mySetCurrentTime(timeA);
-}
-
-var onSliderSlide=function(e, ui){
-  if(ctrlPressed){
+var onSliderSlide=function(e,ui){
+  if(e.ctrlKey){
     let delta=timeB-timeA;
     if(ui.handleIndex==0){
       timeA=ui.values[0];
@@ -342,8 +331,13 @@ var onSliderSlide=function(e, ui){
     myTimeA.value=secToTimeString(Math.max(timeA,0));
     myTimeB.value=secToTimeString(Math.min(timeB, myGetDuration()));
   }else{
-    onSliderChange(e, ui);
+    onSliderChange(e,ui);
   }
+}
+
+var onTimeUpdate=function(){
+  if(myGetCurrentTime()<timeA && !intro.checked || myGetCurrentTime()>=timeB)
+    mySetCurrentTime(timeA);
 }
 
 var onInputTime=function(whichInput, sliderIdx){
@@ -899,18 +893,18 @@ var initResizableYT=function(){
     aspectRatio: false,
     minWidth: 160,
     minHeight: 90,
-    create: function(event, ui){
+    create: function(e,ui){
       $("#slider").width($("#myResizable" ).width());
       $("#scrub").width($("#myResizable" ).width());
     },
-    start: function(event,ui){
+    start: function(e,ui){
       $(ytDiv).hide();
     },
-    stop: function(event,ui){
+    stop: function(e,ui){
       ytPlayer.setSize(ui.size.width,ui.size.height);
       $(ytDiv).show();
     },
-    resize: function(event,ui){
+    resize: function(e,ui){
       $("#slider").width(ui.size.width);
       $("#scrub").width(ui.size.width);
     }
@@ -1116,7 +1110,7 @@ var initResizableVT=function(){
       $("#slider").width($("#myResizable").width());
       $("#scrub").width($("#myResizable").width());
     },
-    resize: function(event,ui){
+    resize: function(e,ui){
       myVideo.width=ui.size.width;
       if(aonly.checked){
         ui.size.height=initHeight;
