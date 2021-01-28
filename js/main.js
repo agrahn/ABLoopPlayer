@@ -229,10 +229,10 @@ var myPrompt=function(onclose, title, text, placeholder, input){
 }
 
 // a modal confirm dialog
-// Usage: myConfirm( <callback>(<ret>), <message text> );
+// Usage: myConfirm(  <message text>, <callback>(<ret>) );
 //   <callback> must accept one arg, which gets either "true" or "false",
 //   depending on the result of the user interaction
-var myConfirm=function(onclose, msg){
+var myConfirm=function(msg, onclose){
   let z=$("<div>"+msg+"</div>");
   $(document.body).append(z);
   let ret=false;
@@ -458,18 +458,18 @@ var bmkDelete=function(idx){
 
 var onClickTrash=function(idx){
   if(idx==0){ //all items
+    "Really delete <b>ALL</b> bookmarked loops?",
     myConfirm(
       function(res){
         if(res) bmkDelete(0);
-      },
-      "Really delete <b>ALL</b> bookmarked loops?"
+      }
     );
   }else{ //selected item
     myConfirm(
+      "Delete this loop?",
       function(res){
         if(res) bmkDelete(idx);
-      },
-      "Delete this loop?"
+      }
     );
   }
 }
@@ -482,30 +482,32 @@ var onClickAddNote=function(idx){
   );
 }
 
+var textFile=null;
 var onClickExport=function(){
   let appData={};
   Object.entries(JSON.parse(JSON.stringify(storage))).forEach(([k,v])=>{
     if(k.match(/^ab\./)) appData[k]=v;
   });
-  navigator.clipboard.writeText(JSON.stringify(appData)).then(function() {
-    myMessage("Export",
-      "<p>Loop data and player settings successfully copied to the <b>clipboard</b>.</p><p>"+
-      "<span style='content:url(png/import.png);float:left;margin:0px 10px 30px 0px'></span>"+
-      "Use the Player's <b>Import</b> dialog on another computer or in a different browser to transfer loop data and app settings.</p>"
-    );
-  }, function(err) {
-    myMessage("Error",
-      "<p>Loop data and app settings could not be copied to the clipboard.</p>"+
-      err.name+": "+err.message);
-  });
+  let data = new Blob([JSON.stringify(appData)], {type: "application/json"});
+  if (textFile !== null) window.URL.revokeObjectURL(textFile);
+  textFile = window.URL.createObjectURL(data);
+  let link = document.createElement("a");
+  link.href = textFile;
+  link.setAttribute("download", "ABLoopPlayer.json");
+  link.click();
 }
 
 var onClickImport=function(){
-  myPrompt(
-    function(data){
-      if(data==null||data.trim()=="") return;
+  let input = document.createElement("input");
+  input.type = "file";
+  input.accept="application/json";
+  input.multiple=false;
+  input.onchange = e => { 
+    let file = e.target.files[0];
+    let reader = new FileReader();
+    reader.onload = e => {
       try{
-        mergeData(convertData(JSON.parse(data)));
+        mergeData(convertData(JSON.parse(e.target.result)));
         myMessage("Import",
           "Loop data and app settings successfully imported.");
       }catch(err){
@@ -513,10 +515,11 @@ var onClickImport=function(){
           "<p>Loop data and app settings could not be imported.</p>"+
           err.name+": "+err.message);
       }
-    },
-    "Import", "Paste exported loop data and app settings in the text field:",
-    "<Paste here>", null
-  );
+    }
+    reader.readAsText(file,"UTF-8");
+
+  }
+  input.click();
 }
 
 var aonlyTitleChecked="Uncheck to enable video display.";
@@ -545,8 +548,10 @@ var contextHelp=function(t){
     annotButton.title="Add a note to the currently selected bookmark.";
     trashButton.title="Delete currently selected / delete all bookmarked loops.";
     mySpeed.title="Select playback rate.";
-    exportButton.title="Export loop data and player settings.";
-    importButton.title="Import loop data and player settings from another computer or browser.";
+    exportButton.title="Export loop data and player settings to file \"ABLoopPlayer.json\". "
+	    + "Check your \"Downloads\" folder.";
+    importButton.title="Import file \"ABLoopPlayer.json\" with loop data and player settings "
+	    + "from another computer or browser.";
     $("#slider").attr("title", "Move slider handles to adjust the loop range. "
         + "Press [Ctrl] while moving a handle to shift the entire loop window. "
         + "Also, handles can be moved with the arrow keys [←] , [→].");
