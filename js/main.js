@@ -488,7 +488,7 @@ var onClickExport=function(){
   Object.entries(JSON.parse(JSON.stringify(storage))).forEach(([k,v])=>{
     if(k.match(/^ab\./)) appData[k]=v;
   });
-  let data = new Blob([JSON.stringify(appData)], {type: "application/json"});
+  let data = new Blob([JSON.stringify(appData,null,2)], {type: "application/json"});
   if (textFile !== null) window.URL.revokeObjectURL(textFile);
   textFile = window.URL.createObjectURL(data);
   let link = document.createElement("a");
@@ -669,7 +669,7 @@ var convertData=function(data){
         known.push(id);
         let bmks=data[id];
         delete data[id];
-        if(bmks && bmks.match(/--/)){
+        if(bmks && typeof(bmks)==='string' && bmks.match(/--/)){
           let bmkArr=[];
           bmks=bmks.split(",");
           bmks.forEach(bmk => {
