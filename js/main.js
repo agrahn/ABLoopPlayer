@@ -26,10 +26,11 @@ var isTimeBSet=false;
 var currentRate=1.0;
 var loopTimer=[];
 var scrubTimer=[];
+const timePattern='(?:\\d+:[0-5]\\d|[0-5]?\\d):[0-5]\\d(?:\\.\\d{1,3})?';
 
 var knownIDs=[];
 var knownMedia=[];
-var storage=window.localStorage;
+const storage=window.localStorage;
 // triggered when another player instance writes to storage
 window.onstorage = () => {
   if(storage.getItem("ab.knownIDs"))
@@ -340,11 +341,12 @@ var onTimeUpdate=function(){
     mySetCurrentTime(timeA);
 }
 
+const timeRegExp=new RegExp('^\\s*'+timePattern+'\\s*$');
 var onInputTime=function(whichInput, sliderIdx){
-  let time=whichInput.value.match(  //validate user input
-    /^\s*(?:\d+:[0-5][0-9]|[0-5]?[0-9]):[0-5][0-9](?:\.\d+)?\s*$/
-  );
+  let time=whichInput.value.match(timeRegExp);  //validate user input
+   console.log(whichInput.value); 
   if(!time){
+   console.log(time); 
     if(sliderIdx==0){
       $("#slider" ).slider("values", 0, timeA);
     }else{
@@ -638,6 +640,8 @@ var myBlur=function(){
 }
 
 //loop & app data conversion to new format "1.0"
+const timeRangePattern=timePattern+'--'+timePattern;
+const timeRangeRegExp=new RegExp('^'+timeRangePattern+'(?:,'+timeRangePattern+')*$');
 var convertData=function(data){
   let storageFormat=data["ab.version"];
   if(storageFormat==="1.0") return data;
@@ -666,10 +670,13 @@ var convertData=function(data){
     let known=[];
     if(ids.length){
       ids.forEach(id => {
-        known.push(id);
         let bmks=data[id];
         delete data[id];
-        if(bmks && typeof(bmks)==='string' && bmks.match(/--/)){
+        if(
+		  bmks && typeof(bmks)==='string' &&
+		  bmks.match(timeRangeRegExp)
+		){
+          if(known.indexOf(id)<0) known.push(id);
           let bmkArr=[];
           bmks=bmks.split(",");
           bmks.forEach(bmk => {
