@@ -460,8 +460,8 @@ var bmkDelete=function(idx){
 
 var onClickTrash=function(idx){
   if(idx==0){ //all items
-    "Really delete <b>ALL</b> bookmarked loops?",
     myConfirm(
+      "Really delete <b>ALL</b> bookmarked loops?",
       function(res){
         if(res) bmkDelete(0);
       }
@@ -480,7 +480,7 @@ var onClickAddNote=function(idx){
   let currentNote=myBookmarks.options[idx].title;
   myPrompt(
     note => bmkAdd(note),
-    null, "Enter description:", (currentNote ? null : "<What's going on here?>"), currentNote
+    null, "Enter description:", (currentNote ? null : "<Add note here>"), currentNote
   );
 }
 
