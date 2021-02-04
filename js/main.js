@@ -26,11 +26,16 @@ var isTimeBSet=false;
 var currentRate=1.0;
 var loopTimer=[];
 var scrubTimer=[];
-const timePattern='(?:\\d+:[0-5]\\d|[0-5]?\\d):[0-5]\\d(?:\\.\\d{1,3})?';
-
 var knownIDs=[];
 var knownMedia=[];
-const storage=window.localStorage;
+const timePattern='(?:\\d+:[0-5]\\d|[0-5]?\\d):[0-5]\\d(?:\\.\\d{1,3})?';
+
+try{
+  var storage=window.localStorage;
+}
+catch(e){
+  alert("Cookies must be enabled for this page to work.");
+}
 // triggered when another player instance writes to storage
 window.onstorage = () => {
   if(storage.getItem("ab.knownIDs"))
@@ -344,9 +349,9 @@ var onTimeUpdate=function(){
 const timeRegExp=new RegExp('^\\s*'+timePattern+'\\s*$');
 var onInputTime=function(whichInput, sliderIdx){
   let time=whichInput.value.match(timeRegExp);  //validate user input
-   console.log(whichInput.value); 
+   console.log(whichInput.value);
   if(!time){
-   console.log(time); 
+   console.log(time);
     if(sliderIdx==0){
       $("#slider" ).slider("values", 0, timeA);
     }else{
@@ -375,7 +380,8 @@ var bmkAdd=function(note=null){
   myBookmarksUpdate(bmkArr,idx);
 }
 
-//insert a bookmark at its correct position into a bookmarks array
+//insert a bookmark at its correct position (sorted by time)
+//into a bookmarks array
 var insertBmk=function(sbm, tbmArr){
   let idx=tbmArr.findIndex(tbm =>
     toNearest5ms(sbm.ta)==toNearest5ms(tbm.ta) &&
@@ -504,7 +510,7 @@ var onClickImport=function(){
   input.type = "file";
   input.accept="application/json";
   input.multiple=false;
-  input.onchange = e => { 
+  input.onchange = e => {
     let file = e.target.files[0];
     let reader = new FileReader();
     reader.onload = e => {
@@ -551,9 +557,9 @@ var contextHelp=function(t){
     trashButton.title="Delete currently selected / delete all bookmarked loops.";
     mySpeed.title="Select playback rate.";
     exportButton.title="Export loop data and player settings to file \"ABLoopPlayer.json\". "
-	    + "Check your \"Downloads\" folder.";
+        + "Check your \"Downloads\" folder.";
     importButton.title="Import file \"ABLoopPlayer.json\" with loop data and player settings "
-	    + "from another computer or browser.";
+        + "from another computer or browser.";
     $("#slider").attr("title", "Move slider handles to adjust the loop range. "
         + "Press [Ctrl] while moving a handle to shift the entire loop window. "
         + "Also, handles can be moved with the arrow keys [←] , [→].");
@@ -673,25 +679,18 @@ var convertData=function(data){
         let bmks=data[id];
         delete data[id];
         if(
-		  bmks && typeof(bmks)==='string' &&
-		  bmks.match(timeRangeRegExp)
-		){
+          bmks && typeof(bmks)==='string' &&
+          bmks.match(timeRangeRegExp)
+        ){
           if(known.indexOf(id)<0) known.push(id);
           let bmkArr=[];
-          bmks=bmks.split(",");
-          bmks.forEach(bmk => {
-            let ta,tb;
-            [ta,tb]=bmk.split("--").map(t => timeStringToSec(t));
+          bmks.split(",").forEach(bmk => {
+            let sbm={};
+            [sbm.ta,sbm.tb]=bmk.split("--").map(t => timeStringToSec(t));
             let note=data[id+"-"+bmk];
             delete data[id+"-"+bmk];
-            let idx=bmkArr.findIndex( bm =>
-              toNearest5ms(ta)< toNearest5ms(bm.ta) ||
-              toNearest5ms(ta)==toNearest5ms(bm.ta) &&
-              toNearest5ms(tb)< toNearest5ms(bm.tb)
-            )
-            if(idx<0) idx=bmkArr.length; //append bookmark
-            bmkArr.splice(idx, 0, {ta: ta, tb: tb});
-            if(note) bmkArr[idx].note=note;
+            if(note && typeof(note)==='string') sbm.note=note;
+            insertBmk(sbm, bmkArr);
           });
           data["ab."+id]=JSON.stringify(bmkArr);
         }
@@ -714,17 +713,43 @@ var convertData=function(data){
 //merge converted/imported data into localStorage
 var mergeData=function(data){
   let ytSrcIds=[], mmSrcIds=[];
-  if(data["ab.knownIDs"]) ytSrcIds=JSON.parse(data["ab.knownIDs"]);
-  if(data["ab.knownMedia"]) mmSrcIds=JSON.parse(data["ab.knownMedia"]);
+  if(data["ab.knownIDs"]){
+    let tmp=JSON.parse(data["ab.knownIDs"]);
+    if(Array.isArray(tmp)){
+      tmp.forEach(id=>{
+        let iid=id.match(/^[0-9a-zA-Z_-]{11}$/);
+        if(iid) ytSrcIds.push(iid[0]);
+      });
+    }
+  }
+  if(data["ab.knownMedia"]){
+    let tmp=JSON.parse(data["ab.knownMedia"]);
+    if(Array.isArray(tmp)){
+      tmp.forEach(id=>{
+        let iid=id.match(/^.+\.[a-zA-Z0-9]{3,4}-\d{3,}$/);
+        if(iid) mmSrcIds.push(iid[0]);
+      });
+    }
+  }
   [[ytSrcIds, knownIDs], [mmSrcIds, knownMedia]].forEach(([src,trg]) => {
     src.forEach(id => {
       if(trg.indexOf(id)==-1) trg.push(id);
-      let srcBmks=[], trgBmks=[];
-      if(data["ab."+id]) srcBmks=JSON.parse(data["ab."+id]);
-      if(storage.getItem("ab."+id))
-        trgBmks=JSON.parse(storage.getItem("ab."+id));
-      srcBmks.forEach(sbm => insertBmk(sbm, trgBmks));
-      if(trgBmks.length) storageWriteKeyVal("ab."+id,JSON.stringify(trgBmks));
+      if(data["ab."+id]) {
+        let trgBmks=[];
+        if(storage.getItem("ab."+id))
+          trgBmks=JSON.parse(storage.getItem("ab."+id));
+        let srcBmks=JSON.parse(data["ab."+id]);
+        if(Array.isArray(srcBmks)){
+          srcBmks.forEach(sbm=>{
+            if(
+              sbm.ta && typeof(sbm.ta)==='number' && !isNaN(sbm.ta) && sbm.ta>0 &&
+              sbm.tb && typeof(sbm.tb)==='number' && !isNaN(sbm.tb) && sbm.tb>0 &&
+              sbm.ta<=sbm.tb && (!sbm.note || typeof(sbm.note)==='string')
+            ) insertBmk(sbm, trgBmks);
+          });
+        }
+        if(trgBmks.length) storageWriteKeyVal("ab."+id,JSON.stringify(trgBmks));
+      }
     });
   });
   if(knownIDs.length) storageWriteKeyVal("ab.knownIDs",JSON.stringify(knownIDs));
