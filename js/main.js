@@ -717,7 +717,7 @@ var mergeData=function(data){
     let tmp=JSON.parse(data["ab.knownIDs"]);
     if(Array.isArray(tmp)){
       tmp.forEach(id=>{
-        let iid=id.match(/^[0-9a-zA-Z_-]{11}$/);
+        let iid=id.match(/^[0-9a-zA-Z_-]{11,}$/); //videos/playlists
         if(iid) ytSrcIds.push(iid[0]);
       });
     }
@@ -900,9 +900,7 @@ var queryYT=function(qu){
     lid=qu.trim().match(/^[0-9a-zA-Z_-]{12,}$/);
   }
   if(!(vid||lid)) return;
-  loadYT(
-    vid ? vid[0] : null , lid ? lid[0] : null
-  );
+  loadYT(vid ? vid[0] : null , lid ? lid[0] : null);
 }
 
 var mySetPlaybackRateYT=function(r){
