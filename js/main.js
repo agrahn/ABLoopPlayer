@@ -371,7 +371,7 @@ var onInputTime=function(whichInput, sliderIdx){
 
 var bmkAdd=function(note=null){
   let bmk={ta: timeA, tb: timeB};
-  if(note) bmk.note=note;
+  if(note && note.trim()) bmk.note=note.trim();
   let bmkArr=[];
   if(storage.getItem("ab."+vidId))
     bmkArr=JSON.parse(storage.getItem("ab."+vidId));
@@ -418,6 +418,7 @@ var myBookmarksUpdate=function(bmkArr,idx){//selected idx
       onBmkSelect(e.target.index);
       e.target.parentNode.size=1;
     });
+    c.title="";
     if(bmk.note){
       c.title=bmk.note;
       //enable tooltip for current <option> element
@@ -950,8 +951,6 @@ var initResizableYT=function(){
 
 var onBmkSelectYT=function(i){
   cancelABLoop();
-  //needs to be reset for some reason
-  if(help.checked) myBookmarks.title="Choose from previously saved loops.";
   if(i==0) return;
   $("#slider").slider("option", "max", myGetDuration());
   let a,b;
@@ -1110,8 +1109,6 @@ var mySetPlaybackRateVT=function(r){
 
 var onBmkSelectVT=function(i){
   cancelABLoop();
-  //needs to be reset for some reason
-  if(help.checked) myBookmarks.title="Choose from previously saved loops.";
   if(i==0) return;
   let a,b;
   [a,b]=myBookmarks.options[i].text.split("--").map(t => timeStringToSec(t));
