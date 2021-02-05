@@ -446,11 +446,13 @@ var bmkDelete=function(idx){
     myBookmarksUpdate([],-1);
   }
   else{
+    let a,b;
+    [a,b]=myBookmarks.options[idx].text.split("--").map(t => timeStringToSec(t));
     let bmkArr=JSON.parse(storage.getItem("ab."+vidId));
     if(!bmkArr) bmkArr=[];
     let i = bmkArr.findIndex(bmk =>
-      toNearest5ms(timeA)==toNearest5ms(bmk.ta) &&
-      toNearest5ms(timeB)==toNearest5ms(bmk.tb)
+      toNearest5ms(a)==toNearest5ms(bmk.ta) &&
+      toNearest5ms(b)==toNearest5ms(bmk.tb)
     );
     if(i>-1) {
       bmkArr.splice(i,1);
