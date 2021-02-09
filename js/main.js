@@ -735,8 +735,8 @@ var mergeData=function(data){
     }
   }
   [[ytSrcIds, knownIDs], [mmSrcIds, knownMedia]].forEach(([src,trg]) => {
-    src.forEach(id => {
-      if(trg.indexOf(id)==-1) trg.push(id);
+    src.reverse().forEach(id => {
+      if(trg.indexOf(id)==-1) trg.unshift(id);
       if(data["ab."+id]) {
         let trgBmks=[];
         if(storage.getItem("ab."+id))
