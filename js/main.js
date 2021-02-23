@@ -827,6 +827,7 @@ var loadYT=function(vid,lid){
 
 var onYouTubeIframeAPIReady=function(){
   inputYT.disabled=searchButtonYT.disabled=false;
+  queryYT(document.location.search.substring(1));
 }
 
 var onPlayerStateChange=function(e, id){ //event object, video id
