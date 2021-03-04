@@ -40,6 +40,10 @@ hr.double {
   color: #000;
 }
 
+#slider .ui-slider-handle:focus {
+  background-color: #fcc;
+}
+
 #slider .ui-state-default {
   background: none;
 }
