@@ -769,7 +769,8 @@ var mergeData=function(data){
 
 //function for loading YT player
 //arg 1: video id, arg 2:  list id
-var loadYT=function(vid,lid){
+//arg 3: loop start, arg 4: loop end time
+var loadYT=function(vid,lid,ta,tb){
   initYT(); //initialize player-specific functions
   resetUI();
   //remove previous player, if there is one
@@ -806,16 +807,19 @@ var loadYT=function(vid,lid){
       "onReady": function(e){if(e.target.getPlaylist()){saveId(lid);}},
       "onStateChange": function(e){
         if(e.target.getPlaylist()){
-          onPlayerStateChange(e,
-            e.target.getPlaylist()[e.target.getPlaylistIndex()].toString());
+          onPlayerStateChange(
+            e,
+            e.target.getPlaylist()[e.target.getPlaylistIndex()].toString(),
+            ta,tb
+          );
         } else {
-          onPlayerStateChange(e,vid);
+          onPlayerStateChange(e,vid,ta,tb);
         }
       },
       "onError": function(e){
         console.log("Error: " + e.data);
         resetUI();
-        loadYT(null,null);
+        loadYT(null,null,null,null);
       }
     }
   });
@@ -828,8 +832,8 @@ var onYouTubeIframeAPIReady=function(){
   queryYT(document.location.search.substring(1));
 }
 
-var onPlayerStateChange=function(e, id){ //event object, video id
-  //the video has changed
+var onPlayerStateChange=function(e, id, ta, tb){ //event object, video id
+  //the video has changed                        //loop start & end time
   if(id!=vidId && e.data==YT.PlayerState.PLAYING){
     $("#scrub").slider("option", "max", myGetDuration()).show();
     scrubTimer.push(setInterval(
@@ -862,6 +866,25 @@ var onPlayerStateChange=function(e, id){ //event object, video id
     myBookmarksUpdate((bmkArr ? bmkArr : []),-1);
     annotButton.disabled=true;
     saveId(id);
+    if(ta||tb){
+      cancelABLoop();
+      $("#slider").slider("option", "max", myGetDuration());
+      let a=0,b=myGetDuration();
+      if(ta!=null&&tb!=null){
+        a=Math.max(0,Math.min(ta,tb));
+        b=Math.min(b,Math.max(ta,tb));
+      }
+      else if(ta!=null){
+        a=Math.max(0,Math.min(ta,b));
+      }
+      else{
+        b=Math.min(b,Math.max(0,tb));
+      }
+      $("#slider").slider("option", "values", [a, b]);
+      isTimeASet=isTimeBSet=true;
+      $("#timeInputs").show();
+      loopButton.value="Cancel";
+    }
   }
   while(loopTimer.length) clearInterval(loopTimer.pop());
   if (isTimeASet && isTimeBSet && e.data==YT.PlayerState.PLAYING)
@@ -902,11 +925,11 @@ var queryYT=function(qu){
     lid=qu.trim().match(/^[0-9a-zA-Z_-]{12,}$/);
   }
   if(!(vid||lid)) return;
-  let ta=qu.match(/(?<=[?&]start=)[0-9]+/);
-  let tb=qu.match(/(?<=[?&]end=)[0-9]+/);
+  let ta=qu.match(/(?<=[?&]start=)[0-9]+(?:\.[0-9]*)?/);
+  let tb=qu.match(/(?<=[?&]end=)[0-9]+(?:\.[0-9]*)?/);
   loadYT(
     vid ? vid[0] : null, lid ? lid[0] : null,
-	ta ? ta[0] : null, tb ? tb[0] : null
+    ta ? ta[0] : null, tb ? tb[0] : null
   );
 }
 
