@@ -349,9 +349,7 @@ var onTimeUpdate=function(){
 const timeRegExp=new RegExp('^\\s*'+timePattern+'\\s*$');
 var onInputTime=function(whichInput, sliderIdx){
   let time=whichInput.value.match(timeRegExp);  //validate user input
-   console.log(whichInput.value);
   if(!time){
-   console.log(time);
     if(sliderIdx==0){
       $("#slider" ).slider("values", 0, timeA);
     }else{
@@ -904,7 +902,12 @@ var queryYT=function(qu){
     lid=qu.trim().match(/^[0-9a-zA-Z_-]{12,}$/);
   }
   if(!(vid||lid)) return;
-  loadYT(vid ? vid[0] : null , lid ? lid[0] : null);
+  let ta=qu.match(/(?<=[?&]start=)[0-9]+/);
+  let tb=qu.match(/(?<=[?&]end=)[0-9]+/);
+  loadYT(
+    vid ? vid[0] : null, lid ? lid[0] : null,
+	ta ? ta[0] : null, tb ? tb[0] : null
+  );
 }
 
 var mySetPlaybackRateYT=function(r){
