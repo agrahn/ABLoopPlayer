@@ -349,9 +349,7 @@ var onTimeUpdate=function(){
 const timeRegExp=new RegExp('^\\s*'+timePattern+'\\s*$');
 var onInputTime=function(whichInput, sliderIdx){
   let time=whichInput.value.match(timeRegExp);  //validate user input
-   console.log(whichInput.value);
   if(!time){
-   console.log(time);
     if(sliderIdx==0){
       $("#slider" ).slider("values", 0, timeA);
     }else{
