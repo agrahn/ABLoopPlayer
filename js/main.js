@@ -880,6 +880,7 @@ var onPlayerStateChange=function(e, id, ta, tb){ //event object, video id
       else{
         b=Math.min(b,Math.max(0,tb));
       }
+      mySetCurrentTime(a);
       $("#slider").slider("option", "values", [a, b]);
       isTimeASet=isTimeBSet=true;
       $("#timeInputs").show();
