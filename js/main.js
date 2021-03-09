@@ -236,7 +236,7 @@ var myPrompt=function(onclose, title, text, placeholder, input){
 
 // a modal confirm dialog
 // Usage: myConfirm(  <message text>, <callback>(<ret>) );
-//   <callback> must accept one arg, which gets either "true" or "false",
+//   <callback> must accept one arg which gets either "true" or "false"
 //   depending on the result of the user interaction
 var myConfirm=function(msg, onclose){
   let z=$("<div>"+msg+"</div>");
@@ -563,7 +563,7 @@ var contextHelp=function(t){
         + "from another computer or browser.";
     $("#slider").attr("title", "Move slider handles to adjust the loop range. "
         + "Press [Ctrl] while moving a handle to shift the entire loop window. "
-        + "Also, handles can be moved with the arrow keys [←] , [→].");
+        + "Also, the handle that currently has keyboard focus can be moved with the arrow keys [←] , [→].");
   } else {
     storageWriteKeyVal("ab.help", "unchecked");
     t.title="Enable context-sensitive help.";
