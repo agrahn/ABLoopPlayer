@@ -926,7 +926,7 @@ var queryYT=function(qu){
     lid=qu.trim().match(/^[0-9a-zA-Z_-]{12,}$/);
   }
   if(!(vid||lid)) return;
-  let ta=qu.match(/(?<=[?&]start=)[0-9]+(?:\.[0-9]*)?/);
+  let ta=qu.match(/(?<=[?&](?:star)?t=)[0-9]+(?:\.[0-9]*)?/);
   let tb=qu.match(/(?<=[?&]end=)[0-9]+(?:\.[0-9]*)?/);
   loadYT(
     vid ? vid[0] : null, lid ? lid[0] : null,
