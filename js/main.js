@@ -147,7 +147,7 @@ $(document).ready(function(){
   if(storage.getItem("ab.help")!="unchecked") help.checked=true;
   contextHelp(help);
   if(storage.getItem("ab.aonly")=="checked") aonly.checked=true;
-  else aonly.checked=false;
+  else {aonly.checked=false; storageWriteKeyVal("ab.aonly", "unchecked");}
   if(help.checked){
     if(aonly.checked) aonly.title=aonlyTitleChecked;
     else aonly.title=aonlyTitleUnChecked;
@@ -757,9 +757,20 @@ var mergeData=function(data){
   else storage.removeItem("ab.knownIDs");
   if(knownMedia.length) storageWriteKeyVal("ab.knownMedia",JSON.stringify(knownMedia));
   else storage.removeItem("ab.knownMedia");
-  if(data["ab.help"]) storageWriteKeyVal("ab.help", data["ab.help"]);
-  if(data["ab.aonly"]) storageWriteKeyVal("ab.aonly", data["ab.aonly"]);
-  if(data["ab.intro"]) storageWriteKeyVal("ab.intro", data["ab.intro"]);
+  if(data["ab.help"]){
+    storageWriteKeyVal("ab.help", data["ab.help"]);
+    if(data["ab.help"]=="checked") help.checked=true; else help.checked=false;
+    contextHelp(help);
+  }
+  if(data["ab.aonly"]){
+    storageWriteKeyVal("ab.aonly", data["ab.aonly"]);
+    if(data["ab.aonly"]=="checked") aonly.checked=true; else aonly.checked=false;
+  }
+  if(data["ab.intro"]){
+    storageWriteKeyVal("ab.intro", data["ab.intro"]);
+    if(data["ab.intro"]=="checked") intro.checked=true; else intro.checked=false;
+    toggleIntro(intro, help);
+  }
   if(data["ab.version"]) storageWriteKeyVal("ab.version", data["ab.version"]);
 }
 
