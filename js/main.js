@@ -1062,7 +1062,6 @@ var playSelectedFile=function(f){
     if (isFinite(e.target.duration)){
       $("#slider").slider("option", "max", myGetDuration());
       $("#scrub").slider("option", "max", myGetDuration()).show();
-      aonly.disabled=false;
       mySpeed.disabled=false;
     }else{
       //repeat setting media source until duration property is properly set;
@@ -1097,7 +1096,6 @@ var playSelectedFile=function(f){
         c.selected=true;
       }
     });
-    aonly.disabled=true;
     //set video source
     vidId=f.name+"-"+f.size; //some checksum would be better
     myVideo.src=URL.createObjectURL(f);
@@ -1229,7 +1227,7 @@ var onLoopDownVT=function(){
 
 var toggleAudio=function(t,h){
   myBlur();
-  if(myVideo.readyState) playSelectedFile(inputVT.files[0]);
+  playSelectedFile(inputVT.files[0]);
   if(h.checked){
     if(t.checked) t.title=aonlyTitleChecked;
     else t.title=aonlyTitleUnChecked;
