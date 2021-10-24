@@ -20,7 +20,7 @@
 var appversion="1.0";
 
 var vidId; //current YT video ID or file name + size
-var timeA, timeB;
+var timeA, timeB; // s
 var isTimeASet=false;
 var isTimeBSet=false;
 var currentRate=1.0;
@@ -29,6 +29,7 @@ var scrubTimer=[];
 var knownIDs=[];
 var knownMedia=[];
 const timePattern='(?:\\d+:[0-5]\\d|[0-5]?\\d):[0-5]\\d(?:\\.\\d{1,3})?';
+var URL=window.URL;
 
 try{
   var storage=window.localStorage;
@@ -104,6 +105,9 @@ $(document).ready(function(){
   bmkAddButton=document.getElementById("bmkAddButton");
   annotButton=document.getElementById("annotButton");
   trashButton=document.getElementById("trashButton");
+  importButton=document.getElementById("importButton");
+  exportButton=document.getElementById("exportButton");
+  shareButton=document.getElementById("shareButton");
   inputVT.addEventListener("change", function(e){
     myBlur();
     playSelectedFile(e.target.files[0]);
@@ -498,8 +502,8 @@ var onClickExport=function(){
     if(k.match(/^ab\./)) appData[k]=v;
   });
   let data = new Blob([JSON.stringify(appData,null,2)], {type: "application/json"});
-  if (textFile !== null) window.URL.revokeObjectURL(textFile);
-  textFile = window.URL.createObjectURL(data);
+  if (textFile !== null) URL.revokeObjectURL(textFile);
+  textFile = URL.createObjectURL(data);
   let link = document.createElement("a");
   link.href = textFile;
   link.setAttribute("download", "ABLoopPlayer.json");
@@ -557,6 +561,7 @@ var contextHelp=function(t){
     annotButton.title="Add a note to the currently selected bookmark.";
     trashButton.title="Delete currently selected / delete all bookmarked loops.";
     mySpeed.title="Select playback rate.";
+    shareButton.title="Share YouTube video link with current loop settings.";
     exportButton.title="Export loop data and player settings to file \"ABLoopPlayer.json\". "
         + "Check your \"Downloads\" folder.";
     importButton.title="Import file \"ABLoopPlayer.json\" with loop data and player settings "
@@ -579,6 +584,7 @@ var contextHelp=function(t){
     annotButton.title=
     trashButton.title=
     mySpeed.title=
+    shareButton.title=
     exportButton.title=
     importButton.title=
     "";
@@ -602,6 +608,7 @@ var resetUI=function(){
   currentRate=1;
   while(mySpeed.options.length) mySpeed.remove(mySpeed.options.length-1);
   mySpeed.disabled=true;
+  shareButton.disabled=true;
   myBookmarksUpdate([],-1);
 }
 
@@ -874,6 +881,7 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id
     });
     mySetPlaybackRate(s); //custom rate via url parameter
     mySpeed.disabled=false;
+    shareButton.disabled=false;
     //populate bookmark list with saved items for the current video ID
     let bmkArr=JSON.parse(storage.getItem("ab."+vidId));
     myBookmarksUpdate((bmkArr ? bmkArr : []),-1);
@@ -1039,10 +1047,18 @@ var onLoopDownYT=function(){
   }
 }
 
+var onClickShare=function(){
+  let sharelink=window.location.href+"?https://www.youtube.com/watch?v="+vidId;
+  if(isTimeASet) sharelink+="&start="+timeA;
+  if(isTimeBSet) sharelink+="&end="+timeB;
+  let rate=myGetPlaybackRate();
+  if(rate!=1.0) sharelink+="&rate="+rate;
+  myMessage("Share Link", sharelink);
+}
+
 /////////////////////////
 // <video> specific code
 /////////////////////////
-var URL=window.URL || window.webkitURL;
 var myVideo;
 
 var playSelectedFile=function(f){
@@ -1103,7 +1119,14 @@ var playSelectedFile=function(f){
     });
     //set video source
     vidId=f.name+"-"+f.size; //some checksum would be better
-    myVideo.src=URL.createObjectURL(f);
+    try {
+      //Modern browsers should support File object as value for HTMLMediaElement.srcObject, see
+      //https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/srcObject#value,
+      //but currently, only Safari does.
+      myVideo.srcObject = f;
+    }catch(e){
+      myVideo.src = URL.createObjectURL(f);
+    }
   }
 }
 

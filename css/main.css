@@ -65,3 +65,5 @@ hr.double {
 
 input {border-radius: 0px;}
 button {border-radius: 0px;}
+
+#shareButton:disabled{opacity:0.5;}
