@@ -781,7 +781,8 @@ var mergeData=function(data){
 //function for loading YT player
 //arg 1: video id, arg 2:  list id
 //arg 3: loop start, arg 4: loop end time
-var loadYT=function(vid,lid,ta,tb){
+//arg 5: playback speed
+var loadYT=function(vid,lid,ta,tb,r){
   initYT(); //initialize player-specific functions
   resetUI();
   //remove previous player, if there is one
@@ -821,16 +822,16 @@ var loadYT=function(vid,lid,ta,tb){
           onPlayerStateChange(
             e,
             e.target.getPlaylist()[e.target.getPlaylistIndex()].toString(),
-            ta,tb
+            ta,tb,r
           );
         } else {
-          onPlayerStateChange(e,vid,ta,tb);
+          onPlayerStateChange(e,vid,ta,tb,r);
         }
       },
       "onError": function(e){
         console.log("Error: " + e.data);
         resetUI();
-        loadYT(null,null,null,null);
+        loadYT(null,null,null,null,null);
       }
     }
   });
@@ -843,8 +844,8 @@ var onYouTubeIframeAPIReady=function(){
   queryYT(document.location.search.substring(1));
 }
 
-var onPlayerStateChange=function(e, id, ta, tb){ //event object, video id
-  //the video has changed                        //loop start & end time
+var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id
+  //the video has changed                        //loop start & end time, rate
   if(id!=vidId && e.data==YT.PlayerState.PLAYING){
     $("#scrub").slider("option", "max", myGetDuration()).show();
     scrubTimer.push(setInterval(
@@ -871,6 +872,7 @@ var onPlayerStateChange=function(e, id, ta, tb){ //event object, video id
         mySetPlaybackRate(1);
       }
     });
+    mySetPlaybackRate(s); //custom rate via url parameter
     mySpeed.disabled=false;
     //populate bookmark list with saved items for the current video ID
     let bmkArr=JSON.parse(storage.getItem("ab."+vidId));
@@ -939,9 +941,12 @@ var queryYT=function(qu){
   if(!(vid||lid)) return;
   let ta=qu.match(/(?<=[?&](?:star)?t=)[0-9]+(?:\.[0-9]*)?/);
   let tb=qu.match(/(?<=[?&]end=)[0-9]+(?:\.[0-9]*)?/);
+  let rate=qu.match(/(?<=[?&]rate=)[0-9]+(?:\.[0-9]*)?/);
+  if(rate) rate=Math.min(Math.max(rate[0],0.25),2.0);
+  else rate=1;
   loadYT(
     vid ? vid[0] : null, lid ? lid[0] : null,
-    ta ? ta[0] : null, tb ? tb[0] : null
+    ta ? ta[0] : null, tb ? tb[0] : null, rate
   );
 }
 
