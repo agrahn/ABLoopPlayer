@@ -1048,7 +1048,10 @@ var onLoopDownYT=function(){
 }
 
 var onClickShare=function(){
-  let sharelink=window.location.href+"?https://www.youtube.com/watch?v="+vidId;
+  let sharelink=window.location.href;
+  let idx=sharelink.indexOf("?");
+  if(idx>-1) sharelink=sharelink.substring(0,idx-1);
+  sharelink+="?https://www.youtube.com/watch?v="+vidId;
   if(isTimeASet) sharelink+="&start="+timeA;
   if(isTimeBSet) sharelink+="&end="+timeB;
   let rate=myGetPlaybackRate();
