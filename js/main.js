@@ -1050,7 +1050,9 @@ var onLoopDownYT=function(){
 var onClickShare=function(){
   let sharelink=window.location.href;
   let idx=sharelink.indexOf("?");
+  console.log(idx+" "+sharelink);
   if(idx>-1) sharelink=sharelink.substring(0,idx-1);
+  console.log(idx+" "+sharelink);
   sharelink+="?https://www.youtube.com/watch?v="+vidId;
   if(isTimeASet) sharelink+="&start="+timeA;
   if(isTimeBSet) sharelink+="&end="+timeB;
