@@ -296,7 +296,10 @@ var myMessage=function(title, msg){
 }
 
 //pretty printing the media time
-var secToTimeString=function(t){
+var secToString=function(t){ // S.sss (sss == millseconds)
+  return Math.floor(t).toString()+'.'+String(t % 1).substring(2,5);
+}
+var secToTimeString=function(t){ // H:MM:SS.sss or M:SS.sss
   let h=Math.floor(t/3600);
   let s=t % 3600;
   let m=Math.floor(s/60);
@@ -372,7 +375,7 @@ var onInputTime=function(whichInput, sliderIdx){
 }
 
 var bmkAdd=function(note=null){
-  let bmk={ta: timeA, tb: timeB};
+  let bmk={ta: secToString(timeA), tb: secToString(timeB)};
   if(note && note.trim()) bmk.note=note.trim();
   let bmkArr=[];
   if(storage.getItem("ab."+vidId))
@@ -1052,8 +1055,8 @@ var onClickShare=function(){
   let idx=sharelink.indexOf("?");
   if(idx>-1) sharelink=sharelink.substring(0,idx-1);
   sharelink+="?https://www.youtube.com/watch?v="+vidId;
-  if(isTimeASet) sharelink+="&start="+timeA;
-  if(isTimeBSet) sharelink+="&end="+timeB;
+  if(isTimeASet) sharelink+="&start="+secToString(timeA);
+  if(isTimeBSet) sharelink+="&end="+secToString(timeB);
   let rate=myGetPlaybackRate();
   if(rate!=1.0) sharelink+="&rate="+rate;
   myMessage("Share Link", sharelink);
