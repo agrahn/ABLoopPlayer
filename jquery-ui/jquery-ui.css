@@ -1,4 +1,4 @@
-/*! jQuery UI - v1.12.1 - 2016-10-18
+/*! jQuery UI - v1.13.0 - 2021-10-27
 * http://jqueryui.com
 * Includes: draggable.css, core.css, resizable.css, button.css, controlgroup.css, checkboxradio.css, dialog.css, slider.css, tooltip.css, theme.css
 * To view and modify this theme, visit http://jqueryui.com/themeroller/?scope=&folderName=base&cornerRadiusShadow=8px&offsetLeftShadow=0px&offsetTopShadow=0px&thicknessShadow=5px&opacityShadow=30&bgImgOpacityShadow=0&bgTextureShadow=flat&bgColorShadow=666666&opacityOverlay=30&bgImgOpacityOverlay=0&bgTextureOverlay=flat&bgColorOverlay=aaaaaa&iconColorError=cc0000&fcError=5f3f3f&borderColorError=f1a899&bgTextureError=flat&bgColorError=fddfdf&iconColorHighlight=777620&fcHighlight=777620&borderColorHighlight=dad55e&bgTextureHighlight=flat&bgColorHighlight=fffa90&iconColorActive=ffffff&fcActive=ffffff&borderColorActive=003eff&bgTextureActive=flat&bgColorActive=007fff&iconColorHover=555555&fcHover=2b2b2b&borderColorHover=cccccc&bgTextureHover=flat&bgColorHover=ededed&iconColorDefault=777777&fcDefault=454545&borderColorDefault=c5c5c5&bgTextureDefault=flat&bgColorDefault=f6f6f6&iconColorContent=444444&fcContent=333333&borderColorContent=dddddd&bgTextureContent=flat&bgColorContent=ffffff&iconColorHeader=444444&fcHeader=333333&borderColorHeader=dddddd&bgTextureHeader=flat&bgColorHeader=e9e9e9&cornerRadius=3px&fwDefault=normal&fsDefault=1em&ffDefault=Arial%2CHelvetica%2Csans-serif
@@ -49,7 +49,7 @@
 	left: 0;
 	position: absolute;
 	opacity: 0;
-	filter:Alpha(Opacity=0); /* support: IE8 */
+	-ms-filter: "alpha(opacity=0)"; /* support: IE8 */
 }
 
 .ui-front {
@@ -413,7 +413,7 @@ button.ui-button::-moz-focus-inner {
 	z-index: 2;
 	width: 1.2em;
 	height: 1.2em;
-	cursor: default;
+	cursor: pointer;
 	-ms-touch-action: none;
 	touch-action: none;
 }
@@ -639,18 +639,18 @@ a.ui-button:active,
 .ui-widget-content .ui-priority-secondary,
 .ui-widget-header .ui-priority-secondary {
 	opacity: .7;
-	filter:Alpha(Opacity=70); /* support: IE8 */
+	-ms-filter: "alpha(opacity=70)"; /* support: IE8 */
 	font-weight: normal;
 }
 .ui-state-disabled,
 .ui-widget-content .ui-state-disabled,
 .ui-widget-header .ui-state-disabled {
 	opacity: .35;
-	filter:Alpha(Opacity=35); /* support: IE8 */
+	-ms-filter: "alpha(opacity=35)"; /* support: IE8 */
 	background-image: none;
 }
 .ui-state-disabled .ui-icon {
-	filter:Alpha(Opacity=35); /* support: IE8 - See #6059 */
+	-ms-filter: "alpha(opacity=35)"; /* support: IE8 - See #6059 */
 }
 
 /* Icons
@@ -691,7 +691,10 @@ a.ui-button:active,
 }
 
 /* positioning */
-.ui-icon-blank { background-position: 16px 16px; }
+/* Three classes needed to override `.ui-button:hover .ui-icon` */
+.ui-icon-blank.ui-icon-blank.ui-icon-blank {
+	background-image: none;
+}
 .ui-icon-caret-1-n { background-position: 0 0; }
 .ui-icon-caret-1-ne { background-position: -16px 0; }
 .ui-icon-caret-1-e { background-position: -32px 0; }
@@ -902,7 +905,7 @@ a.ui-button:active,
 .ui-widget-overlay {
 	background: #aaaaaa;
 	opacity: .3;
-	filter: Alpha(Opacity=30); /* support: IE8 */
+	-ms-filter: Alpha(Opacity=30); /* support: IE8 */
 }
 .ui-widget-shadow {
 	-webkit-box-shadow: 0px 0px 5px #666666;
