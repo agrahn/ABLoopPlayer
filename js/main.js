@@ -296,18 +296,20 @@ var myMessage=function(title, msg){
 }
 
 //pretty printing the media time
-var secToString=function(t){ // S.sss (sss == millseconds)
-  return Math.floor(t).toString()+'.'+String(t % 1).substring(2,5);
+var secToString=function(t){ // S[.sss] (sss == millseconds)
+  let s=Math.floor(t);
+  let ms=t-s;
+  ms=ms > 0.0 ? "." + ms.toFixed(3).substring(2) : "";
+  return s.toString() + ms;
 }
-var secToTimeString=function(t){ // H:MM:SS.sss or M:SS.sss
+var secToTimeString=function(t){ // H:MM:SS[.sss] or M:SS[.sss]
   let h=Math.floor(t/3600);
-  let s=t % 3600;
-  let m=Math.floor(s/60);
-  s=s % 60;
-  let ms=String(s % 1).substring(2,5);
-  s=Math.floor(s);
-  return ((h>0 ? h+":"+strPadLeft(m,0,2) : m) + ":" + strPadLeft(s,0,2)
-      + (ms.length>0 ? "."+ms :''));
+  let m=Math.floor(t/60).toString();
+  let s=Math.floor(t % 60).toString();
+  let ms=t-Math.floor(t);
+  ms=ms > 0.0 ? "." + ms.toFixed(3).substring(2) : "";
+  return (h>0 ? h.toString()+":"+strPadLeft(m,"0",2) : m)
+    + ":" + strPadLeft(s,"0",2) + ms;
 }
 var strPadLeft=function strPadLeft(string,pad,length){
   return (new Array(length+1).join(pad)+string).slice(-length);
