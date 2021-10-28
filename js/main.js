@@ -299,7 +299,7 @@ var myMessage=function(title, msg){
 var secToString=function(t){ // S[.sss] (sss == millseconds)
   let s=Math.floor(t);
   let ms=t-s;
-  ms=ms > 0.0 ? "." + ms.toFixed(3).substring(2) : "";
+  ms=ms > 0.0 ? ms.toFixed(3).substring(1) : "";
   return s.toString() + ms;
 }
 var secToTimeString=function(t){ // H:MM:SS[.sss] or M:SS[.sss]
@@ -307,7 +307,7 @@ var secToTimeString=function(t){ // H:MM:SS[.sss] or M:SS[.sss]
   let m=Math.floor(t/60).toString();
   let s=Math.floor(t % 60).toString();
   let ms=t-Math.floor(t);
-  ms=ms > 0.0 ? "." + ms.toFixed(3).substring(2) : "";
+  ms=ms > 0.0 ? ms.toFixed(3).substring(1) : "";
   return (h>0 ? h.toString()+":"+strPadLeft(m,"0",2) : m)
     + ":" + strPadLeft(s,"0",2) + ms;
 }
