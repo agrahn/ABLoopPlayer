@@ -302,12 +302,11 @@ var secToString=function(t){ // S[.sss] (sss == millseconds)
   ms=ms > 0.0 ? ms.toFixed(3).substring(1) : "";
   return s.toString() + ms;
 }
-var secToTimeString=function(t){ // H:MM:SS[.sss] or M:SS[.sss]
+var secToTimeString=function(t){ // H:MM:SS.sss or M:SS.sss
   let h=Math.floor(t/3600);
-  let m=Math.floor(t/60).toString();
-  let s=Math.floor(t % 60).toString();
-  let ms=t-Math.floor(t);
-  ms=ms > 0.0 ? ms.toFixed(3).substring(1) : "";
+  let m=Math.floor((t-h*3600)/60).toString();
+  let s=Math.floor(t%60).toString();
+  let ms=(t-Math.floor(t)).toFixed(3).substring(1);
   return (h>0 ? h.toString()+":"+strPadLeft(m,"0",2) : m)
     + ":" + strPadLeft(s,"0",2) + ms;
 }
@@ -391,17 +390,17 @@ var bmkAdd=function(note=null){
 //into a bookmarks array
 var insertBmk=function(sbm, tbmArr){
   let idx=tbmArr.findIndex(tbm =>
-    toNearest5ms(sbm.ta)==toNearest5ms(tbm.ta) &&
-    toNearest5ms(sbm.tb)==toNearest5ms(tbm.tb)
+    toNearest5ms(Number(sbm.ta))==toNearest5ms(Number(tbm.ta)) &&
+    toNearest5ms(Number(sbm.tb))==toNearest5ms(Number(tbm.tb))
   );
   if(idx>-1) { //update existing
     tbmArr.splice(idx, 1, sbm);
     return idx;
   }
   idx=tbmArr.findIndex(tbm =>
-    toNearest5ms(sbm.ta)< toNearest5ms(tbm.ta) ||
-    toNearest5ms(sbm.ta)==toNearest5ms(tbm.ta) &&
-    toNearest5ms(sbm.tb)< toNearest5ms(tbm.tb)
+    toNearest5ms(Number(sbm.ta))< toNearest5ms(Number(tbm.ta)) ||
+    toNearest5ms(Number(sbm.ta))==toNearest5ms(Number(tbm.ta)) &&
+    toNearest5ms(Number(sbm.tb))< toNearest5ms(Number(tbm.tb))
   );
   if(idx>-1){ //insert as new
     tbmArr.splice(idx, 0, sbm);
@@ -419,7 +418,7 @@ var myBookmarksUpdate=function(bmkArr,idx){//selected idx
     myBookmarks.remove(myBookmarks.options.length-1);
   bmkArr.forEach((bmk,i) => {
     let c=document.createElement("OPTION");
-    c.text=secToTimeString(bmk.ta)+"--"+secToTimeString(bmk.tb);
+    c.text=secToTimeString(Number(bmk.ta))+"--"+secToTimeString(Number(bmk.tb));
     c.addEventListener("mouseover", e => e.target.selected=true);
     c.addEventListener("mouseup", e => {
       onBmkSelect(e.target.index);
@@ -459,8 +458,8 @@ var bmkDelete=function(idx){
     let bmkArr=JSON.parse(storage.getItem("ab."+vidId));
     if(!bmkArr) bmkArr=[];
     let i = bmkArr.findIndex(bmk =>
-      toNearest5ms(a)==toNearest5ms(bmk.ta) &&
-      toNearest5ms(b)==toNearest5ms(bmk.tb)
+      toNearest5ms(a)==toNearest5ms(Number(bmk.ta)) &&
+      toNearest5ms(b)==toNearest5ms(Number(bmk.tb))
     );
     if(i>-1) {
       bmkArr.splice(i,1);
@@ -755,9 +754,9 @@ var mergeData=function(data){
         if(Array.isArray(srcBmks)){
           srcBmks.forEach(sbm=>{
             if(
-              sbm.ta && typeof(sbm.ta)==='number' && !isNaN(sbm.ta) && sbm.ta>0 &&
-              sbm.tb && typeof(sbm.tb)==='number' && !isNaN(sbm.tb) && sbm.tb>0 &&
-              sbm.ta<=sbm.tb && (!sbm.note || typeof(sbm.note)==='string')
+              sbm.ta && !isNaN(Number(sbm.ta)) && Number(sbm.ta)>0 &&
+              sbm.tb && !isNaN(Number(sbm.tb)) && Number(sbm.tb)>0 &&
+              Number(sbm.ta)<=Number(sbm.tb) && (!sbm.note || typeof(sbm.note)==='string')
             ) insertBmk(sbm, trgBmks);
           });
         }
