@@ -163,7 +163,7 @@ $(document).ready(function(){
 
 //add some hotkeys
 window.addEventListener("keydown", function(e){
-  e.preventDefault();e.stopPropagation();
+  e.stopPropagation();
   if (e.which==27
     && !loopButton.disabled
     && !$("input").is(":focus")
