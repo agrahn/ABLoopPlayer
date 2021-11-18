@@ -73,12 +73,9 @@ var storageWriteKeyVal=function(k,v){
 }
 
 //HTML elements
-var YTids;
-var inputYT, inputVT;
-var ytPlayer;
-var help, aonly, intro;
-var myTimeA, myTimeB, mySpeed, myBookmarks;
-var loopButton, bmkAddButton, annotButton, trashButton;
+var YTids, inputYT, inputVT, ytPlayer, help, aonly, intro, myTimeA,
+  myTimeB, mySpeed, myBookmarks, loopButton, bmkAddButton, annotButton,
+  trashButton;
 
 $(document).ready(function(){
   $("#introText").width($("#test").width()+1);
@@ -159,12 +156,14 @@ $(document).ready(function(){
   if(storage.getItem("ab.intro")!="unchecked") intro.checked=true;
   toggleIntro(intro, help);
   mySpeed.addEventListener("change", onSpeedSelectChange);
+  mySpeed.addEventListener("click", myBlur);
   bmkAddButton.addEventListener("mouseup", function(e){bmkAdd();});
   playSelectedFile("");
 });
 
 //add some hotkeys
 window.addEventListener("keydown", function(e){
+  e.preventDefault();e.stopPropagation();
   if (e.which==27
     && !loopButton.disabled
     && !$("input").is(":focus")
@@ -474,6 +473,7 @@ var bmkDelete=function(idx){
 }
 
 var onClickTrash=function(idx){
+  myBlur();
   if(idx==0){ //all items
     myConfirm(
       "Really delete <b>ALL</b> bookmarked loops?",
@@ -492,6 +492,7 @@ var onClickTrash=function(idx){
 }
 
 var onClickAddNote=function(idx){
+  myBlur();
   let currentNote=myBookmarks.options[idx].title;
   myPrompt(
     note => bmkAdd(note),
@@ -501,6 +502,7 @@ var onClickAddNote=function(idx){
 
 var textFile=null;
 var onClickExport=function(){
+  myBlur();
   let appData={};
   Object.entries(JSON.parse(JSON.stringify(storage))).forEach(([k,v])=>{
     if(k.match(/^ab\./)) appData[k]=v;
@@ -515,6 +517,7 @@ var onClickExport=function(){
 }
 
 var onClickImport=function(){
+  myBlur();
   let input = document.createElement("input");
   input.type = "file";
   input.accept="application/json";
@@ -599,7 +602,7 @@ var contextHelp=function(t){
 var cancelABLoop=function(){
   while(loopTimer.length) clearInterval(loopTimer.pop());
   isTimeASet=isTimeBSet=false;
-  loopButton.value="A";
+  loopButton.innerHTML="A";
 }
 
 var resetUI=function(){
@@ -650,12 +653,7 @@ var onRateChange=function(e){
   if(newRate!=currentRate) mySetPlaybackRate(currentRate);
 }
 
-var myBlur=function(){
-  document.activeElement.focus();
-  while(document.activeElement.tagName!="BODY"){
-    document.activeElement.blur();
-  }
-}
+var myBlur=function(){document.activeElement.blur();}
 
 //loop & app data conversion to new format "1.0"
 const timeRangePattern=timePattern+'--'+timePattern;
@@ -909,7 +907,7 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id
       $("#slider").slider("option", "values", [a, b]);
       isTimeASet=isTimeBSet=true;
       $("#timeInputs").show();
-      loopButton.value="Cancel";
+      loopButton.innerHTML="Cancel";
     }
   }
   while(loopTimer.length) clearInterval(loopTimer.pop());
@@ -1006,6 +1004,7 @@ var initResizableYT=function(){
 }
 
 var onBmkSelectYT=function(i){
+  myBlur();
   cancelABLoop();
   if(i==0) return;
   $("#slider").slider("option", "max", myGetDuration());
@@ -1014,7 +1013,7 @@ var onBmkSelectYT=function(i){
   $("#slider").slider("option", "values", [a, b]);
   isTimeASet=isTimeBSet=true;
   $("#timeInputs").show();
-  loopButton.value="Cancel";
+  loopButton.innerHTML="Cancel";
   annotButton.disabled=false;
   if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING)
     loopTimer.push(setInterval(onTimeUpdate,05));
@@ -1036,7 +1035,7 @@ var onLoopDownYT=function(){
           timeB=myGetCurrentTimeYT();
         }
         isTimeBSet=true;
-        loopButton.value="Cancel";
+        loopButton.innerHTML="Cancel";
         $("#slider").slider("option", "max", myGetDuration());
         $("#slider").slider("option", "values", [ timeA, timeB ]);
         $("#timeInputs").show();
@@ -1046,12 +1045,13 @@ var onLoopDownYT=function(){
     }else{
       timeA=myGetCurrentTimeYT();
       isTimeASet=true;
-      loopButton.value="B";
+      loopButton.innerHTML="B";
     }
   }
 }
 
 var onClickShare=function(){
+  myBlur();
   let sharelink=window.location.href;
   let idx=sharelink.indexOf("?");
   if(idx>-1) sharelink=sharelink.substring(0,idx-1);
@@ -1180,6 +1180,7 @@ var mySetPlaybackRateVT=function(r){
 }
 
 var onBmkSelectVT=function(i){
+  myBlur();
   cancelABLoop();
   if(i==0) return;
   let a,b;
@@ -1187,7 +1188,7 @@ var onBmkSelectVT=function(i){
   $("#slider").slider("option", "values", [a, b]);
   isTimeASet=isTimeBSet=true;
   $("#timeInputs").show();
-  loopButton.value="Cancel";
+  loopButton.innerHTML="Cancel";
   annotButton.disabled=false;
   if(!myVideo.paused)
     loopTimer.push(setInterval(onTimeUpdate,05));
@@ -1245,7 +1246,7 @@ var onLoopDownVT=function(){
           timeB=myGetCurrentTimeVT();
         }
         isTimeBSet=true;
-        loopButton.value="Cancel";
+        loopButton.innerHTML="Cancel";
         $("#slider").slider("option", "max", myGetDuration());
         $("#slider").slider("option", "values", [ timeA, timeB ]);
         $("#timeInputs").show();
@@ -1255,7 +1256,7 @@ var onLoopDownVT=function(){
     }else{
       timeA=myGetCurrentTimeVT();
       isTimeASet=true;
-      loopButton.value="B";
+      loopButton.innerHTML="B";
     }
   }
 }

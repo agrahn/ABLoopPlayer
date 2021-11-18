@@ -87,7 +87,7 @@ A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playl
 </div>
 
 <div id="bottom" style="margin: 3px 0px 0px 0px; padding: 5px; background-color: #ddd;position:relative;">
-A-B Loop: <input type="button" id="loopButton" value="A" onmousedown="onLoopDown()" onmouseup="myBlur()"/>
+A-B Loop: <button id="loopButton" onmousedown="onLoopDown()" onmouseup="this.blur()"/>A</button>
 <span id="myBmkSpan" hidden>
   <style>select:invalid { color: gray; }</style>
   <select id="myBookmarks" size="1"
