@@ -37,7 +37,7 @@ hr.double {
   height: 1em; width: 1em; top: 0px;
   border: 0px;
   padding: 0;
-  color: #000;
+  color: #000000;
 }
 
 #slider .ui-slider-handle:focus {
@@ -60,10 +60,44 @@ hr.double {
   display: none;
 }
 
+#speed {
+  height: 6px;
+  display: inline-block;
+  width: 20ex;
+  margin-left:1.1em;
+  margin-top:0.7em;
+  background: #aaaaaa;
+}
+
+#speed .ui-slider-handle {
+  width: 2.2em;
+  height: 1.2em;
+  top: 50%;
+  margin-top: -0.8em;
+  margin-left: -1.1em;
+  text-align: center;
+  line-height: 1.2em;
+  border-left-color: #e0e0e0;
+  border-top-color: #e0e0e0;
+  border-right-color: #959595;
+  border-bottom-color: #959595;
+  border-width: 2px;
+  font-family: serif;
+  color: #000000;
+}
+
 /* remove rounded corners */
 .ui-corner-all {border-radius: 0px;}
 
-input {border-radius: 0px;}
-button {border-radius: 0px;}
+button {
+  border-width: 2px;
+  border-radius: 0;
+  color: #000000;
+  border-left-color: #e0e0e0;
+  border-top-color: #e0e0e0;
+  border-right-color: #959595;
+  border-bottom-color: #959595;
+}
 
-#shareButton:disabled{opacity:0.5;}
+button:disabled{opacity:0.5;}
+

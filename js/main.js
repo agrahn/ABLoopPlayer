@@ -23,7 +23,6 @@ var vidId; //current YT video ID or file name + size
 var timeA, timeB; // s
 var isTimeASet=false;
 var isTimeBSet=false;
-var currentRate=1.0;
 var loopTimer=[];
 var scrubTimer=[];
 var knownIDs=[];
@@ -74,7 +73,7 @@ var storageWriteKeyVal=function(k,v){
 
 //HTML elements
 var YTids, inputYT, inputVT, ytPlayer, help, aonly, intro, myTimeA,
-  myTimeB, mySpeed, myBookmarks, loopButton, bmkAddButton, annotButton,
+  myTimeB, myBookmarks, loopButton, bmkAddButton, annotButton,
   trashButton;
 
 $(document).ready(function(){
@@ -97,7 +96,6 @@ $(document).ready(function(){
   myTimeA=document.getElementById("myTimeA");
   myTimeB=document.getElementById("myTimeB");
   loopButton=document.getElementById("loopButton");
-  mySpeed=document.getElementById("mySpeed");
   myBookmarks=document.getElementById("myBookmarks");
   bmkAddButton=document.getElementById("bmkAddButton");
   annotButton=document.getElementById("annotButton");
@@ -155,8 +153,14 @@ $(document).ready(function(){
   }
   if(storage.getItem("ab.intro")!="unchecked") intro.checked=true;
   toggleIntro(intro, help);
-  mySpeed.addEventListener("change", onSpeedSelectChange);
-  mySpeed.addEventListener("click", myBlur);
+  let speedHandle = $("#speed .ui-slider-handle");
+  $("#speed").slider({
+    min: 0.25, max: 2.0, step: 0.05, value: 1,
+    create: function() {speedHandle.text($(this).slider("value"));},
+    change: function(e,ui) {speedHandle.text(myGetPlaybackRate());},
+    slide: function(e,ui) {speedHandle.text(ui.value);},
+    stop: function(e,ui){mySetPlaybackRate(ui.value);},
+  });
   bmkAddButton.addEventListener("mouseup", function(e){bmkAdd();});
   playSelectedFile("");
 });
@@ -170,21 +174,25 @@ window.addEventListener("keydown", function(e){
   ) onLoopDown();
   else if (e.which==36
     && !$("#slider .ui-slider-handle").is(":focus")
+    && !$("#speed .ui-slider-handle").is(":focus")
     && !$("input").is(":focus")
     && !$("select").is(":focus")
   ){ try{mySetCurrentTime(0);}catch(err){} }
   else if (e.which==35
     && !$("#slider .ui-slider-handle").is(":focus")
+    && !$("#speed .ui-slider-handle").is(":focus")
     && !$("input").is(":focus")
     && !$("select").is(":focus")
   ){ try{mySetCurrentTime(myGetDuration());}catch(err){} }
   else if (e.which==37
     && !$("#slider .ui-slider-handle").is(":focus")
+    && !$("#speed .ui-slider-handle").is(":focus")
     && !$("input").is(":focus")
     && !$("select").is(":focus")
   ){ try{mySetCurrentTime(myGetCurrentTime()-15);}catch(err){} }
   else if (e.which==39
     && !$("#slider .ui-slider-handle").is(":focus")
+    && !$("#speed .ui-slider-handle").is(":focus")
     && !$("input").is(":focus")
     && !$("select").is(":focus")
   ){ try{mySetCurrentTime(myGetCurrentTime()+15);}catch(err){} }
@@ -567,7 +575,7 @@ var contextHelp=function(t){
     myTimeA.title=myTimeB.title="Fine-tune loop range. Input format: [hh:]mm:ss[.sss]";
     annotButton.title="Add a note to the currently selected bookmark.";
     trashButton.title="Delete currently selected / delete all bookmarked loops.";
-    mySpeed.title="Select playback rate.";
+    $("#speed").attr("title", "Select playback rate.");
     shareButton.title="Share YouTube video link with current loop settings.";
     exportButton.title="Export loop data and player settings to file \"ABLoopPlayer.json\". "
         + "Check your \"Downloads\" folder.";
@@ -590,7 +598,7 @@ var contextHelp=function(t){
     bmkAddButton.title=
     annotButton.title=
     trashButton.title=
-    mySpeed.title=
+    $("#speed").attr("title", "");
     shareButton.title=
     exportButton.title=
     importButton.title=
@@ -612,45 +620,16 @@ var resetUI=function(){
   while(scrubTimer.length) clearInterval(scrubTimer.pop());
   $("#scrub").slider("option", "value", 0).hide();
   loopButton.disabled=true;
-  currentRate=1;
-  while(mySpeed.options.length) mySpeed.remove(mySpeed.options.length-1);
-  mySpeed.disabled=true;
+  $("#speed").slider("option", "disabled", true);
+  $("#speed").slider("option", "step", 0.05);
   shareButton.disabled=true;
   myBookmarksUpdate([],-1);
 }
 
-var onSpeedSelectChange=function(e){
-  e.target.blur();
-  let newRate=Number(e.target.value);
-  if(newRate==currentRate) return;
-  //temporarily reset <select> to old value
-  //new value set by onRateChange only on success
-  for(let i=0; i<e.target.length; i++){
-    if(Number(e.target.options[i].value)==currentRate){
-      e.target.options[i].selected=true;
-      break;
-    }
-  }
-  mySetPlaybackRate(newRate);
-}
-
 var onRateChange=function(e){
-  myBlur();
-  let newRate=myGetPlaybackRate();
-  for(let i=0; i<mySpeed.length; i++){
-    if(Number(mySpeed.options[i].value)==newRate){
-      mySpeed.options[i].selected=true;
-      currentRate=newRate;
-      break;
-    } else if (i+1<mySpeed.length && newRate < mySpeed.options[i+1].value){
-      let c=document.createElement("OPTION");
-      mySpeed.add(c,i+1); //append as a child to selector
-      c.text=c.value=currentRate=newRate;
-      c.selected=true;
-      break;
-    }
-  }
-  if(newRate!=currentRate) mySetPlaybackRate(currentRate);
+  let r=myGetPlaybackRate();
+  $("#speed").slider("value",r);
+  $("#speed .ui-slider-handle").text(r);
 }
 
 var myBlur=function(){document.activeElement.blur();}
@@ -866,23 +845,16 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id
     vidId=id;
     $("#timeInputs").hide();
     cancelABLoop();
-    //clear list of playback rates
-    while(mySpeed.options.length) mySpeed.remove(mySpeed.options.length-1);
-    mySpeed.disabled=true;
-    //determine available playback rates and populate the #mySpeed element
     let rates=e.target.getAvailablePlaybackRates();
-    rates.forEach(r => {
-      let c=document.createElement("OPTION");
-      mySpeed.add(c); //append as a child to selector
-      c.text=c.value=r;
-      if(r==1.0){
-        c.text="Normal";
-        c.selected=true;
-        mySetPlaybackRate(1);
-      }
-    });
+    let min=rates[0];
+    let max=rates[rates.length-1];
+    $("#speed").slider("option", "disabled", true);
+    $("#speed").slider("option", "min", min);
+    $("#speed").slider("option", "max", max);
+    $("#speed").slider("option", "step", 0.05);
+    $("#speed").slider("option", "value", s);
     mySetPlaybackRate(s); //custom rate via url parameter
-    mySpeed.disabled=false;
+    $("#speed").slider("option", "disabled", false);
     shareButton.disabled=false;
     //populate bookmark list with saved items for the current video ID
     let bmkArr=JSON.parse(storage.getItem("ab."+vidId));
@@ -1090,7 +1062,11 @@ var playSelectedFile=function(f){
     if (isFinite(e.target.duration)){
       $("#slider").slider("option", "max", myGetDuration());
       $("#scrub").slider("option", "max", myGetDuration()).show();
-      mySpeed.disabled=false;
+      $("#speed").slider("option", "min", 0.25);
+      $("#speed").slider("option", "max", 2);
+      $("#speed").slider("option", "value", 1);
+      $("#speed").slider("option", "step", 0.01);
+      $("#speed").slider("option", "disabled", false);
     }else{
       //repeat setting media source until duration property is properly set;
       //this is a workaround of a bug in FFox on Windows
@@ -1099,7 +1075,7 @@ var playSelectedFile=function(f){
   });
   myVideo.addEventListener("loadeddata", onLoadedData);
   myVideo.addEventListener("play", function(){
-    mySetPlaybackRate(Number(mySpeed.value));
+    mySetPlaybackRate(Number($("#speed").slider("value")));
     if (isTimeASet && isTimeBSet) loopTimer.push(setInterval(onTimeUpdate,05));
   });
   myVideo.addEventListener("pause", function(){
@@ -1112,18 +1088,7 @@ var playSelectedFile=function(f){
   myVideo.addEventListener("ratechange", onRateChange);
   myResizable.appendChild(myVideo);
   if(f){ //a media file was selected
-    //add speed options
-    mySpeed.disabled=true;
-    [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0].forEach(r => {
-      let c=document.createElement("OPTION");
-      mySpeed.add(c); //append as a child to selector
-      c.text=c.value=r;
-      if(r==1.0){
-        c.id="normalSpeed";
-        c.text="Normal";
-        c.selected=true;
-      }
-    });
+  $("#speed").slider("option", "disabled", true);
     //set video source
     vidId=f.name+"-"+f.size; //some checksum would be better
     try {

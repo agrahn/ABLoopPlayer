@@ -58,7 +58,7 @@ A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playl
 <hr class="double" style="margin-bottom: 0px;"/>
 <div style="margin-bottom: 3px; padding: 5px; background-color: #ddd;">
   <div style="display: flex;">
-  YouTube URL | video ID | list ID :<!--
+  <label for="inputYT">YouTube URL | video ID | list ID :</label><!--
   --><input id="inputYT" list="YTids" autocomplete onfocus="this.select()"
     onkeypress="if(event && event.keyCode == 13) queryYT(this.value)" onchange="queryYT(this.value)"
     style="margin-left: 5px; margin-right: 1px; flex: 1 1 auto;" disabled/><datalist id="YTids"></datalist><!--
@@ -66,11 +66,11 @@ A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playl
       --><button id="searchButtonYT" onclick="queryYT(inputYT.value)"
            style="margin-left: 0px; padding: 0;" disabled><!--
         --><span class="ui-icon ui-icon-play"></span></button>
-      <input type="checkbox" onchange="contextHelp(this)" id="help"/>?
+      <input type="checkbox" onchange="contextHelp(this)" id="help"/><label for="help">?</label>
     </span>
   </div>
-  Media file: <input id="inputVT" accept="video/*,audio/*" type="file"/>
-  <input type="checkbox" onchange="toggleAudio(this, help)" id="aonly"/>audio only
+  <label for="inputVT">Media file:</label> <input id="inputVT" accept="video/*,audio/*" type="file"/>
+  <input type="checkbox" onchange="toggleAudio(this, help)" id="aonly"/><label for="aonly">audio only</label>
 </div>
 
 <div id="myResizable" style="background: #ddd;"></div><!-- takes one of the players -->
@@ -80,14 +80,14 @@ A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playl
   <!-- placeholder for jQuery range slider -->
   <div id="slider" style="margin-top: 0px; margin-bottom: 2px;"></div>
   <div style="margin: 3px 0px 0px 0px; padding: 5px; background-color: #ddd;">
-  A: <input id="myTimeA" onchange="onInputTime(this,0)" size="8"/>
-  B: <input id="myTimeB" onchange="onInputTime(this,1)" size="8"/>
+  <label for="myTimeA">A:</label> <input id="myTimeA" onchange="onInputTime(this,0)" size="8"/>
+  <label for="myTimeB">B:</label> <input id="myTimeB" onchange="onInputTime(this,1)" size="8"/>
   <button id="bmkAddButton" style="padding:0px 2px;font-size:110%;">&#9734;</button>
   </div>
 </div>
 
 <div id="bottom" style="margin: 3px 0px 0px 0px; padding: 5px; background-color: #ddd;position:relative;">
-A-B Loop: <button id="loopButton" onmousedown="onLoopDown()" onmouseup="this.blur()"/>A</button>
+<label for="loopButton">A-B Loop:</label> <button id="loopButton" onmousedown="onLoopDown()" onmouseup="this.blur()"/>A</button>
 <span id="myBmkSpan" hidden>
   <style>select:invalid { color: gray; }</style>
   <select id="myBookmarks" size="1"
@@ -102,8 +102,8 @@ A-B Loop: <button id="loopButton" onmousedown="onLoopDown()" onmouseup="this.blu
   --><button id="trashButton" style="width:1.5em; padding: 0px;"
     onclick="onClickTrash(myBookmarks.selectedIndex)"
   ><span class="ui-icon ui-icon-trash"></span></button>
-</span> <input type="checkbox" onchange="toggleIntro(this, help)" id="intro"/>play intro<br/>
-Speed: <select id="mySpeed" style="margin-top: 5px;" disabled></select>
+</span> <input type="checkbox" onchange="toggleIntro(this, help)" id="intro"/><label for="intro">play intro</label><br/>
+<label for="speed">Speed:</label> <div id="speed"><div id="speed-handle" class="ui-slider-handle"></div></div>
 <span style="position:absolute;bottom:3px;right:5px">
   <button id="shareButton" style="width:1.5em;padding:0px;margin:0px;"
       onclick="onClickShare()"
