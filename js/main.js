@@ -227,6 +227,7 @@ var myPrompt=function(onclose, title, text, placeholder, input){
       {
         text: "Cancel",
         click: function(){
+          ret=input;
           $(this).dialog( "close" );
         }
       },
