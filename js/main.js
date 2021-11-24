@@ -428,6 +428,9 @@ var myBookmarksUpdate=function(bmkArr,idx){//selected idx
     let c=document.createElement("OPTION");
     c.text=secToTimeString(Number(bmk.ta))+"--"+secToTimeString(Number(bmk.tb));
     c.addEventListener("mouseover", e => e.target.selected=true);
+    c.addEventListener("touchstart", e => {
+	  if(e.target.title) $(e.target).tooltip("open");
+	});
     c.addEventListener("mouseup", e => {
       onBmkSelect(e.target.index);
       e.target.parentNode.size=1;
