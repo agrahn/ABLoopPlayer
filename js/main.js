@@ -421,6 +421,13 @@ var insertBmk=function(sbm, tbmArr){
 
 const toNearest5ms = t => Math.round(t*200)/200;
 
+var showNote=function(o){// option ref
+  try{$(o).tooltip("open");}catch(e){}
+};
+var hideNote=function(o){// option ref
+  try{$(o).tooltip("close");}catch(e){}
+};
+
 var myBookmarksUpdate=function(bmkArr,idx){//selected idx
   while(myBookmarks.options.length>1)
     myBookmarks.remove(myBookmarks.options.length-1);
@@ -428,9 +435,6 @@ var myBookmarksUpdate=function(bmkArr,idx){//selected idx
     let c=document.createElement("OPTION");
     c.text=secToTimeString(Number(bmk.ta))+"--"+secToTimeString(Number(bmk.tb));
     c.addEventListener("mouseover", e => e.target.selected=true);
-    c.addEventListener("touchstart", e => {
-	  if(e.target.title) $(e.target).tooltip("open");
-	});
     c.addEventListener("mouseup", e => {
       onBmkSelect(e.target.index);
       e.target.parentNode.size=1;

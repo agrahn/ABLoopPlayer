@@ -95,6 +95,9 @@ A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playl
 <span id="myBmkSpan" hidden>
   <style>select:invalid { color: gray; }</style>
   <select id="myBookmarks" size="1"
+    ontouchstart="showNote(this.options[this.selectedIndex]);"
+    ontouchend="hideNote(this.options[this.selectedIndex]);"
+    ontouchcancel="hideNote(this.options[this.selectedIndex]);"
     onmousedown="this.size=Math.min(5,this.options.length)"
     onblur="onBmkSelect(this.selectedIndex);this.size=1;"
   >
