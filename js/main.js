@@ -439,6 +439,9 @@ var myBookmarksUpdate=function(bmkArr,idx){//selected idx
       onBmkSelect(e.target.index);
       e.target.parentNode.size=1;
     });
+    c.addEventListener("touchstart", showNote(e.target));
+    c.addEventListener("touchend", hideNote(e.target));
+    c.addEventListener("touchcancel", hideNote(e.target));
     c.title="";
     if(bmk.note){
       c.title=bmk.note;
