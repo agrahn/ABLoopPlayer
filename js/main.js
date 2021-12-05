@@ -385,11 +385,16 @@ var onInputTime=function(whichInput, sliderIdx){
 
 var bmkAdd=function(note=null){
   let bmk={ta: secToString(timeA), tb: secToString(timeB)};
-  if(note && note.trim()) bmk.note=note.trim();
   let bmkArr=[];
   if(storage.getItem("ab."+vidId))
     bmkArr=JSON.parse(storage.getItem("ab."+vidId));
-  let idx=insertBmk(bmk, bmkArr);
+  let idx=bmkArr.findIndex(bm =>
+    toNearest5ms(Number(bmk.ta))==toNearest5ms(Number(bm.ta)) &&
+    toNearest5ms(Number(bmk.tb))==toNearest5ms(Number(bm.tb))
+  );
+  if(note && note.trim()) bmk.note=note.trim();
+  if(idx>-1 && bmkArr[idx].note && note===null) bmk.note=bmkArr[idx].note;
+  idx=insertBmk(bmk, bmkArr);
   if(bmkArr.length) storageWriteKeyVal("ab."+vidId,JSON.stringify(bmkArr));
   myBookmarksUpdate(bmkArr,idx);
 }
