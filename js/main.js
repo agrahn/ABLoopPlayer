@@ -17,7 +17,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-var appversion="1.0";
+var appversion="1.01";
 
 var vidId; //current YT video ID or file name + size
 var timeA, timeB; // s
@@ -108,14 +108,19 @@ $(document).ready(function(){
     playSelectedFile(e.target.files[0]);
   });
   inputYT.disabled=searchButtonYT.disabled=true;
-  //convert saved bookmarks from previous version
-  if(storage.getItem("help")){ //indicates old storage format
+  //convert saved bookmarks from previous versions
+  if(!(
+    storage.getItem("ab.version")&&
+    Number(storage.getItem("ab.version"))>1.0
+  )){
     let appData=convertData(JSON.parse(JSON.stringify(storage)));
     storage.clear();
     mergeData(appData);
   }
   storageWriteKeyVal("ab.version", appversion);
-  //get already watched YT IDs
+  //get already watched media files and YT IDs
+  if(storage.getItem("ab.knownMedia"))
+    knownMedia=JSON.parse(storage.getItem("ab.knownMedia"));
   if(storage.getItem("ab.knownIDs")){
     knownIDs=JSON.parse(storage.getItem("ab.knownIDs"));
     for(let i=0; i<knownIDs.length && i<100; i++){
@@ -561,7 +566,6 @@ var onClickImport=function(){
       }
     }
     reader.readAsText(file,"UTF-8");
-
   }
   input.click();
 }
@@ -650,12 +654,23 @@ var onRateChange=function(e){
 
 var myBlur=function(){document.activeElement.blur();}
 
-//loop & app data conversion to new format "1.0"
+//loop & app data conversion to current format
 const timeRangePattern=timePattern+'--'+timePattern;
 const timeRangeRegExp=new RegExp('^'+timeRangePattern+'(?:,'+timeRangePattern+')*$');
 var convertData=function(data){
-  let storageFormat=data["ab.version"];
-  if(storageFormat==="1.0") return data;
+  let storageFormat=Number(data["ab.version"]);
+  if(storageFormat==1.0){
+    //fix list of known media files
+    let mediaids=[];
+    Object.entries(data).forEach(([k,v])=>{
+      let id=k.match(/^ab\.(.+\.[a-zA-Z0-9]{3,4}-\d{3,})$/);
+      if(id&&id[1]) mediaids.push(id[1]);
+    });
+    delete data["ab.knownMedia"];
+    if(mediaids.length) data["ab.knownMedia"]=JSON.stringify(mediaids);
+    data["ab.version"]=appversion;
+    return data;
+  }
   //YouTube data
   let ytubeids=[];
   if(data.knownIDs){
@@ -665,7 +680,7 @@ var convertData=function(data){
   else{
     Object.entries(data).forEach(([k,v])=>{
       let id=k.match(/^[0-9a-zA-Z_-]{11}$/);
-      if(id) ytubeids.push(id[0]);
+      if(id&&id[0]) ytubeids.push(id[0]);
     });
   }
   //media files >= 100 Bytes
@@ -673,7 +688,7 @@ var convertData=function(data){
   delete data.knownMedia;
   Object.entries(data).forEach(([k,v])=>{
     let id=k.match(/^.+\.[a-zA-Z0-9]{3,4}-\d{3,}$/);
-    if(id) mediaids.push(id[0]);
+    if(id&&id[0]) mediaids.push(id[0]);
   });
   //now, process both lists
   let knownIDs, knownMedia;
@@ -723,7 +738,7 @@ var mergeData=function(data){
     if(Array.isArray(tmp)){
       tmp.forEach(id=>{
         let iid=id.match(/^[0-9a-zA-Z_-]{11,}$/); //videos/playlists
-        if(iid) ytSrcIds.push(iid[0]);
+        if(iid&&iid[0]) ytSrcIds.push(iid[0]);
       });
     }
   }
@@ -732,7 +747,7 @@ var mergeData=function(data){
     if(Array.isArray(tmp)){
       tmp.forEach(id=>{
         let iid=id.match(/^.+\.[a-zA-Z0-9]{3,4}-\d{3,}$/);
-        if(iid) mmSrcIds.push(iid[0]);
+        if(iid&&iid[0]) mmSrcIds.push(iid[0]);
       });
     }
   }
