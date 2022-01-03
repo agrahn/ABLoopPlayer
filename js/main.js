@@ -17,7 +17,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-var appversion="1.01";
+var appversion=1.01;
 
 var vidId; //current YT video ID or file name + size
 var timeA, timeB; // s
@@ -108,16 +108,14 @@ $(document).ready(function(){
     playSelectedFile(e.target.files[0]);
   });
   inputYT.disabled=searchButtonYT.disabled=true;
-  //convert saved bookmarks from previous versions
-  if(!(
-    storage.getItem("ab.version")&&
-    Number(storage.getItem("ab.version"))>1.0
-  )){
+  //initialise storage or convert it from previous versions
+  if(
+    !storage.getItem("ab.version") || Number(storage.getItem("ab.version"))!=appversion
+  ){
     let appData=convertData(JSON.parse(JSON.stringify(storage)));
     storage.clear();
     mergeData(appData);
   }
-  storageWriteKeyVal("ab.version", appversion);
   //get already watched media files and YT IDs
   if(storage.getItem("ab.knownMedia"))
     knownMedia=JSON.parse(storage.getItem("ab.knownMedia"));
@@ -659,6 +657,7 @@ const timeRangePattern=timePattern+'--'+timePattern;
 const timeRangeRegExp=new RegExp('^'+timeRangePattern+'(?:,'+timeRangePattern+')*$');
 var convertData=function(data){
   let storageFormat=Number(data["ab.version"]);
+  if(storageFormat==appversion) return data;
   if(storageFormat==1.0){
     //fix list of known media files
     let mediaids=[];
