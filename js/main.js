@@ -605,6 +605,8 @@ var contextHelp=function(t){
   } else {
     storageWriteKeyVal("ab.help", "unchecked");
     t.title="Enable context-sensitive help.";
+    $("#speed").attr("title", "");
+    $("#slider").attr("title", "");
     aonly.title=
     intro.title=
     inputYT.title=
@@ -616,12 +618,10 @@ var contextHelp=function(t){
     bmkAddButton.title=
     annotButton.title=
     trashButton.title=
-    $("#speed").attr("title", "");
     shareButton.title=
     exportButton.title=
     importButton.title=
     "";
-    $("#slider").attr("title", "");
   }
 }
 
