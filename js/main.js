@@ -73,7 +73,8 @@ var storageWriteKeyVal=function(k,v){
 
 //HTML elements
 var YTids, inputYT, inputVT, ytPlayer, help, aonly, intro, myTimeA,
-  myTimeB, myBookmarks, loopButton, bmkAddButton, annotButton,
+  myTimeB, myBookmarks, loopButton, bmkAddButton, loopBackButton,
+  loopHalveButton, loopDoubleButton, loopForwardButton, annotButton,
   trashButton;
 
 $(document).ready(function(){
@@ -98,6 +99,10 @@ $(document).ready(function(){
   loopButton=document.getElementById("loopButton");
   myBookmarks=document.getElementById("myBookmarks");
   bmkAddButton=document.getElementById("bmkAddButton");
+  loopBackButton=document.getElementById("loopBackButton");
+  loopHalveButton=document.getElementById("loopHalveButton");
+  loopDoubleButton=document.getElementById("loopDoubleButton");
+  loopForwardButton=document.getElementById("loopForwardButton");
   annotButton=document.getElementById("annotButton");
   trashButton=document.getElementById("trashButton");
   importButton=document.getElementById("importButton");
@@ -386,6 +391,38 @@ var onInputTime=function(whichInput, sliderIdx){
   }
 }
 
+var updateLoopUI=function(){
+  $("#slider").slider("option", "max", myGetDuration());
+  $("#slider").slider("option", "values", [ timeA, timeB ]);
+  $("#timeInputs").show();
+}
+
+var onLoopBack=function(){
+  let delta=timeB-timeA;
+  timeA-=delta;
+  timeB-=delta;
+  updateLoopUI();
+}
+
+var onLoopHalve=function(){
+  let delta=timeB-timeA;
+  timeB-=delta/2;
+  updateLoopUI();
+}
+
+var onLoopDouble=function(){
+  let delta=timeB-timeA;
+  timeB+=delta;
+  updateLoopUI();
+}
+
+var onLoopForward=function(){
+  let delta=timeB-timeA;
+  timeA+=delta;
+  timeB+=delta;
+  updateLoopUI();
+}
+
 var bmkAdd=function(note=null){
   let bmk={ta: secToString(timeA), tb: secToString(timeB)};
   let bmkArr=[];
@@ -590,6 +627,10 @@ var contextHelp=function(t){
                      + " Hotkey: [Esc]";
     myBookmarks.title="Choose from previously saved loops.";
     bmkAddButton.title="Save current loop range to the list of bookmarks.";
+    loopBackButton.title="Loop preceding section";
+    loopHalveButton.title="Halve the loop duration";
+    loopDoubleButton.title="Double the loop duration";
+    loopForwardButton.title="Loop following section";
     myTimeA.title=myTimeB.title="Fine-tune loop range. Input format: [hh:]mm:ss[.sss]";
     annotButton.title="Add a note to the currently selected bookmark.";
     trashButton.title="Delete currently selected / delete all bookmarked loops.";
@@ -616,6 +657,10 @@ var contextHelp=function(t){
     myBookmarks.title=
     myTimeA.title=myTimeB.title=
     bmkAddButton.title=
+    loopBackButton.title=
+    loopHalveButton.title=
+    loopDoubleButton.title=
+    loopForwardButton.title=
     annotButton.title=
     trashButton.title=
     shareButton.title=
@@ -1038,9 +1083,7 @@ var onLoopDownYT=function(){
         }
         isTimeBSet=true;
         loopButton.innerHTML="Cancel";
-        $("#slider").slider("option", "max", myGetDuration());
-        $("#slider").slider("option", "values", [ timeA, timeB ]);
-        $("#timeInputs").show();
+        updateLoopUI();
         if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING)
           loopTimer.push(setInterval(onTimeUpdate,05));
       }
@@ -1242,9 +1285,7 @@ var onLoopDownVT=function(){
         }
         isTimeBSet=true;
         loopButton.innerHTML="Cancel";
-        $("#slider").slider("option", "max", myGetDuration());
-        $("#slider").slider("option", "values", [ timeA, timeB ]);
-        $("#timeInputs").show();
+        updateLoopUI();
         if(!myVideo.paused)
           loopTimer.push(setInterval(onTimeUpdate,05));
       }
