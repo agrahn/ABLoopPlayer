@@ -20,7 +20,7 @@
 var appversion=1.01;
 
 var vidId; //current YT video ID or file name + size
-var timeA, timeB; // s
+var timeA, timeB, delta; // s
 var isTimeASet=false;
 var isTimeBSet=false;
 var loopTimer=[];
@@ -73,8 +73,8 @@ var storageWriteKeyVal=function(k,v){
 
 //HTML elements
 var YTids, inputYT, inputVT, ytPlayer, help, aonly, intro, myTimeA,
-  myTimeB, myBookmarks, loopButton, bmkAddButton, loopBackButton,
-  loopHalveButton, loopDoubleButton, loopForwardButton, annotButton,
+  myTimeB, myBookmarks, loopButton, bmkAddButton, loopBackwardsButton,
+  loopHalveButton, loopDoubleButton, loopForwardsButton, annotButton,
   trashButton;
 
 $(document).ready(function(){
@@ -99,10 +99,10 @@ $(document).ready(function(){
   loopButton=document.getElementById("loopButton");
   myBookmarks=document.getElementById("myBookmarks");
   bmkAddButton=document.getElementById("bmkAddButton");
-  loopBackButton=document.getElementById("loopBackButton");
+  loopBackwardsButton=document.getElementById("loopBackwardsButton");
   loopHalveButton=document.getElementById("loopHalveButton");
   loopDoubleButton=document.getElementById("loopDoubleButton");
-  loopForwardButton=document.getElementById("loopForwardButton");
+  loopForwardsButton=document.getElementById("loopForwardsButton");
   annotButton=document.getElementById("annotButton");
   trashButton=document.getElementById("trashButton");
   importButton=document.getElementById("importButton");
@@ -145,8 +145,9 @@ $(document).ready(function(){
     min: 0,
     step: 0.005,
     range: true,
-    change: function(e,ui){onSliderChange(e,ui);},
+    start: function(e,ui){onSliderStart(e,ui);},
     slide: function(e,ui){onSliderSlide(e,ui);},
+    change: function(e,ui){onSliderChange(e,ui);},
   });
   $("#slider").css("height", "1em");
   $("#slider .ui-slider-handle").first().css("margin-left", "-1em").text("A");
@@ -339,30 +340,43 @@ var timeStringToSec=function(ts){
   return s;
 }
 
+var onSliderStart=function(e,ui){
+  delta=Math.round((timeB-timeA)*1000)/1000;
+}
+
 var onSliderChange=function(e,ui){
   timeA=ui.values[0];
   timeB=ui.values[1];
-  myTimeA.value=secToTimeString(timeA);
-  myTimeB.value=secToTimeString(timeB);
+  myTimeA.value=secToTimeString(Math.max(timeA,0));
+  myTimeB.value=secToTimeString(Math.min(timeB,myGetDuration()));
 }
 
 var onSliderSlide=function(e,ui){
   if(e.ctrlKey){
-    let delta=timeB-timeA;
     if(ui.handleIndex==0){
-      timeA=ui.values[0];
-      timeB=timeA+delta;
-      $("#slider" ).slider("values", 1, timeB);
+      if(timeB>=myGetDuration()-0.005) {
+        e.preventDefault();
+        timeA=myGetDuration()-delta;
+        timeB=myGetDuration();
+      }else{
+        timeA=ui.values[0];
+        timeB=timeA+delta;
+      }
     }else{
-      timeB=ui.values[1];
-      timeA=timeB-delta;
-      $("#slider" ).slider("values", 0, timeA);
+      if(timeA<=0.005) {
+        e.preventDefault();
+        timeA=0;
+        timeB=delta;
+      }else{
+        timeB=ui.values[1];
+        timeA=timeB-delta;
+      }
     }
-    myTimeA.value=secToTimeString(Math.max(timeA,0));
-    myTimeB.value=secToTimeString(Math.min(timeB, myGetDuration()));
   }else{
-    onSliderChange(e,ui);
+    timeA=ui.values[0];
+    timeB=ui.values[1];
   }
+  updateLoopUI();
 }
 
 var onTimeUpdate=function(){
@@ -375,30 +389,33 @@ var onInputTime=function(whichInput, sliderIdx){
   let time=whichInput.value.match(timeRegExp);  //validate user input
   if(!time){
     if(sliderIdx==0){
-      $("#slider" ).slider("values", 0, timeA);
+      $("#slider").slider("values", 0, timeA);
     }else{
-      $("#slider" ).slider("values", 1, timeB);
+      $("#slider").slider("values", 1, timeB);
     }
     return;
   }
   let sec=timeStringToSec(time[0]);
   if(sliderIdx==0){
     sec=Math.min(sec,timeB);
-    $("#slider" ).slider("values", 0, sec);
+    $("#slider").slider("values", 0, sec);
   }else{
     sec=Math.min(sec,myGetDuration()); sec=Math.max(sec,timeA);
-    $("#slider" ).slider("values", 1, sec);
+    $("#slider").slider("values", 1, sec);
   }
 }
 
 var updateLoopUI=function(){
+  myTimeA.value=secToTimeString(Math.max(timeA,0));
+  myTimeB.value=secToTimeString(Math.min(timeB,myGetDuration()));
   $("#slider").slider("option", "max", myGetDuration());
   $("#slider").slider("option", "values", [ timeA, timeB ]);
   $("#timeInputs").show();
 }
 
-var onLoopBack=function(){
+var onLoopBackwards=function(){
   let delta=timeB-timeA;
+  if(timeA-delta<0) return;
   timeA-=delta;
   timeB-=delta;
   updateLoopUI();
@@ -416,8 +433,9 @@ var onLoopDouble=function(){
   updateLoopUI();
 }
 
-var onLoopForward=function(){
+var onLoopForwards=function(){
   let delta=timeB-timeA;
+  if(timeB+delta>myGetDuration()) return;
   timeA+=delta;
   timeB+=delta;
   updateLoopUI();
@@ -626,12 +644,12 @@ var contextHelp=function(t){
     loopButton.title="Click twice to mark loop range / click to cancel current loop."
                      + " Hotkey: [Esc]";
     myBookmarks.title="Choose from previously saved loops.";
-    bmkAddButton.title="Save current loop range to the list of bookmarks.";
-    loopBackButton.title="Loop preceding section";
-    loopHalveButton.title="Halve the loop duration";
-    loopDoubleButton.title="Double the loop duration";
-    loopForwardButton.title="Loop following section";
-    myTimeA.title=myTimeB.title="Fine-tune loop range. Input format: [hh:]mm:ss[.sss]";
+    bmkAddButton.title="Save current loop to the list of bookmarks.";
+    loopBackwardsButton.title="Shift loop window backwards by one loop duration.";
+    loopHalveButton.title="Halve the loop duration.";
+    loopDoubleButton.title="Double the loop duration.";
+    loopForwardsButton.title="Shift loop window forwards by one loop duration.";
+    myTimeA.title=myTimeB.title="Fine-tune the loop. Input format: [hh:]mm:ss[.sss]";
     annotButton.title="Add a note to the currently selected bookmark.";
     trashButton.title="Delete currently selected / delete all bookmarked loops.";
     $("#speed").attr("title", "Select playback rate.");
@@ -640,7 +658,7 @@ var contextHelp=function(t){
         + "Check your \"Downloads\" folder.";
     importButton.title="Import file \"ABLoopPlayer.json\" with loop data and player settings "
         + "from another computer or browser.";
-    $("#slider").attr("title", "Move slider handles to adjust the loop range. "
+    $("#slider").attr("title", "Move slider handles to adjust the loop. "
         + "Press [Ctrl] while moving a handle to shift the entire loop window. "
         + "Also, the handle that currently has keyboard focus can be moved with the arrow keys [←] , [→].");
   } else {
@@ -657,10 +675,10 @@ var contextHelp=function(t){
     myBookmarks.title=
     myTimeA.title=myTimeB.title=
     bmkAddButton.title=
-    loopBackButton.title=
+    loopBackwardsButton.title=
     loopHalveButton.title=
     loopDoubleButton.title=
-    loopForwardButton.title=
+    loopForwardsButton.title=
     annotButton.title=
     trashButton.title=
     shareButton.title=
