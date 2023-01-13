@@ -11,7 +11,7 @@ Firefox or Chrome recommended.
 - The entire A-B loop window can be moved by pressing <kbd>Ctrl</kbd> while moving one of the slider handles with the mouse or the arrow keys.
 - A-B loops can be saved as bookmarks for the current and for later sessions.
 - Bookmarked A-B loops can be annotated individually with short description texts.
-- Share YouTube video link with the current loop setting and playback rate using <kbd><img src="https://agrahn.gitlab.io/ABLoopPlayer/png/sharelink.png" width="16px"/></kbd>.
+- Share player link with the current YouTube video or playlist, loop settings and playback rate using <kbd><img src="https://agrahn.gitlab.io/ABLoopPlayer/png/sharelink.png" width="16px"/></kbd>.
 - Bookmarks and player settings can be exported and transferred between computers and different web browsers with buttons <kbd><img src="https://agrahn.gitlab.io/ABLoopPlayer/png/export.png" width="16px"/></kbd> and <kbd><img src="https://agrahn.gitlab.io/ABLoopPlayer/png/import.png" width="16px"/></kbd>.
 - Playback rates from slow to fast motion
 - Resizable video display

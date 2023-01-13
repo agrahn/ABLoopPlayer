@@ -653,7 +653,7 @@ var contextHelp=function(t){
     annotButton.title="Add a note to the currently selected bookmark.";
     trashButton.title="Delete currently selected / delete all bookmarked loops.";
     $("#speed").attr("title", "Select playback rate.");
-    shareButton.title="Share YouTube video link with current loop settings.";
+    shareButton.title="Share player link with the current YouTube video or playlist, loop settings and playback rate.";
     exportButton.title="Export loop data and player settings to file \"ABLoopPlayer.json\". "
         + "Check your \"Downloads\" folder.";
     importButton.title="Import file \"ABLoopPlayer.json\" with loop data and player settings "
@@ -860,10 +860,12 @@ var mergeData=function(data){
 ///////////////////////////
 
 //function for loading YT player
-//arg 1: video id, arg 2:  list id
-//arg 3: loop start, arg 4: loop end time
+//arg 1: video id,
+//arg 2: playlist (comma-separated v ids),
+//arg 3: list id,
+//arg 4: loop start, arg 4: loop end time
 //arg 5: playback speed
-var loadYT=function(vid,lid,ta,tb,r){
+var loadYT=function(vid,plist,lid,ta,tb,r){
   initYT(); //initialize player-specific functions
   resetUI();
   //remove previous player, if there is one
@@ -890,6 +892,7 @@ var loadYT=function(vid,lid,ta,tb,r){
     height: $("#myResizable").height(),
     playerVars: {
       listType: "playlist",
+      playlist: plist,
       list: lid,
       autoplay: (vid ? 1 : 0),
       fs: 0,  //no fullscreen button
@@ -912,7 +915,7 @@ var loadYT=function(vid,lid,ta,tb,r){
       "onError": function(e){
         console.log("Error: " + e.data);
         resetUI();
-        loadYT(null,null,null,null,null);
+        loadYT(null,null,null,null,null,null);
       }
     }
   });
@@ -922,7 +925,7 @@ var loadYT=function(vid,lid,ta,tb,r){
 
 var onYouTubeIframeAPIReady=function(){
   inputYT.disabled=searchButtonYT.disabled=false;
-  queryYT(document.location.search.substring(1));
+  queryYT(document.location.search);
 }
 
 var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id
@@ -1007,8 +1010,16 @@ var saveId=function(id){
 }
 
 var queryYT=function(qu){
-  let vid=qu.match(/(?<=youtu\.be\/|\/embed\/|\/v\/|[?&]v=)[0-9a-zA-Z_-]{11}/);
-  let lid=qu.match(/(?<=[?&]list=)[0-9a-zA-Z_-]{12,}/);
+  let vid, plist, lid;
+  // share-link url: mandatory video id and optional playlist (comma-separated video ids)
+  vid=qu.match(/(?<=[?&]videoid=)[0-9a-zA-Z_-]{11}/);
+  plist=qu.match(/(?<=[?&]playlist=)[0-9a-zA-Z_-]{11}(?:,[0-9a-zA-Z_-]{11})*/);
+  // regular YT url with video id and/or list id
+  if(!vid){
+    vid=qu.match(/(?<=youtu\.be\/|\/embed\/|\/v\/|[?&]v=)[0-9a-zA-Z_-]{11}/);
+    lid=qu.match(/(?<=[?&]list=)[0-9a-zA-Z_-]{12,}/);
+  }
+  // plain video id or list id
   if(!(vid||lid)){
     vid=qu.trim().match(/^[0-9a-zA-Z_-]{11}$/);
     lid=qu.trim().match(/^[0-9a-zA-Z_-]{12,}$/);
@@ -1020,7 +1031,9 @@ var queryYT=function(qu){
   if(rate) rate=Math.min(Math.max(rate[0],0.25),2.0);
   else rate=1;
   loadYT(
-    vid ? vid[0] : null, lid ? lid[0] : null,
+    vid ? vid[0] : null,
+    plist ? plist[0] : null,
+    lid ? lid[0] : null,
     ta ? ta[0] : null, tb ? tb[0] : null, rate
   );
 }
@@ -1115,10 +1128,17 @@ var onLoopDownYT=function(){
 
 var onClickShare=function(){
   myBlur();
-  let sharelink=window.location.href;
+  let sharelink=document.URL;
   let idx=sharelink.indexOf("?");
-  if(idx>-1) sharelink=sharelink.substring(0,idx-1);
-  sharelink+="?https://www.youtube.com/watch?v="+vidId;
+  if(idx>-1) sharelink=sharelink.substring(0,idx);
+  let playlist=ytPlayer.getPlaylist();
+  if(playlist){
+    sharelink+="?videoid="+playlist[ytPlayer.getPlaylistIndex()];
+    sharelink+="&playlist="+playlist.join();
+  }
+  else{
+    sharelink+="?videoid="+vidId;
+  }
   if(isTimeASet) sharelink+="&start="+secToString(timeA);
   if(isTimeBSet) sharelink+="&end="+secToString(timeB);
   let rate=myGetPlaybackRate();
