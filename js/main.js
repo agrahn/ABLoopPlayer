@@ -1011,20 +1011,20 @@ var saveId=function(id){
 
 var queryYT=function(qu){
   let vid, plist, lid;
-  // share-link url: mandatory video id and optional playlist (comma-separated video ids)
+  // share-link url: video id and/or playlist (comma-separated video ids)
   vid=qu.match(/(?<=[?&]videoid=)[0-9a-zA-Z_-]{11}/);
   plist=qu.match(/(?<=[?&]playlist=)[0-9a-zA-Z_-]{11}(?:,[0-9a-zA-Z_-]{11})*/);
   // regular YT url with video id and/or list id
-  if(!vid){
+  if(!(vid||plist)){
     vid=qu.match(/(?<=youtu\.be\/|\/embed\/|\/v\/|[?&]v=)[0-9a-zA-Z_-]{11}/);
     lid=qu.match(/(?<=[?&]list=)[0-9a-zA-Z_-]{12,}/);
   }
   // plain video id or list id
-  if(!(vid||lid)){
+  if(!(vid||plist||lid)){
     vid=qu.trim().match(/^[0-9a-zA-Z_-]{11}$/);
     lid=qu.trim().match(/^[0-9a-zA-Z_-]{12,}$/);
   }
-  if(!(vid||lid)) return;
+  if(!(vid||plist||lid)) return;
   let ta=qu.match(/(?<=[?&](?:star)?t=)[0-9]+(?:\.[0-9]*)?/);
   let tb=qu.match(/(?<=[?&]end=)[0-9]+(?:\.[0-9]*)?/);
   let rate=qu.match(/(?<=[?&]rate=)[0-9]+(?:\.[0-9]*)?/);
