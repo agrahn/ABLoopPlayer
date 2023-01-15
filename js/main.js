@@ -126,6 +126,9 @@ $(document).ready(function(){
     knownMedia=JSON.parse(storage.getItem("ab.knownMedia"));
   if(storage.getItem("ab.knownIDs")){
     knownIDs=JSON.parse(storage.getItem("ab.knownIDs"));
+    let items=knownIDs.length; let idx;// remove erroneous `null' entries
+    while((idx=knownIDs.indexOf(null))>-1) knownIDs.splice(idx,1);
+    if(items!=knownIDs.length) storageWriteKeyVal("ab.knownIDs",JSON.stringify(knownIDs));
     for(let i=0; i<knownIDs.length && i<100; i++){
       let z=document.createElement("OPTION");
       z.setAttribute("value", knownIDs[i]);
@@ -798,6 +801,8 @@ var mergeData=function(data){
   if(data["ab.knownIDs"]){
     let tmp=JSON.parse(data["ab.knownIDs"]);
     if(Array.isArray(tmp)){
+      let idx;// remove erroneous `null' entries
+      while((idx=tmp.indexOf(null))>-1) tmp.splice(idx,1);
       tmp.forEach(id=>{
         let iid=id.match(/^[0-9a-zA-Z_-]{11,}$/); //videos/playlists
         if(iid&&iid[0]) ytSrcIds.push(iid[0]);
@@ -984,15 +989,13 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id
 }
 
 var saveId=function(id){
+  if(!id) return; //prevent erroneous `null' entry
   //prepend ID to/move ID to front of the list of valid and already
   //visited video/playlist IDs and of the datalist object
   //at first, remove all occurrences
   if(knownIDs.length){
-    let idx=knownIDs.indexOf(id);
-    while(idx>=0){
-      knownIDs.splice(idx,1);
-      idx=knownIDs.indexOf(id);
-    }
+    let idx;
+    while((idx=knownIDs.indexOf(id))>-1) knownIDs.splice(idx,1);
   }
   for(let i=0;i<YTids.childNodes.length;i++){
     if(YTids.childNodes[i].getAttribute("value")==id)
