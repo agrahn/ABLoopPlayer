@@ -943,7 +943,6 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id
       } , 05
     ));
     loopButton.disabled=false;
-    vidId=id;
     $("#timeInputs").hide();
     cancelABLoop();
     let rates=e.target.getAvailablePlaybackRates();
@@ -958,12 +957,12 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id
     $("#speed").slider("option", "disabled", false);
     shareButton.disabled=false;
     //populate bookmark list with saved items for the current video ID
-    let bmkArr=JSON.parse(storage.getItem("ab."+vidId));
+    let bmkArr=JSON.parse(storage.getItem("ab."+id));
     myBookmarksUpdate((bmkArr ? bmkArr : []),-1);
     annotButton.disabled=true;
     saveId(id);
-    if(ta||tb){
-      cancelABLoop();
+    //set ab loop from ta, tb args only upon new player instantiation
+    if((ta||tb)&&!vidId){
       $("#slider").slider("option", "max", myGetDuration());
       let a=0,b=myGetDuration();
       if(ta!=null&&tb!=null){
@@ -982,6 +981,7 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id
       $("#timeInputs").show();
       loopButton.innerHTML="Cancel";
     }
+    vidId=id;
   }
   while(loopTimer.length) clearInterval(loopTimer.pop());
   if (isTimeASet && isTimeBSet && e.data==YT.PlayerState.PLAYING)
