@@ -127,7 +127,7 @@ $(document).ready(function(){
   if(storage.getItem("ab.knownIDs")){
     knownIDs=JSON.parse(storage.getItem("ab.knownIDs"));
     let items=knownIDs.length; let idx;// remove erroneous `null' entries
-    while((idx=knownIDs.indexOf(null))>-1) knownIDs.splice(idx,1);
+    while(knownIDs.length&&(idx=knownIDs.indexOf(null))>-1) knownIDs.splice(idx,1);
     if(items!=knownIDs.length) storageWriteKeyVal("ab.knownIDs",JSON.stringify(knownIDs));
     for(let i=0; i<knownIDs.length && i<100; i++){
       let z=document.createElement("OPTION");
@@ -993,10 +993,8 @@ var saveId=function(id){
   //prepend ID to/move ID to front of the list of valid and already
   //visited video/playlist IDs and of the datalist object
   //at first, remove all occurrences
-  if(knownIDs.length){
-    let idx;
-    while((idx=knownIDs.indexOf(id))>-1) knownIDs.splice(idx,1);
-  }
+  let idx;
+  while(knownIDs.length&&(idx=knownIDs.indexOf(id))>-1) knownIDs.splice(idx,1);
   for(let i=0;i<YTids.childNodes.length;i++){
     if(YTids.childNodes[i].getAttribute("value")==id)
       YTids.removeChild(YTids.childNodes[i]);
@@ -1238,13 +1236,8 @@ var onLoadedData=function(e){
 var saveMediaId=function(id){
   //prepend ID to/move ID to front of the visited media files list
   //at first, remove all occurrences
-  if(knownMedia.length){
-    let idx=knownMedia.indexOf(id);
-    while(idx>=0){
-      knownMedia.splice(idx,1);
-      idx=knownMedia.indexOf(id);
-    }
-  }
+  let idx;
+  while(knownMedia.length&&(idx=knownMedia.indexOf(id))>-1) knownMedia.splice(idx,1);
   //now add to the head
   knownMedia.unshift(id);
   storageWriteKeyVal("ab.knownMedia",JSON.stringify(knownMedia));
