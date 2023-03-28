@@ -75,7 +75,7 @@ var storageWriteKeyVal=function(k,v){
 var YTids, inputYT, inputVT, ytPlayer, help, aonly, intro, myTimeA,
   myTimeB, myBookmarks, loopButton, bmkAddButton, loopBackwardsButton,
   loopHalveButton, loopDoubleButton, loopForwardsButton, annotButton,
-  trashButton;
+  trashButton, tapButton;
 
 $(document).ready(function(){
   $("#introText").width($("#test").width()+1);
@@ -108,6 +108,7 @@ $(document).ready(function(){
   importButton=document.getElementById("importButton");
   exportButton=document.getElementById("exportButton");
   shareButton=document.getElementById("shareButton");
+  tapButton=document.getElementById("tapButton");
   inputVT.addEventListener("change", function(e){
     myBlur();
     playSelectedFile(e.target.files[0]);
@@ -180,6 +181,7 @@ $(document).ready(function(){
 //add some hotkeys
 window.addEventListener("keydown", function(e){
   e.stopPropagation();
+  if(!$("input").is(":focus")) { e.preventDefault(); }
   if (e.which==27
     && !loopButton.disabled
     && !$("input").is(":focus")
@@ -211,6 +213,10 @@ window.addEventListener("keydown", function(e){
   else if (e.which==32
     && !$("input").is(":focus")
   ){ try{myPlayPause();}catch(err){} }
+  else if (e.which==84
+    && !tapButton.disabled
+    && !$("input").is(":focus")
+  ){ onTap(tapButton); }
 });
 
 // a modal prompt dialog based on jQuery
@@ -444,6 +450,26 @@ var onLoopForwards=function(){
   updateLoopUI();
 }
 
+var bpm;
+var bpmNormal;
+var beat; //beat length in ms
+var beatNormal; //beat length at normal speed in ms
+var beatsArr = [];
+var onTap=function(ui) {
+  beatsArr.push(Date.now());
+  if(beatsArr.length>2) {
+    let change=(beatsArr.at(-1)-beatsArr.at(-2))/(beatsArr.at(-2)-beatsArr.at(-3));
+    if(change>1.25||change<0.8) { beatsArr.splice(0,beatsArr.length-1); }
+  }
+  if (beatsArr.length>1) {
+    beat=(beatsArr.at(-1)-beatsArr[0])/(beatsArr.length-1);
+    beatNormal=beat*myGetPlaybackRate();
+    bpm=60000.0/beat;
+    bpmNormal=60000.0/beatNormal;
+    ui.innerHTML=Math.round(bpm).toString();
+  }
+}
+
 var bmkAdd=function(note=null){
   let bmk={ta: secToString(timeA), tb: secToString(timeB)};
   let bmkArr=[];
@@ -664,6 +690,7 @@ var contextHelp=function(t){
     $("#slider").attr("title", "Move slider handles to adjust the loop. "
         + "Press [Ctrl] while moving a handle to shift the entire loop window. "
         + "Also, the handle that currently has keyboard focus can be moved with the arrow keys [←] , [→].");
+    tapButton.title="Tap tempo. Hotkey: [T]";
   } else {
     storageWriteKeyVal("ab.help", "unchecked");
     t.title="Enable context-sensitive help.";
@@ -687,6 +714,7 @@ var contextHelp=function(t){
     shareButton.title=
     exportButton.title=
     importButton.title=
+    tapButton.title=
     "";
   }
 }
@@ -708,12 +736,20 @@ var resetUI=function(){
   $("#speed").slider("option", "step", 0.05);
   shareButton.disabled=true;
   myBookmarksUpdate([],-1);
+  beatsArr.length=0;
+  tapButton.innerHTML="Tap";
+  tapButton.disabled=true;
 }
 
 var onRateChange=function(e){
   let r=myGetPlaybackRate();
   $("#speed").slider("value",r);
   $("#speed .ui-slider-handle").text(r);
+  if (beatsArr.length>1) {
+    bpm=bpmNormal*r;
+    beat=beatNormal/r;
+    tapButton.innerHTML=Math.round(bpm).toString();
+  }
 }
 
 var myBlur=function(){document.activeElement.blur();}
@@ -955,6 +991,7 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id
     $("#speed").slider("option", "value", s);
     mySetPlaybackRate(s); //custom rate via url parameter
     $("#speed").slider("option", "disabled", false);
+    tapButton.disabled=false;
     shareButton.disabled=false;
     //populate bookmark list with saved items for the current video ID
     let bmkArr=JSON.parse(storage.getItem("ab."+id));
@@ -1179,6 +1216,7 @@ var playSelectedFile=function(f){
       $("#speed").slider("option", "value", 1);
       $("#speed").slider("option", "step", 0.01);
       $("#speed").slider("option", "disabled", false);
+      tapButton.disabled=false;
     }else{
       //repeat setting media source until duration property is properly set;
       //this is a workaround of a bug in FFox on Windows
@@ -1200,7 +1238,8 @@ var playSelectedFile=function(f){
   myVideo.addEventListener("ratechange", onRateChange);
   myResizable.appendChild(myVideo);
   if(f){ //a media file was selected
-  $("#speed").slider("option", "disabled", true);
+    $("#speed").slider("option", "disabled", true);
+    tapButton.disabled=true;
     //set video source
     vidId=f.name+"-"+f.size; //some checksum would be better
     try {

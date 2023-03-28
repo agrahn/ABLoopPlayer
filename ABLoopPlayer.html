@@ -114,7 +114,8 @@ A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playl
     onclick="onClickTrash(myBookmarks.selectedIndex)"
   ><span class="ui-icon ui-icon-trash"></span></button>
 </span> <input type="checkbox" onchange="toggleIntro(this, help)" id="intro"/><label for="intro">play intro</label><br/>
-<label for="speed">Speed:</label> <div id="speed"><div id="speed-handle" class="ui-slider-handle"></div></div>
+<label for="speed">Speed:</label> <div id="speed"><div id="speed-handle" class="ui-slider-handle"></div></div>&emsp;&emsp;
+<button id="tapButton" onmousedown="onTap(this)" onmouseup="this.blur()"/>Tap</button><label for="tapButton"> BPM</label> 
 <span style="position:absolute;bottom:3px;right:5px">
   <button id="shareButton" style="width:1.5em;padding:0px;margin:0px;"
       onclick="onClickShare()"
