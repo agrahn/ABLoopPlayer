@@ -109,6 +109,7 @@ $(document).ready(function(){
   exportButton=document.getElementById("exportButton");
   shareButton=document.getElementById("shareButton");
   tapButton=document.getElementById("tapButton");
+  quant=document.getElementById("quant");
   inputVT.addEventListener("change", function(e){
     myBlur();
     playSelectedFile(e.target.files[0]);
@@ -213,10 +214,18 @@ window.addEventListener("keydown", function(e){
   else if (e.which==32
     && !$("input").is(":focus")
   ){ try{myPlayPause();}catch(err){} }
-  else if (e.which==84
+  else if (e.which==84 // "t"
     && !tapButton.disabled
     && !$("input").is(":focus")
   ){ onTap(tapButton); }
+  else if (e.which==81 // "q"
+    && !quant.disabled
+    && !$("input").is(":focus")
+  ){
+    if(quant.checked) quant.checked=false;
+    else quant.checked=true;
+    toggleQuant(quant, help);
+  }
 });
 
 // a modal prompt dialog based on jQuery
@@ -388,9 +397,26 @@ var onSliderSlide=function(e,ui){
   updateLoopUI();
 }
 
+var loopArr=[];
 var onTimeUpdate=function(){
-  if(myGetCurrentTime()<timeA && !intro.checked || myGetCurrentTime()>=timeB)
+  let tMedia=myGetCurrentTime();
+  if(tMedia<timeA && !intro.checked || tMedia>=timeB) {
+    //quantise loop based on tapped tempo
+    let update=false;
+    if(tMedia>=timeB && beatsArr.length>1 && quant.checked){
+      loopArr.push(Date.now());
+      if(loopArr.length>2) {
+        loopArr.splice(0,loopArr.length-2);
+        let loopMeas=loopArr[1]-loopArr[0];
+        let delay=loopMeas-Math.round(loopMeas/beat)*beat;
+        //quantise with some under-relaxation (0.5)
+        timeB-=toNearest5ms(0.5*delay*myGetPlaybackRate()/1000.0);
+        update=true;
+      }
+    }
     mySetCurrentTime(timeA);
+    if(update) updateLoopUI();
+  }
 }
 
 const timeRegExp=new RegExp('^\\s*'+timePattern+'\\s*$');
@@ -419,7 +445,6 @@ var updateLoopUI=function(){
   myTimeB.value=secToTimeString(Math.min(timeB,myGetDuration()));
   $("#slider").slider("option", "max", myGetDuration());
   $("#slider").slider("option", "values", [ timeA, timeB ]);
-  $("#timeInputs").show();
 }
 
 var onLoopBackwards=function(){
@@ -459,7 +484,7 @@ var onTap=function(ui) {
   beatsArr.push(Date.now());
   if(beatsArr.length>2) {
     let change=(beatsArr.at(-1)-beatsArr.at(-2))/(beatsArr.at(-2)-beatsArr.at(-3));
-    if(change>1.25||change<0.8) { beatsArr.splice(0,beatsArr.length-1); }
+    if(change>1.25||change<0.75) { beatsArr.splice(0,beatsArr.length-1); }
   }
   if (beatsArr.length>1) {
     beat=(beatsArr.at(-1)-beatsArr[0])/(beatsArr.length-1);
@@ -654,6 +679,12 @@ var onClickImport=function(){
 
 var aonlyTitleChecked="Uncheck to enable video display.";
 var aonlyTitleUnChecked="Suppress video display.";
+var introTitleChecked="Uncheck to always skip media section up to \"A\".";
+var introTitleUnChecked="If checked, media section up to \"A\""
+              + " is played before starting the loop.";
+var quantTitleChecked="Uncheck to stop loop quantisation. Hotkey: [Q]";
+var quantTitleUnChecked="Start loop quantisation (auto-adjustment). Hotkey: [Q]\n"
+          + "Tempo (BPM) needs to be tapped beforehand.";
 
 var contextHelp=function(t){
   myBlur();
@@ -662,11 +693,10 @@ var contextHelp=function(t){
     t.title="Uncheck to disable context-sensitive help.";
     if(aonly.checked) aonly.title=aonlyTitleChecked;
     else aonly.title=aonlyTitleUnChecked;
-    if(intro.checked)
-      intro.title="Uncheck to always skip media section up to \"A\".";
-    else
-      intro.title="If checked, media section up to \"A\""
-              + " is played before starting the loop.";
+    if(intro.checked) intro.title=introTitleChecked;
+    else intro.title=introTitleUnChecked;
+    if(quant.checked) quant.title=quantTitleChecked;
+    else quant.title=quantTitleUnChecked;
     inputYT.title="Paste a valid YouTube URL, video or playlist ID.";
     searchButtonYT.title="Look up matching video on YouTube.";
     inputVT.title="Browse the hard disk for media files (mp4/H.264, webm, ogg, mp3, wav, ...).";
@@ -709,6 +739,7 @@ var contextHelp=function(t){
     loopHalveButton.title=
     loopDoubleButton.title=
     loopForwardsButton.title=
+    quant.title=
     annotButton.title=
     trashButton.title=
     shareButton.title=
@@ -723,6 +754,9 @@ var cancelABLoop=function(){
   while(loopTimer.length) clearInterval(loopTimer.pop());
   isTimeASet=isTimeBSet=false;
   loopButton.innerHTML="A";
+  quant.disabled=true;
+  quant.checked=false;
+  toggleQuant(quant, help);
 }
 
 var resetUI=function(){
@@ -737,14 +771,19 @@ var resetUI=function(){
   shareButton.disabled=true;
   myBookmarksUpdate([],-1);
   beatsArr.length=0;
+  loopArr.length=0;
   tapButton.innerHTML="Tap";
   tapButton.disabled=true;
+  quant.disabled=true;
+  quant.checked=false;
+  toggleQuant(quant, help);
 }
 
 var onRateChange=function(e){
   let r=myGetPlaybackRate();
   $("#speed").slider("value",r);
   $("#speed .ui-slider-handle").text(r);
+  loopArr.length=0;
   if (beatsArr.length>1) {
     bpm=bpmNormal*r;
     beat=beatNormal/r;
@@ -1017,6 +1056,7 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id
       isTimeASet=isTimeBSet=true;
       $("#timeInputs").show();
       loopButton.innerHTML="Cancel";
+      if(beatsArr.length>1) quant.disabled=false;
     }
     vidId=id;
   }
@@ -1130,6 +1170,7 @@ var onBmkSelectYT=function(i){
   isTimeASet=isTimeBSet=true;
   $("#timeInputs").show();
   loopButton.innerHTML="Cancel";
+  if(beatsArr.length>1) quant.disabled=false;
   annotButton.disabled=false;
   if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING)
     loopTimer.push(setInterval(onTimeUpdate,05));
@@ -1153,6 +1194,8 @@ var onLoopDownYT=function(){
         isTimeBSet=true;
         loopButton.innerHTML="Cancel";
         updateLoopUI();
+        $("#timeInputs").show();
+        if(beatsArr.length>1) quant.disabled=false;
         if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING)
           loopTimer.push(setInterval(onTimeUpdate,05));
       }
@@ -1217,6 +1260,7 @@ var playSelectedFile=function(f){
       $("#speed").slider("option", "step", 0.01);
       $("#speed").slider("option", "disabled", false);
       tapButton.disabled=false;
+      loopArr.length=0;
     }else{
       //repeat setting media source until duration property is properly set;
       //this is a workaround of a bug in FFox on Windows
@@ -1225,10 +1269,12 @@ var playSelectedFile=function(f){
   });
   myVideo.addEventListener("loadeddata", onLoadedData);
   myVideo.addEventListener("play", function(){
+    loopArr.length=0;
     mySetPlaybackRate(Number($("#speed").slider("value")));
     if (isTimeASet && isTimeBSet) loopTimer.push(setInterval(onTimeUpdate,05));
   });
   myVideo.addEventListener("pause", function(){
+    loopArr.length=0; // reset quantisation
     while(loopTimer.length) clearInterval(loopTimer.pop());
   });
   myVideo.addEventListener("error", function(e){
@@ -1300,6 +1346,7 @@ var onBmkSelectVT=function(i){
   isTimeASet=isTimeBSet=true;
   $("#timeInputs").show();
   loopButton.innerHTML="Cancel";
+  if(beatsArr.length>1) quant.disabled=false;
   annotButton.disabled=false;
   if(!myVideo.paused)
     loopTimer.push(setInterval(onTimeUpdate,05));
@@ -1359,6 +1406,8 @@ var onLoopDownVT=function(){
         isTimeBSet=true;
         loopButton.innerHTML="Cancel";
         updateLoopUI();
+        $("#timeInputs").show();
+        if(beatsArr.length>1) quant.disabled=false;
         if(!myVideo.paused)
           loopTimer.push(setInterval(onTimeUpdate,05));
       }
@@ -1385,13 +1434,19 @@ var toggleIntro=function(t,h){
   myBlur();
   if(t.checked){
     storageWriteKeyVal("ab.intro", "checked");
-    if(h.checked)
-        t.title="Uncheck to always skip media section up to \"A\".";
+    if(h.checked) t.title=introTitleChecked;
   }else{
     storageWriteKeyVal("ab.intro", "unchecked");
-    if(h.checked)
-        t.title="If checked, media section up to \"A\""
-                + " is played before starting the loop.";
+    if(h.checked) t.title=introTitleUnChecked;
+  }
+}
+
+var toggleQuant=function(t,h){
+  myBlur();
+  if(t.checked){
+    if(h.checked) t.title=quantTitleChecked;
+  }else{
+    if(h.checked) t.title=quantTitleUnChecked;
   }
 }
 

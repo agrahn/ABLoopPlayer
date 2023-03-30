@@ -58,11 +58,13 @@ Player for <em><b>YouTube</b></em> and <em><b>video and audio files</b></em> in 
 A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playlists</b></em>.
 </div>
 <div style="margin-top: 0.5em;">Firefox or Chrome/Chromium on PC or Laptop recommended.</div>
+</div>
 
+<div style="font-family: sans-serif; font-size: 87.5%;">
 <hr class="double" style="margin-bottom: 0px;"/>
 <div style="margin-bottom: 3px; padding: 5px; background-color: #ddd;">
   <div style="display: flex;">
-  <label for="inputYT">YouTube URL | video ID | list ID :</label><!--
+  <label for="inputYT" style="padding-top: 3px;">YouTube URL | video ID | list ID :</label><!--
   --><input id="inputYT" list="YTids" autocomplete onfocus="this.select()"
     onkeypress="if(event && event.keyCode == 13) queryYT(this.value)" onchange="queryYT(this.value)"
     style="margin-left: 5px; margin-right: 1px; flex: 1 1 auto;" disabled/><datalist id="YTids"></datalist><!--
@@ -90,7 +92,8 @@ A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playl
   <button id="loopBackwardsButton" style="padding:0px 2px;font-size:110%;" onmouseup="onLoopBackwards()">&laquo;</button>
   <button id="loopHalveButton" style="padding:0px 2px;font-size:110%;" onmouseup="onLoopHalve()">&times;&frac12;</button>
   <button id="loopDoubleButton" style="padding:0px 2px;font-size:110%;" onmouseup="onLoopDouble()">&times;2</button>
-  <button id="loopForwardsButton" style="padding:0px 2px;font-size:110%;" onmouseup="onLoopForwards()">&raquo;</button>
+  <button id="loopForwardsButton" style="padding:0px 2px;font-size:110%;" onmouseup="onLoopForwards()">&raquo;</button>&emsp;&emsp;
+  <input type="checkbox" onchange="toggleQuant(this, help)" disabled id="quant"/><label for="quant">quantise</label>
   </div>
 </div>
 
@@ -115,7 +118,7 @@ A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playl
   ><span class="ui-icon ui-icon-trash"></span></button>
 </span> <input type="checkbox" onchange="toggleIntro(this, help)" id="intro"/><label for="intro">play intro</label><br/>
 <label for="speed">Speed:</label> <div id="speed"><div id="speed-handle" class="ui-slider-handle"></div></div>&emsp;&emsp;
-<button id="tapButton" onmousedown="onTap(this)" onmouseup="this.blur()"/>Tap</button><label for="tapButton"> BPM</label> 
+<button id="tapButton" onmousedown="onTap(this)" onmouseup="this.blur()"/>Tap</button><label for="tapButton"> BPM</label>
 <span style="position:absolute;bottom:3px;right:5px">
   <button id="shareButton" style="width:1.5em;padding:0px;margin:0px;"
       onclick="onClickShare()"
@@ -129,6 +132,7 @@ A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playl
 </span>
 </div>
 <hr class="double" style="margin-top: 0px;"/>
+</div>
 © 2016–2023 Alexander Grahn
 <a href="https://gitlab.com/agrahn/ABLoopPlayer" style="float: right; margin-right: 5px;">
   Visit project on <img src="svg/gitlab.svg" alt="GitLab logo" style="height:0.9em;"/>

@@ -82,7 +82,6 @@ hr.double {
   border-right-color: #959595;
   border-bottom-color: #959595;
   border-width: 2px;
-  font-family: serif;
   color: #000000;
 }
 
@@ -97,6 +96,7 @@ button {
   border-top-color: #e0e0e0;
   border-right-color: #959595;
   border-bottom-color: #959595;
+  font-size: 100%;
 }
 
 button:disabled{opacity:0.5;}
