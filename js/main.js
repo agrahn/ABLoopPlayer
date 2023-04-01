@@ -402,20 +402,19 @@ var onTimeUpdate=function(){
   let tMedia=myGetCurrentTime();
   if(tMedia<timeA && !intro.checked || tMedia>=timeB) {
     //quantise loop based on tapped tempo
-    let update=false;
+    let delay=0.0;
     if(tMedia>=timeB && beatsArr.length>1 && quant.checked){
       loopArr.push(Date.now());
       if(loopArr.length>2) {
         loopArr.splice(0,loopArr.length-2);
         let loopMeas=loopArr[1]-loopArr[0];
-        let delay=loopMeas-Math.round(loopMeas/beat)*beat;
-        //quantise with some under-relaxation (0.5)
-        timeB-=toNearest5ms(0.5*delay*myGetPlaybackRate()/1000.0);
-        update=true;
+        delay=loopMeas-Math.round(loopMeas/beat)*beat;
+        delay=toNearest5ms(0.0005*delay*myGetPlaybackRate());//relax with 0.5
+        timeB-=delay;
       }
     }
     mySetCurrentTime(timeA);
-    if(update) updateLoopUI();
+    if(delay) updateLoopUI();
   }
 }
 
