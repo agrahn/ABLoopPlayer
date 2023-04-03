@@ -771,7 +771,7 @@ var resetUI=function(){
   myBookmarksUpdate([],-1);
   beatsArr.length=0;
   loopArr.length=0;
-  tapButton.innerHTML="Tap";
+  tapButton.innerHTML="tap";
   tapButton.disabled=true;
   quant.disabled=true;
   quant.checked=false;

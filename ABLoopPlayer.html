@@ -88,12 +88,12 @@ A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playl
   <div style="margin: 3px 0px 0px 0px; padding: 5px; background-color: #ddd;">
   <label for="myTimeA">A:</label> <input id="myTimeA" onchange="onInputTime(this,0)" size="8"/>
   <label for="myTimeB">B:</label> <input id="myTimeB" onchange="onInputTime(this,1)" size="8"/>
-  <button id="bmkAddButton" style="padding:0px 2px;font-size:110%;">&#9734;</button>&emsp;&emsp;
+  <button id="bmkAddButton" style="padding:0px 2px;font-size:110%;">&#9734;</button>&ensp;
+  <input type="checkbox" onchange="toggleQuant(this, help)" disabled id="quant"/><label for="quant">quantise</label>&emsp;&emsp;
   <button id="loopBackwardsButton" style="padding:0px 2px;font-size:110%;" onmouseup="onLoopBackwards()">&laquo;</button>
   <button id="loopHalveButton" style="padding:0px 2px;font-size:110%;" onmouseup="onLoopHalve()">&times;&frac12;</button>
   <button id="loopDoubleButton" style="padding:0px 2px;font-size:110%;" onmouseup="onLoopDouble()">&times;2</button>
-  <button id="loopForwardsButton" style="padding:0px 2px;font-size:110%;" onmouseup="onLoopForwards()">&raquo;</button>&emsp;&emsp;
-  <input type="checkbox" onchange="toggleQuant(this, help)" disabled id="quant"/><label for="quant">quantise</label>
+  <button id="loopForwardsButton" style="padding:0px 2px;font-size:110%;" onmouseup="onLoopForwards()">&raquo;</button>
   </div>
 </div>
 
@@ -118,7 +118,8 @@ A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playl
   ><span class="ui-icon ui-icon-trash"></span></button>
 </span> <input type="checkbox" onchange="toggleIntro(this, help)" id="intro"/><label for="intro">play intro</label><br/>
 <label for="speed">Speed:</label> <div id="speed"><div id="speed-handle" class="ui-slider-handle"></div></div>&emsp;&emsp;
-<button id="tapButton" onmousedown="onTap(this)" onmouseup="this.blur()"/>Tap</button><label for="tapButton"> BPM</label>
+<label for="tapButton">Tempo:</label>
+<button id="tapButton" onmousedown="onTap(this)" onmouseup="this.blur()"/>tap</button><label for="tapButton"> BPM</label>
 <span style="position:absolute;bottom:3px;right:5px">
   <button id="shareButton" style="width:1.5em;padding:0px;margin:0px;"
       onclick="onClickShare()"
