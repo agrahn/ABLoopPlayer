@@ -446,8 +446,15 @@ var updateLoopUI=function(){
   $("#slider").slider("option", "values", [ timeA, timeB ]);
 }
 
+var compDeltaByBeat=function(d, b){//d in s, b in ms!
+  return b/1000.0*Math.round(d*1000/b);
+}
+
 var onLoopBackwards=function(){
   let delta=timeB-timeA;
+  if(beatNormal) {
+    delta=compDeltaByBeat(delta, beatNormal);
+  }
   if(timeA-delta<0) return;
   timeA-=delta;
   timeB-=delta;
@@ -456,18 +463,28 @@ var onLoopBackwards=function(){
 
 var onLoopHalve=function(){
   let delta=timeB-timeA;
+  if(beatNormal) {
+    delta=compDeltaByBeat(delta, beatNormal);
+  }
   timeB-=delta/2;
   updateLoopUI();
 }
 
 var onLoopDouble=function(){
   let delta=timeB-timeA;
+  if(beatNormal) {
+    delta=compDeltaByBeat(delta, beatNormal);
+  }
+  if(timeB+delta>myGetDuration()) return;
   timeB+=delta;
   updateLoopUI();
 }
 
 var onLoopForwards=function(){
   let delta=timeB-timeA;
+  if(beatNormal) {
+    delta=compDeltaByBeat(delta, beatNormal);
+  }
   if(timeB+delta>myGetDuration()) return;
   timeA+=delta;
   timeB+=delta;
@@ -773,6 +790,7 @@ var resetUI=function(){
   loopArr.length=0;
   tapButton.innerHTML="tap";
   tapButton.disabled=true;
+  bpm=bpmNormal=beat=beatNormal=0;
   quant.disabled=true;
   quant.checked=false;
   toggleQuant(quant, help);
