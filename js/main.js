@@ -400,10 +400,10 @@ var onSliderSlide=function(e,ui){
 var loopArr=[];
 var onTimeUpdate=function(){
   let tMedia=myGetCurrentTime();
+  let delay=0.0;
   if(tMedia<timeA && !intro.checked || tMedia>=timeB) {
     //quantise loop based on tapped tempo
-    let delay=0.0;
-    if(tMedia>=timeB && beatsArr.length>1 && quant.checked){
+    if(tMedia>=timeB && beat && quant.checked){
       loopArr.push(Date.now());
       if(loopArr.length>2) {
         loopArr.splice(0,loopArr.length-2);
@@ -414,8 +414,12 @@ var onTimeUpdate=function(){
       }
     }
     mySetCurrentTime(timeA);
-    if(delay) updateLoopUI();
   }
+  if(tMedia>=timeA) tapButton.disabled=true;//don't allow tapping while looping
+  else tapButton.disabled=false;
+  if(beat) quant.disabled=false;
+  else quant.disabled=true;
+  if(delay) updateLoopUI();
 }
 
 const timeRegExp=new RegExp('^\\s*'+timePattern+'\\s*$');
@@ -770,6 +774,7 @@ var cancelABLoop=function(){
   while(loopTimer.length) clearInterval(loopTimer.pop());
   isTimeASet=isTimeBSet=false;
   loopButton.innerHTML="A";
+  tapButton.disabled=false;
   quant.disabled=true;
   quant.checked=false;
   toggleQuant(quant, help);
@@ -786,7 +791,6 @@ var resetUI=function(){
   $("#speed").slider("option", "step", 0.05);
   shareButton.disabled=true;
   myBookmarksUpdate([],-1);
-  beatsArr.length=0;
   loopArr.length=0;
   tapButton.innerHTML="tap";
   tapButton.disabled=true;
@@ -801,7 +805,7 @@ var onRateChange=function(e){
   $("#speed").slider("value",r);
   $("#speed .ui-slider-handle").text(r);
   loopArr.length=0;
-  if (beatsArr.length>1) {
+  if (beat) {
     bpm=bpmNormal*r;
     beat=beatNormal/r;
     tapButton.innerHTML=Math.round(bpm).toString();
@@ -1073,7 +1077,7 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id
       isTimeASet=isTimeBSet=true;
       $("#timeInputs").show();
       loopButton.innerHTML="Cancel";
-      if(beatsArr.length>1) quant.disabled=false;
+      if(beat) quant.disabled=false;
     }
     vidId=id;
   }
@@ -1187,7 +1191,7 @@ var onBmkSelectYT=function(i){
   isTimeASet=isTimeBSet=true;
   $("#timeInputs").show();
   loopButton.innerHTML="Cancel";
-  if(beatsArr.length>1) quant.disabled=false;
+  if(beat) quant.disabled=false;
   annotButton.disabled=false;
   if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING)
     loopTimer.push(setInterval(onTimeUpdate,05));
@@ -1212,7 +1216,7 @@ var onLoopDownYT=function(){
         loopButton.innerHTML="Cancel";
         updateLoopUI();
         $("#timeInputs").show();
-        if(beatsArr.length>1) quant.disabled=false;
+        if(beat) quant.disabled=false;
         if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING)
           loopTimer.push(setInterval(onTimeUpdate,05));
       }
@@ -1363,7 +1367,7 @@ var onBmkSelectVT=function(i){
   isTimeASet=isTimeBSet=true;
   $("#timeInputs").show();
   loopButton.innerHTML="Cancel";
-  if(beatsArr.length>1) quant.disabled=false;
+  if(beat) quant.disabled=false;
   annotButton.disabled=false;
   if(!myVideo.paused)
     loopTimer.push(setInterval(onTimeUpdate,05));
@@ -1424,7 +1428,7 @@ var onLoopDownVT=function(){
         loopButton.innerHTML="Cancel";
         updateLoopUI();
         $("#timeInputs").show();
-        if(beatsArr.length>1) quant.disabled=false;
+        if(beat) quant.disabled=false;
         if(!myVideo.paused)
           loopTimer.push(setInterval(onTimeUpdate,05));
       }
