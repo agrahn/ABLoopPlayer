@@ -2,7 +2,7 @@
 
 © 2016–2023 Alexander Grahn
 
-A media player based on HTML5, jQuery and JavaScript, with **A-B repeat**, **fast/slow motion** and **bookmarking** functionality for online video (YouTube) and local video and audio files in the MP4/H.264, WebM, Ogg, MP3, WAV formats.
+A media player based on HTML5, jQuery UI and JavaScript, with **A-B repeat**, **fast/slow motion** and **bookmarking** functionality for online video (YouTube) and local video and audio files in the MP4/H.264, WebM, Ogg, MP3, WAV formats.
 
 Firefox or Chrome on a Laptop or PC recommended.
 
