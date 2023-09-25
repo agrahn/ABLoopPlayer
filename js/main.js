@@ -1029,15 +1029,10 @@ var onYouTubeIframeAPIReady=function(){
   queryYT(document.location.search);
 }
 
-var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id
-  //the video has changed                        //loop start & end time, rate
+var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id loop start & end time, rate
+  //the video has changed
   if(id!=vidId && e.data==YT.PlayerState.PLAYING){
     $("#scrub").slider("option", "max", myGetDuration()).show();
-    scrubTimer.push(setInterval(
-      function(e){
-        $("#scrub").slider("option", "value", myGetCurrentTimeYT());
-      } , 05
-    ));
     loopButton.disabled=false;
     $("#timeInputs").hide();
     cancelABLoop();
@@ -1082,8 +1077,15 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id
     vidId=id;
   }
   while(loopTimer.length) clearInterval(loopTimer.pop());
-  if (isTimeASet && isTimeBSet && e.data==YT.PlayerState.PLAYING)
-    loopTimer.push(setInterval(onTimeUpdate,05));
+  while(scrubTimer.length) clearInterval(scrubTimer.pop());
+  if(e.data==YT.PlayerState.PLAYING){
+    scrubTimer.push(setInterval(
+      function(e){
+        $("#scrub").slider("option", "value", myGetCurrentTimeYT());
+      } , 05
+    ));
+    if (isTimeASet && isTimeBSet) loopTimer.push(setInterval(onTimeUpdate,05));
+  }
 }
 
 var saveId=function(id){
@@ -1272,6 +1274,8 @@ var playSelectedFile=function(f){
   myVideo.controls=true;
   myVideo.width=$("#myResizable").width();
   myVideo.addEventListener("durationchange", function(e){
+    while(scrubTimer.length) clearInterval(scrubTimer.pop());
+    while(loopTimer.length) clearInterval(loopTimer.pop());
     if (isFinite(e.target.duration)){
       $("#slider").slider("option", "max", myGetDuration());
       $("#scrub").slider("option", "max", myGetDuration()).show();
@@ -1292,10 +1296,16 @@ var playSelectedFile=function(f){
   myVideo.addEventListener("play", function(){
     loopArr.length=0;
     mySetPlaybackRate(Number($("#speed").slider("value")));
+    scrubTimer.push(setInterval(
+      function(){
+        $("#scrub").slider("option", "value", myGetCurrentTimeVT());
+      }, 0.025
+    ));
     if (isTimeASet && isTimeBSet) loopTimer.push(setInterval(onTimeUpdate,05));
   });
   myVideo.addEventListener("pause", function(){
     loopArr.length=0; // reset quantisation
+    while(scrubTimer.length) clearInterval(scrubTimer.pop());
     while(loopTimer.length) clearInterval(loopTimer.pop());
   });
   myVideo.addEventListener("error", function(e){
@@ -1326,11 +1336,7 @@ var onLoadedData=function(e){
     e.target.addEventListener("mouseout", function(e){e.target.controls=false;});
   }
   loopButton.disabled=false;
-  scrubTimer.push(setInterval(
-    function(){
-      $("#scrub").slider("option", "value", myGetCurrentTimeVT());
-    }, 0.025
-  ));
+  $("#scrub").slider("option", "value", myGetCurrentTimeVT());
   initResizableVT();
   //look for bookmark items with the current video ID
   let bmkArr=JSON.parse(storage.getItem("ab."+vidId));
