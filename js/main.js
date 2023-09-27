@@ -168,6 +168,7 @@ $(document).ready(function(){
   if(storage.getItem("ab.intro")!="unchecked") intro.checked=true;
   toggleIntro(intro, help);
   let speedHandle = $("#speed .ui-slider-handle");
+  speedHandle.on("dblclick", function() {mySetPlaybackRate(1.0);});
   $("#speed").slider({
     min: 0.25, max: 2.0, step: 0.05, value: 1,
     create: function() {speedHandle.text($(this).slider("value"));},
@@ -731,7 +732,7 @@ var contextHelp=function(t){
     myTimeA.title=myTimeB.title="Fine-tune the loop. Input format: [hh:]mm:ss[.sss]";
     annotButton.title="Add a note to the currently selected bookmark.";
     trashButton.title="Delete currently selected / delete all bookmarked loops.";
-    $("#speed").attr("title", "Select playback rate.");
+    $("#speed").attr("title", "Select playback rate. Reset to \"1\" with double click.");
     shareButton.title="Share player link with the current YouTube video or playlist, loop settings and playback rate.";
     exportButton.title="Export loop data and player settings to file \"ABLoopPlayer.json\". "
         + "Check your \"Downloads\" folder.";
