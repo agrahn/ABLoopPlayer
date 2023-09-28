@@ -719,7 +719,7 @@ var contextHelp=function(t){
     if(quant.checked) quant.title=quantTitleChecked;
     else quant.title=quantTitleUnChecked;
     inputYT.title="Paste a valid YouTube URL, video or playlist ID.";
-    searchButtonYT.title="Look up matching video on YouTube.";
+    searchButtonYT.title="Play video.";
     inputVT.title="Browse the hard disk for media files (mp4/H.264, webm, ogg, mp3, wav, ...).";
     loopButton.title="Click twice to mark loop range / click to cancel current loop."
                      + " Hotkey: [Esc]";
