@@ -957,7 +957,7 @@ var mergeData=function(data){
   if(data["ab.version"]) storageWriteKeyVal("ab.version", data["ab.version"]);
 }
 
-var crossmark="<img src='svg/crossmark.svg' width='60%'>";
+var crossmark="<svg  width='60%' viewBox='0 0 10 10'><path stroke='red' stroke-width='2' stroke-linecap='round' d='M1 1L9 9M1 9L9 1'/></svg>";
 
 ///////////////////////////
 // YT player specific code
