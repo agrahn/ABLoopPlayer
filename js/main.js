@@ -399,7 +399,7 @@ var onSliderSlide=function(e,ui){
 }
 
 var loopArr=[];
-var onTimeUpdate=function(){
+var onLoopTimerUpdate=function(){
   let tMedia=myGetCurrentTime();
   let delay=0.0;
   if(tMedia<timeA && !intro.checked || tMedia>=timeB) {
@@ -957,6 +957,8 @@ var mergeData=function(data){
   if(data["ab.version"]) storageWriteKeyVal("ab.version", data["ab.version"]);
 }
 
+var crossmark="<img src='svg/crossmark.svg' width='60%'>";
+
 ///////////////////////////
 // YT player specific code
 ///////////////////////////
@@ -1072,7 +1074,7 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id loo
       $("#slider").slider("option", "values", [a, b]);
       isTimeASet=isTimeBSet=true;
       $("#timeInputs").show();
-      loopButton.innerHTML="Cancel";
+      loopButton.innerHTML=crossmark;
       if(beat) quant.disabled=false;
     }
     vidId=id;
@@ -1085,7 +1087,7 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id loo
         $("#scrub").slider("option", "value", myGetCurrentTimeYT());
       } , 05
     ));
-    if (isTimeASet && isTimeBSet) loopTimer.push(setInterval(onTimeUpdate,05));
+    if (isTimeASet && isTimeBSet) loopTimer.push(setInterval(onLoopTimerUpdate,05));
   }
 }
 
@@ -1193,11 +1195,11 @@ var onBmkSelectYT=function(i){
   $("#slider").slider("option", "values", [a, b]);
   isTimeASet=isTimeBSet=true;
   $("#timeInputs").show();
-  loopButton.innerHTML="Cancel";
+  loopButton.innerHTML=crossmark;
   if(beat) quant.disabled=false;
   annotButton.disabled=false;
   if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING)
-    loopTimer.push(setInterval(onTimeUpdate,05));
+    loopTimer.push(setInterval(onLoopTimerUpdate,05));
 }
 
 var onLoopDownYT=function(){
@@ -1216,12 +1218,12 @@ var onLoopDownYT=function(){
           timeB=myGetCurrentTimeYT();
         }
         isTimeBSet=true;
-        loopButton.innerHTML="Cancel";
+        loopButton.innerHTML=crossmark;
         updateLoopUI();
         $("#timeInputs").show();
         if(beat) quant.disabled=false;
         if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING)
-          loopTimer.push(setInterval(onTimeUpdate,05));
+          loopTimer.push(setInterval(onLoopTimerUpdate,05));
       }
     }else{
       timeA=myGetCurrentTimeYT();
@@ -1297,15 +1299,17 @@ var playSelectedFile=function(f){
   myVideo.addEventListener("play", function(){
     loopArr.length=0;
     mySetPlaybackRate(Number($("#speed").slider("value")));
+    this.removeEventListener("timeupdate", onTimeUpdateVT);
     scrubTimer.push(setInterval(
       function(){
         $("#scrub").slider("option", "value", myGetCurrentTimeVT());
       }, 0.025
     ));
-    if (isTimeASet && isTimeBSet) loopTimer.push(setInterval(onTimeUpdate,05));
+    if (isTimeASet && isTimeBSet) loopTimer.push(setInterval(onLoopTimerUpdate,05));
   });
-  myVideo.addEventListener("pause", function(){
+  myVideo.addEventListener("pause", function(e){
     loopArr.length=0; // reset quantisation
+    this.addEventListener("timeupdate", onTimeUpdateVT);
     while(scrubTimer.length) clearInterval(scrubTimer.pop());
     while(loopTimer.length) clearInterval(loopTimer.pop());
   });
@@ -1331,11 +1335,14 @@ var playSelectedFile=function(f){
   }
 }
 
+var onTimeUpdateVT=function(e){$("#scrub").slider("option", "value", e.target.currentTime);};
+
 var onLoadedData=function(e){
   if(!aonly.checked){
     e.target.addEventListener("mouseover", function(e){e.target.controls=true;});
     e.target.addEventListener("mouseout", function(e){e.target.controls=false;});
   }
+  e.target.addEventListener("timeupdate", onTimeUpdateVT);
   loopButton.disabled=false;
   $("#scrub").slider("option", "value", myGetCurrentTimeVT());
   initResizableVT();
@@ -1373,11 +1380,11 @@ var onBmkSelectVT=function(i){
   $("#slider").slider("option", "values", [a, b]);
   isTimeASet=isTimeBSet=true;
   $("#timeInputs").show();
-  loopButton.innerHTML="Cancel";
+  loopButton.innerHTML=crossmark;
   if(beat) quant.disabled=false;
   annotButton.disabled=false;
   if(!myVideo.paused)
-    loopTimer.push(setInterval(onTimeUpdate,05));
+    loopTimer.push(setInterval(onLoopTimerUpdate,05));
 }
 
 var myGetDurationVT=function(){
@@ -1432,12 +1439,12 @@ var onLoopDownVT=function(){
           timeB=myGetCurrentTimeVT();
         }
         isTimeBSet=true;
-        loopButton.innerHTML="Cancel";
+        loopButton.innerHTML=crossmark;
         updateLoopUI();
         $("#timeInputs").show();
         if(beat) quant.disabled=false;
         if(!myVideo.paused)
-          loopTimer.push(setInterval(onTimeUpdate,05));
+          loopTimer.push(setInterval(onLoopTimerUpdate,05));
       }
     }else{
       timeA=myGetCurrentTimeVT();
