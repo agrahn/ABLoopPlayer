@@ -98,7 +98,6 @@ $(document).ready(function(){
   myTimeB=document.getElementById("myTimeB");
   loopButton=document.getElementById("loopButton");
   myBookmarks=document.getElementById("myBookmarks");
-  bmkAddButton=document.getElementById("bmkAddButton");
   loopBackwardsButton=document.getElementById("loopBackwardsButton");
   loopHalveButton=document.getElementById("loopHalveButton");
   loopDoubleButton=document.getElementById("loopDoubleButton");
@@ -110,6 +109,8 @@ $(document).ready(function(){
   shareButton=document.getElementById("shareButton");
   tapButton=document.getElementById("tapButton");
   quant=document.getElementById("quant");
+  bmkAddButton=document.getElementById("bmkAddButton");
+  bmkAddButton.innerHTML=bmkStar;
   inputVT.addEventListener("change", function(e){
     myBlur();
     playSelectedFile(e.target.files[0]);
@@ -957,7 +958,8 @@ var mergeData=function(data){
   if(data["ab.version"]) storageWriteKeyVal("ab.version", data["ab.version"]);
 }
 
-var crossmark="<svg  width='60%' viewBox='0 0 10 10'><path stroke='red' stroke-width='2' stroke-linecap='round' d='M1 1L9 9M1 9L9 1'/></svg>";
+var crossmark="<svg height='64%' viewBox='0 0 10 10'><path stroke='red' stroke-width='2' stroke-linecap='round' d='M1 1L9 9M1 9L9 1'/></svg>";
+var bmkStar="<svg height='70%' viewBox='0 0 19.88 19.005'><path d='M18.88 7.495L12.703 6.598L9.94 1L7.177 6.598L1 7.495L5.47 11.852L4.415 18.005L9.94 15.1L15.465 18.005L14.41 11.852Z' stroke='#000' fill='none' stroke-width='2' stroke-linejoin='round'/></svg>";
 
 ///////////////////////////
 // YT player specific code
