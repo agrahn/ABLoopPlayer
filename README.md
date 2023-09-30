@@ -17,7 +17,7 @@ Firefox or Chrome on a Laptop or PC recommended.
 - Playback rates from slow to fast motion
 - Resizable video display
 
-**Usage:** Use it online on [GitLab Pages](https://agrahn.gitlab.io/ABLoopPlayer/) (recommended): Paste in a valid YouTube URL, video or playlist ID, or browse the hard disk for video/audio files in one of the supported formats.
+**Usage (recommended):** Use it online on [GitLab](https://agrahn.gitlab.io/ABLoopPlayer/) or [GitHub Pages](https://agrahn.github.io/ABLoopPlayer/): Paste in a valid YouTube URL, video or playlist ID, or browse the hard disk for video/audio files in one of the supported formats.
 
-**Installation (optional):** [Download from GitLab](https://gitlab.com/agrahn/ABLoopPlayer/-/archive/master/ABLoopPlayer-master.zip) and unzip the archive file. Open `ABLoopPlayer.html` in the browser. Note that some YT content may not be playable if `ABLoopPlayer.html` is installed locally on a computer or on a web server outside the U.S.
+**Installation (optional):** [Download from GitLab](https://agrahn.gitlab.io/ABLoopPlayer.html) and unzip the archive file. Open `ABLoopPlayer.html` in the browser. Note that some YT content may not be playable if `ABLoopPlayer.html` is installed locally on a computer or on a web server outside the U.S.
 
