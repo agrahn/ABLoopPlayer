@@ -93,8 +93,8 @@ A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playl
     background-position:center;background-repeat:no-repeat;vertical-align:bottom;"></button>&ensp;
   <input type="checkbox" onchange="toggleQuant(this, help)" disabled id="quant"/><label for="quant">quantise</label>&emsp;&emsp;
   <button id="loopBackwardsButton" style="width:1.5em;height:1.5em;font-size:110%;" onmouseup="onLoopBackwards()">&laquo;</button><!--
-  --><button id="loopHalveButton" style="width:2em;height:1.5em;font-size:110%;" onmouseup="onLoopHalve()">&times;&frac12;</button><!--
-  --><button id="loopDoubleButton" style="width:2em;height:1.5em;font-size:110%;" onmouseup="onLoopDouble()">&times;2</button><!--
+  --><button id="loopHalveButton" style="width:2.4em;height:1.5em;font-size:110%;" onmouseup="onLoopHalve()">&times;&frac12;</button><!--
+  --><button id="loopDoubleButton" style="width:2.4em;height:1.5em;font-size:110%;" onmouseup="onLoopDouble()">&times;2</button><!--
   --><button id="loopForwardsButton" style="width:1.5em;height:1.5em;font-size:110%;" onmouseup="onLoopForwards()">&raquo;</button>
   </div>
 </div>
@@ -102,8 +102,8 @@ A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playl
 <div id="bottom" style="margin: 3px 0px 0px 0px; padding: 5px; background-color: #ddd;position:relative;">
 <label for="loopButton">A-B Loop:</label>
 <button id="loopButton" onmousedown="onLoopDown()" onmouseup="this.blur()"
-  style="width:1.6em;height:1.6em;padding:0px;margin:0px;
-    background-size:80%;background-position:center;background-repeat:no-repeat;vertical-align:baseline;">A</button>
+  style="width:1.6em;height:1.6em;padding:0px;margin:0px;background-image:url('svg/crossmark.svg');
+    background-size:80%;background-position:center;background-repeat:no-repeat;vertical-align:baseline;"></button>
 <span id="myBmkSpan" hidden>
   <style>select:invalid { color: gray; }</style>
   <select id="myBookmarks" size="1"

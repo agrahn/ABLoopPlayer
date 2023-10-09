@@ -97,6 +97,8 @@ $(document).ready(function(){
   myTimeA=document.getElementById("myTimeA");
   myTimeB=document.getElementById("myTimeB");
   loopButton=document.getElementById("loopButton");
+  loopButton.innerHTML="A";
+  loopButton.style.backgroundImage="none";
   myBookmarks=document.getElementById("myBookmarks");
   loopBackwardsButton=document.getElementById("loopBackwardsButton");
   loopHalveButton=document.getElementById("loopHalveButton");
