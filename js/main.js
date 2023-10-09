@@ -110,7 +110,6 @@ $(document).ready(function(){
   tapButton=document.getElementById("tapButton");
   quant=document.getElementById("quant");
   bmkAddButton=document.getElementById("bmkAddButton");
-  bmkAddButton.innerHTML=bmkStar;
   inputVT.addEventListener("change", function(e){
     myBlur();
     playSelectedFile(e.target.files[0]);
@@ -776,6 +775,7 @@ var cancelABLoop=function(){
   while(loopTimer.length) clearInterval(loopTimer.pop());
   isTimeASet=isTimeBSet=false;
   loopButton.innerHTML="A";
+  loopButton.style.backgroundImage="none";
   tapButton.disabled=false;
   quant.disabled=true;
   quant.checked=false;
@@ -958,9 +958,6 @@ var mergeData=function(data){
   if(data["ab.version"]) storageWriteKeyVal("ab.version", data["ab.version"]);
 }
 
-var crossmark="<svg height='64%' viewBox='0 0 10 10'><path stroke='red' stroke-width='2' stroke-linecap='round' d='M1 1L9 9M1 9L9 1'/></svg>";
-var bmkStar="<svg height='70%' viewBox='0 0 19.88 19.005'><path d='M18.88 7.495L12.703 6.598L9.94 1L7.177 6.598L1 7.495L5.47 11.852L4.415 18.005L9.94 15.1L15.465 18.005L14.41 11.852Z' stroke='#000' fill='none' stroke-width='2' stroke-linejoin='round'/></svg>";
-
 ///////////////////////////
 // YT player specific code
 ///////////////////////////
@@ -1076,7 +1073,8 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id loo
       $("#slider").slider("option", "values", [a, b]);
       isTimeASet=isTimeBSet=true;
       $("#timeInputs").show();
-      loopButton.innerHTML=crossmark;
+      loopButton.innerHTML="&emsp;";
+      loopButton.style.backgroundImage="url('svg/crossmark.svg')";
       if(beat) quant.disabled=false;
     }
     vidId=id;
@@ -1197,7 +1195,8 @@ var onBmkSelectYT=function(i){
   $("#slider").slider("option", "values", [a, b]);
   isTimeASet=isTimeBSet=true;
   $("#timeInputs").show();
-  loopButton.innerHTML=crossmark;
+  loopButton.innerHTML="&emsp;";
+  loopButton.style.backgroundImage="url('svg/crossmark.svg')";
   if(beat) quant.disabled=false;
   annotButton.disabled=false;
   if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING)
@@ -1220,7 +1219,8 @@ var onLoopDownYT=function(){
           timeB=myGetCurrentTimeYT();
         }
         isTimeBSet=true;
-        loopButton.innerHTML=crossmark;
+        loopButton.innerHTML="&emsp;";
+        loopButton.style.backgroundImage="url('svg/crossmark.svg')";
         updateLoopUI();
         $("#timeInputs").show();
         if(beat) quant.disabled=false;
@@ -1231,6 +1231,7 @@ var onLoopDownYT=function(){
       timeA=myGetCurrentTimeYT();
       isTimeASet=true;
       loopButton.innerHTML="B";
+      loopButton.style.backgroundImage="none";
     }
   }
 }
@@ -1382,7 +1383,8 @@ var onBmkSelectVT=function(i){
   $("#slider").slider("option", "values", [a, b]);
   isTimeASet=isTimeBSet=true;
   $("#timeInputs").show();
-  loopButton.innerHTML=crossmark;
+  loopButton.innerHTML="&emsp;";
+  loopButton.style.backgroundImage="url('svg/crossmark.svg')";
   if(beat) quant.disabled=false;
   annotButton.disabled=false;
   if(!myVideo.paused)
@@ -1441,7 +1443,8 @@ var onLoopDownVT=function(){
           timeB=myGetCurrentTimeVT();
         }
         isTimeBSet=true;
-        loopButton.innerHTML=crossmark;
+        loopButton.innerHTML="&emsp;";
+        loopButton.style.backgroundImage="url('svg/crossmark.svg')";
         updateLoopUI();
         $("#timeInputs").show();
         if(beat) quant.disabled=false;
@@ -1452,6 +1455,7 @@ var onLoopDownVT=function(){
       timeA=myGetCurrentTimeVT();
       isTimeASet=true;
       loopButton.innerHTML="B";
+      loopButton.style.backgroundImage="none";
     }
   }
 }

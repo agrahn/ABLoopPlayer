@@ -86,20 +86,24 @@ A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playl
 <div id="timeInputs" style="margin: 3px 0px 0px 0px;">
   <!-- placeholder for jQuery range slider -->
   <div id="slider" style="margin-top: 0px; margin-bottom: 2px;"></div>
-  <div style="margin: 3px 0px 0px 0px; padding: 5px; background-color: #ddd;">
+  <div style="margin: 3px 0px 0px 0px;padding: 5px; background-color: #ddd;">
   <label for="myTimeA">A:</label> <input id="myTimeA" onchange="onInputTime(this,0)" size="8"/>
   <label for="myTimeB">B:</label> <input id="myTimeB" onchange="onInputTime(this,1)" size="8"/>
-  <button id="bmkAddButton" style="width:1.6em;height:1.5em;padding:0px;margin:0px;"></button>&ensp;
+  <button id="bmkAddButton" style="width:1.5em;height:1.5em;background-image:url('svg/star.svg');background-size:80%;
+    background-position:center;background-repeat:no-repeat;vertical-align:bottom;"></button>&ensp;
   <input type="checkbox" onchange="toggleQuant(this, help)" disabled id="quant"/><label for="quant">quantise</label>&emsp;&emsp;
-  <button id="loopBackwardsButton" style="padding:0px 2px;font-size:110%;" onmouseup="onLoopBackwards()">&laquo;</button><!--
-  --><button id="loopHalveButton" style="padding:0px 2px;font-size:110%;" onmouseup="onLoopHalve()">&times;&frac12;</button><!--
-  --><button id="loopDoubleButton" style="padding:0px 2px;font-size:110%;" onmouseup="onLoopDouble()">&times;2</button><!--
-  --><button id="loopForwardsButton" style="padding:0px 2px;font-size:110%;" onmouseup="onLoopForwards()">&raquo;</button>
+  <button id="loopBackwardsButton" style="width:1.5em;height:1.5em;font-size:110%;" onmouseup="onLoopBackwards()">&laquo;</button><!--
+  --><button id="loopHalveButton" style="width:2em;height:1.5em;font-size:110%;" onmouseup="onLoopHalve()">&times;&frac12;</button><!--
+  --><button id="loopDoubleButton" style="width:2em;height:1.5em;font-size:110%;" onmouseup="onLoopDouble()">&times;2</button><!--
+  --><button id="loopForwardsButton" style="width:1.5em;height:1.5em;font-size:110%;" onmouseup="onLoopForwards()">&raquo;</button>
   </div>
 </div>
 
 <div id="bottom" style="margin: 3px 0px 0px 0px; padding: 5px; background-color: #ddd;position:relative;">
-<label for="loopButton">A-B Loop:</label> <button id="loopButton" onmousedown="onLoopDown()" onmouseup="this.blur()" style="width:1.6em;height:1.5em;padding:0px;margin:0px;">A</button>
+<label for="loopButton">A-B Loop:</label>
+<button id="loopButton" onmousedown="onLoopDown()" onmouseup="this.blur()"
+  style="width:1.6em;height:1.6em;padding:0px;margin:0px;
+    background-size:80%;background-position:center;background-repeat:no-repeat;vertical-align:baseline;">A</button>
 <span id="myBmkSpan" hidden>
   <style>select:invalid { color: gray; }</style>
   <select id="myBookmarks" size="1"
@@ -111,10 +115,10 @@ A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playl
   >
     <option value="" selected disabled>Bookmarked</option>
   </select><!--
-  --><button id="annotButton" style="width:1.5em; padding: 0px;"
+  --><button id="annotButton" style="width:1.5em;height:1.5em;padding:0px;"
     onclick="onClickAddNote(myBookmarks.selectedIndex)" disabled
     ><span class="ui-icon ui-icon-comment"></span></button><!--
-  --><button id="trashButton" style="width:1.5em; padding: 0px;"
+  --><button id="trashButton" style="width:1.5em;height:1.5em;padding:0px;"
     onclick="onClickTrash(myBookmarks.selectedIndex)"
   ><span class="ui-icon ui-icon-trash"></span></button>
 </span> <input type="checkbox" onchange="toggleIntro(this, help)" id="intro"/><label for="intro">play intro</label><br/>
@@ -122,15 +126,14 @@ A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playl
 <label for="tapButton">Tempo:</label>
 <button id="tapButton" onmousedown="onTap(this)" onmouseup="this.blur()"/>tap</button><label for="tapButton"> BPM</label>
 <span style="position:absolute;bottom:3px;right:5px">
-  <button id="shareButton" style="width:1.5em;padding:0px;margin:0px;"
-      onclick="onClickShare()"
-    ><img src="png/sharelink.png" alt="share video link with current loop setting and playback rate" width="100%"/></button><!--
-  --><button id="exportButton" style="width:1.5em;padding:0px;margin:0px;"
+  <button id="shareButton" style="width:1.5em;height:1.5em;background-image: url('png/sharelink.png');background-size:cover;"
+      onclick="onClickShare()"></button><!--
+  --><button id="exportButton" style="width:1.5em;height:1.5em;background-image: url('png/export.png');background-size:cover;"
       onclick="onClickExport()"
-    ><img src="png/export.png" alt="export loop and app data" width="100%"/></button><!--
-  --><button id="importButton" style="width:1.5em;padding:0px;margin:0px;"
+    ></button><!--
+  --><button id="importButton" style="width:1.5em;height:1.5em;background-image: url('png/import.png');background-size:cover;"
       onclick="onClickImport()"
-    ><img src="png/import.png" alt="import loop and app data" width="100%"/></button>
+    ></button>
 </span>
 </div>
 <hr class="double" style="margin-top: 0px;"/>
