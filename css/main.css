@@ -101,5 +101,7 @@ button {
 
 button:disabled{opacity:0.5;}
 
-#searchButtonYT {background-color: transparent;}
-#searchButtonYT:active {background-color: #999;}
+#searchButtonYT {background-color:transparent;background-size:contain;}
+#searchButtonYT:active {background-color:#fff;border-radius:0.4em;background-size:90%;}
+
+input[type=checkbox] {vertical-align:middle;}

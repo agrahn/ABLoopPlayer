@@ -31,7 +31,7 @@ const timePattern='(?:\\d+:[0-5]\\d|[0-5]?\\d):[0-5]\\d(?:\\.\\d{1,3})?';
 var URL=window.URL;
 
 var crossmark='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" version="1.1">'
-  +'<path stroke="red" stroke-width="2" stroke-linecap="round" d="M1 1L9 9M1 9L9 1"/></svg>';
+  +'<path stroke="red" stroke-width="2" stroke-linecap="butt" d="M1 1L9 9M1 9L9 1"/></svg>';
 var crossMarkUrl="url('data:image/svg+xml;base64,"+window.btoa(crossmark)+"')";
 
 try{

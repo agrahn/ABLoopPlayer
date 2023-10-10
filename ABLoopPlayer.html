@@ -51,29 +51,29 @@
   <link rel="shortcut icon" type="image/x-icon" href="png/favicon.ico">
 </head>
 
-<body style="margin-left: 1em; margin-right: 1em; min-width: max-content; display: inline-block;">
+<body style="margin-left:1em;margin-right:1em;min-width:max-content;display:inline-block;">
 
-<h1 style="font-size: 150%; margin-top: 0; margin-bottom: 0.5em;">AB Loop Player</h1>
+<h1 style="font-size:150%;margin-top:0;margin-bottom:0.5em;">AB Loop Player</h1>
 <div id="introText">
 Player for <em><b>YouTube</b></em> and <em><b>video and audio files</b></em> in various formats (MP4, WebM, Ogg, MP3, AAC, FLAC, WAV) with
 A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playlists</b></em>.
 </div>
-<div style="margin-top: 0.5em;">Firefox or Chrome/Chromium on PC or Laptop recommended.</div>
+<div style="margin-top:0.5em;">Firefox or Chrome/Chromium on PC or Laptop recommended.</div>
 </div>
 
-<div style="font-family: sans-serif; font-size: 87.5%;">
-<hr class="double" style="margin-bottom: 0px;"/>
-<div style="margin-bottom: 3px; padding: 5px; background-color: #ddd;">
-  <div style="display: flex;">
-  <label for="inputYT" style="padding-top: 3px;">YouTube URL | video ID | list ID :</label><!--
-  --><input id="inputYT" list="YTids" autocomplete onfocus="this.select()"
-    onkeypress="if(event && event.keyCode == 13) queryYT(this.value)" onchange="queryYT(this.value)"
-    style="margin-left: 5px; margin-right: 1px; flex: 1 1 auto;" disabled/><datalist id="YTids"></datalist><!--
-    --><span style="float: right;"><!--
-      --><button id="searchButtonYT" onclick="queryYT(inputYT.value)" style="width:2.1em;height:1.6em;background-position:center;
-            background-repeat:no-repeat;vertical-align:bottom;background-size:100%;border:none;background-image:url('svg/yt-play.svg');"
-            disabled></button>
-      <input type="checkbox" onchange="contextHelp(this)" id="help"/><label for="help">?</label>
+<div style="font-family:sans-serif;font-size:87.5%;">
+<hr class="double" style="margin-bottom:0px;"/>
+<div style="margin-bottom:3px;padding:5px;background-color:#ddd;">
+  <div style="display:flex;">
+    <label for="inputYT" style="padding-top:3px;vertical-align:baseline;">YouTube URL | video ID | list ID :</label>
+    <input id="inputYT" list="YTids" autocomplete onfocus="this.select()"
+      onkeypress="if(event && event.keyCode == 13) queryYT(this.value)" onchange="queryYT(this.value)"
+      style="margin-left:5px;margin-right:3px;flex: 1 1 auto;vertical-align:baseline;" disabled/><datalist id="YTids"></datalist>
+    <span style="float:right;">
+      <button id="searchButtonYT" onclick="queryYT(inputYT.value)" style="width:2.2em;height:1.6em;background-position:center;
+            background-repeat:no-repeat;vertical-align:baseline;border:none;background-image:url('svg/yt-play.svg');"
+            disabled>&ensp;</button>
+      <input type="checkbox" onchange="contextHelp(this)" id="help"/><label for="help" style="vertical-align:middle;">?</label>
     </span>
   </div>
   <label for="inputVT">Media file:</label> <input id="inputVT" accept="video/*,audio/*" type="file"/>
@@ -83,10 +83,10 @@ A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playl
 <div id="myResizable" style="background: #ddd;"></div><!-- takes one of the players -->
 <div id="scrub" style="margin-top: 4px;"></div>
 
-<div id="timeInputs" style="margin: 3px 0px 0px 0px;">
+<div id="timeInputs" style="margin:3px 0px 0px 0px;">
   <!-- placeholder for jQuery range slider -->
-  <div id="slider" style="margin-top: 0px; margin-bottom: 2px;"></div>
-  <div style="margin: 3px 0px 0px 0px;padding: 5px; background-color: #ddd;">
+  <div id="slider" style="margin-top:0px;margin-bottom:2px;"></div>
+  <div style="margin:3px 0px 0px 0px;padding:5px;background-color: #ddd;">
   <label for="myTimeA">A:</label> <input id="myTimeA" onchange="onInputTime(this,0)" size="8"/>
   <label for="myTimeB">B:</label> <input id="myTimeB" onchange="onInputTime(this,1)" size="8"/>
   <button id="bmkAddButton" style="width:1.5em;height:1.5em;background-image:url('svg/star.svg');background-size:80%;
@@ -99,7 +99,7 @@ A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playl
   </div>
 </div>
 
-<div id="bottom" style="margin: 3px 0px 0px 0px; padding: 5px; background-color: #ddd;position:relative;">
+<div id="bottom" style="margin:3px 0px 0px 0px;padding:5px;background-color:#ddd;position:relative;">
 <label for="loopButton">A-B Loop:</label>
 <button id="loopButton" onmousedown="onLoopDown()" onmouseup="this.blur()"
   style="width:1.6em;height:1.6em;padding:0px;margin:0px;background-size:80%;
@@ -125,13 +125,13 @@ A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playl
 <label for="speed">Speed:</label> <div id="speed"><div id="speed-handle" class="ui-slider-handle"></div></div>&emsp;&emsp;
 <label for="tapButton">Tempo:</label>
 <button id="tapButton" onmousedown="onTap(this)" onmouseup="this.blur()"/>tap</button><label for="tapButton"> BPM</label>
-<span style="position:absolute;bottom:3px;right:5px">
-  <button id="shareButton" style="width:1.5em;height:1.5em;background-image: url('png/sharelink.png');background-size:cover;"
+<span style="position:absolute;bottom:3px;right:5px;">
+  <button id="shareButton" style="width:1.5em;height:1.5em;background-image: url('png/sharelink.png');background-size:contain;"
       onclick="onClickShare()"></button><!--
-  --><button id="exportButton" style="width:1.5em;height:1.5em;background-image: url('png/export.png');background-size:cover;"
+  --><button id="exportButton" style="width:1.5em;height:1.5em;background-image: url('png/export.png');background-size:contain;"
       onclick="onClickExport()"
     ></button><!--
-  --><button id="importButton" style="width:1.5em;height:1.5em;background-image: url('png/import.png');background-size:cover;"
+  --><button id="importButton" style="width:1.5em;height:1.5em;background-image: url('png/import.png');background-size:contain;"
       onclick="onClickImport()"
     ></button>
 </span>
@@ -140,13 +140,13 @@ A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playl
 </div>
 <div style="float: left;">© 2016–2023 Alexander Grahn</div>
 <div style="float: right;">Visit project on
-<a href="https://gitlab.com/agrahn/ABLoopPlayer" style="margin-left: 3px;">
+<a href="https://gitlab.com/agrahn/ABLoopPlayer" style="margin-left:3px;">
   <img src="svg/glfox2.svg" alt="GitLab logo" style="height:1.2em;margin-bottom:-0.3em;" title="GitLab"/></a>
-<a href="https://github.com/agrahn/ABLoopPlayer" style="margin-left: 3px;">
+<a href="https://github.com/agrahn/ABLoopPlayer" style="margin-left:3px;">
   <img src="svg/octocat.svg" alt="GitHub logo" style="height:1.2em;margin-bottom:-0.3em;" title="GitHub"/></a>
 </div>
 
-<div id="test" style="visibility: hidden; white-space: nowrap; width: auto;position: absolute;">
+<div id="test" style="visibility:hidden;white-space:nowrap;width:auto;position:absolute;">
 FLAC, WAV) with A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playlists</b></em>.</div>
 </body>
 </html>
