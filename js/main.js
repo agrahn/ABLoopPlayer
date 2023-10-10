@@ -30,6 +30,10 @@ var knownMedia=[];
 const timePattern='(?:\\d+:[0-5]\\d|[0-5]?\\d):[0-5]\\d(?:\\.\\d{1,3})?';
 var URL=window.URL;
 
+var crossmark='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" version="1.1">'
+  +'<path stroke="red" stroke-width="2" stroke-linecap="round" d="M1 1L9 9M1 9L9 1"/></svg>';
+var crossMarkUrl="url('data:image/svg+xml;base64,"+window.btoa(crossmark)+"')";
+
 try{
   var storage=window.localStorage;
 }
@@ -97,8 +101,6 @@ $(document).ready(function(){
   myTimeA=document.getElementById("myTimeA");
   myTimeB=document.getElementById("myTimeB");
   loopButton=document.getElementById("loopButton");
-  loopButton.innerHTML="A";
-  loopButton.style.backgroundImage="none";
   myBookmarks=document.getElementById("myBookmarks");
   loopBackwardsButton=document.getElementById("loopBackwardsButton");
   loopHalveButton=document.getElementById("loopHalveButton");
@@ -723,7 +725,7 @@ var contextHelp=function(t){
     inputYT.title="Paste a valid YouTube URL, video or playlist ID.";
     searchButtonYT.title="Play video.";
     inputVT.title="Browse the hard disk for media files (mp4/H.264, webm, ogg, mp3, wav, ...).";
-    loopButton.title="Click twice to mark loop range / click to cancel current loop."
+    loopButton.title="Click twice to mark loop range. Third click cancels current loop."
                      + " Hotkey: [Esc]";
     myBookmarks.title="Choose from previously saved loops.";
     bmkAddButton.title="Save current loop to the list of bookmarks.";
@@ -1076,7 +1078,7 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id loo
       isTimeASet=isTimeBSet=true;
       $("#timeInputs").show();
       loopButton.innerHTML="&emsp;";
-      loopButton.style.backgroundImage="url('svg/crossmark.svg')";
+      loopButton.style.backgroundImage=crossMarkUrl;
       if(beat) quant.disabled=false;
     }
     vidId=id;
@@ -1198,7 +1200,7 @@ var onBmkSelectYT=function(i){
   isTimeASet=isTimeBSet=true;
   $("#timeInputs").show();
   loopButton.innerHTML="&emsp;";
-  loopButton.style.backgroundImage="url('svg/crossmark.svg')";
+  loopButton.style.backgroundImage=crossMarkUrl;
   if(beat) quant.disabled=false;
   annotButton.disabled=false;
   if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING)
@@ -1222,7 +1224,7 @@ var onLoopDownYT=function(){
         }
         isTimeBSet=true;
         loopButton.innerHTML="&emsp;";
-        loopButton.style.backgroundImage="url('svg/crossmark.svg')";
+        loopButton.style.backgroundImage=crossMarkUrl;
         updateLoopUI();
         $("#timeInputs").show();
         if(beat) quant.disabled=false;
@@ -1386,7 +1388,7 @@ var onBmkSelectVT=function(i){
   isTimeASet=isTimeBSet=true;
   $("#timeInputs").show();
   loopButton.innerHTML="&emsp;";
-  loopButton.style.backgroundImage="url('svg/crossmark.svg')";
+  loopButton.style.backgroundImage=crossMarkUrl;
   if(beat) quant.disabled=false;
   annotButton.disabled=false;
   if(!myVideo.paused)
@@ -1446,7 +1448,7 @@ var onLoopDownVT=function(){
         }
         isTimeBSet=true;
         loopButton.innerHTML="&emsp;";
-        loopButton.style.backgroundImage="url('svg/crossmark.svg')";
+        loopButton.style.backgroundImage=crossMarkUrl;
         updateLoopUI();
         $("#timeInputs").show();
         if(beat) quant.disabled=false;
