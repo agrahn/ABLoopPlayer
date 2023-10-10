@@ -101,3 +101,5 @@ button {
 
 button:disabled{opacity:0.5;}
 
+#searchButtonYT {background-color: transparent;}
+#searchButtonYT:active {background-color: #999;}
