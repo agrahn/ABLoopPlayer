@@ -105,3 +105,5 @@ button:disabled{opacity:0.5;}
 #searchButtonYT:active {background-color:#fff;border-radius:0.4em;background-size:90%;}
 
 input[type=checkbox] {vertical-align:middle;}
+
+select:invalid {color:gray;}
