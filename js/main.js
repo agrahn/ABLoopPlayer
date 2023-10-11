@@ -21,6 +21,7 @@ var appversion=1.01;
 
 var vidId; //current YT video ID or file name + size
 var lstId; //current YT playlist ID
+var searchStr; //url parameters
 var timeA, timeB, delta; // s
 var isTimeASet=false;
 var isTimeBSet=false;
@@ -1011,6 +1012,10 @@ var loadYT=function(vid,plist,lid,ta,tb,r){
     },
     events: {
       "onReady": function(e){
+        if(searchStr){
+          inputYT.value=searchStr;
+          searchStr=undefined;
+        }
         if(e.target.getPlaylist()&&lid){
           saveId(lid);
           lstId=lid;
@@ -1040,6 +1045,7 @@ var loadYT=function(vid,plist,lid,ta,tb,r){
 
 var onYouTubeIframeAPIReady=function(){
   inputYT.disabled=searchButtonYT.disabled=false;
+  if(document.location.search) searchStr=document.location.search;
   queryYT(document.location.search);
 }
 
