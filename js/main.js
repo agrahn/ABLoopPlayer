@@ -20,6 +20,7 @@
 var appversion=1.01;
 
 var vidId; //current YT video ID or file name + size
+var lstId; //current YT playlist ID
 var timeA, timeB, delta; // s
 var isTimeASet=false;
 var isTimeBSet=false;
@@ -788,6 +789,7 @@ var cancelABLoop=function(){
 
 var resetUI=function(){
   vidId=undefined;
+  lstId=undefined;
   $("#timeInputs").hide();
   cancelABLoop();
   while(scrubTimer.length) clearInterval(scrubTimer.pop());
@@ -1001,13 +1003,19 @@ var loadYT=function(vid,plist,lid,ta,tb,r){
       listType: "playlist",
       playlist: plist,
       list: lid,
-      autoplay: (vid ? 1 : 0),
-      fs: 0,  //no fullscreen button
+      //autoplay: (vid ? 1 : 0),
+      autoplay: 1,
       modestbranding: 1,
+      fs: 0,  //no fullscreen button
       rel: 0, //no related videos at the end
     },
     events: {
-      "onReady": function(e){if(e.target.getPlaylist()){saveId(lid);}},
+      "onReady": function(e){
+        if(e.target.getPlaylist()&&lid){
+          saveId(lid);
+          lstId=lid;
+        }
+      },
       "onStateChange": function(e){
         if(e.target.getPlaylist()){
           onPlayerStateChange(
@@ -1119,11 +1127,12 @@ var saveId=function(id){
 
 var queryYT=function(qu){
   let vid, plist, lid;
-  // share-link url: video id and/or playlist (comma-separated video ids)
+  // ABLoopPlayer share link
   vid=qu.match(/(?<=[?&]videoid=)[0-9a-zA-Z_-]{11}/);
   plist=qu.match(/(?<=[?&]playlist=)[0-9a-zA-Z_-]{11}(?:,[0-9a-zA-Z_-]{11})*/);
+  lid=qu.match(/(?<=[?&]listid=)[0-9a-zA-Z_-]{12,}/);
   // regular YT url with video id and/or list id
-  if(!(vid||plist)){
+  if(!(vid||plist||lid)){
     vid=qu.match(/(?<=youtu\.be\/|\/embed\/|\/v\/|[?&]v=)[0-9a-zA-Z_-]{11}/);
     lid=qu.match(/(?<=[?&]list=)[0-9a-zA-Z_-]{12,}/);
   }
@@ -1248,7 +1257,8 @@ var onClickShare=function(){
   let playlist=ytPlayer.getPlaylist();
   if(playlist){
     sharelink+="?videoid="+playlist[ytPlayer.getPlaylistIndex()];
-    sharelink+="&playlist="+playlist.join();
+    if(lstId) sharelink+="&listid="+lstId;
+    else sharelink+="&playlist="+playlist.join();
   }
   else{
     sharelink+="?videoid="+vidId;
