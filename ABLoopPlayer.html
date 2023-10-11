@@ -49,6 +49,8 @@
   <script src="js/main.js"></script>
 
   <link rel="shortcut icon" type="image/x-icon" href="png/favicon.ico">
+  <link rel="preload" type="image/svg+xml" href="svg/trash.svg" as="image"/>
+  <link rel="preload" type="image/svg+xml" href="svg/comment.svg" as="image"/>
 </head>
 
 <body style="margin-left:1em;margin-right:1em;min-width:max-content;display:inline-block;font-family:serif;">
@@ -114,23 +116,23 @@ A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playl
   >
     <option value="" selected disabled>Bookmarked</option>
   </select><!--
-  --><button id="annotButton" style="width:1.5em;height:1.5em;padding:0px;"
-    onclick="onClickAddNote(myBookmarks.selectedIndex)" disabled
-    ><span class="ui-icon ui-icon-comment"></span></button><!--
-  --><button id="trashButton" style="width:1.5em;height:1.5em;padding:0px;"
-    onclick="onClickTrash(myBookmarks.selectedIndex)"
-  ><span class="ui-icon ui-icon-trash"></span></button>
+  --><button id="annotButton" style="width:1.5em;height:1.5em;padding:0px;background-size:80%;background-position:center;
+       background-image:url('svg/comment.svg');background-repeat:no-repeat;vertical-align:baseline;"
+       onclick="onClickAddNote(myBookmarks.selectedIndex)" disabled>&ensp;</button><!--
+  --><button id="trashButton" style="width:1.5em;height:1.5em;padding:0px;background-size:73%;background-position:center;
+       background-image:url('svg/trash.svg');background-repeat:no-repeat;vertical-align:baseline;"
+       onclick="onClickTrash(myBookmarks.selectedIndex)">&ensp;</button>
 </span> <input type="checkbox" onchange="toggleIntro(this, help)" id="intro"/><label for="intro">play intro</label><br/>
 Speed:<div id="speed"><div id="speed-handle" class="ui-slider-handle"></div></div>&emsp;&emsp;
 <label for="tapButton">Tempo:</label>
 <button id="tapButton" onmousedown="onTap(this)" onmouseup="this.blur()"/>tap</button><label for="tapButton"> BPM</label>
 <span style="position:absolute;bottom:3px;right:5px;">
-  <button id="shareButton" style="width:1.5em;height:1.5em;background-image: url('png/sharelink.png');background-size:contain;"
+  <button id="shareButton" style="width:1.5em;height:1.5em;background-image:url('png/sharelink.png');background-size:contain;"
       onclick="onClickShare()"></button><!--
-  --><button id="exportButton" style="width:1.5em;height:1.5em;background-image: url('png/export.png');background-size:contain;"
+  --><button id="exportButton" style="width:1.5em;height:1.5em;background-image:url('png/export.png');background-size:contain;"
       onclick="onClickExport()"
     ></button><!--
-  --><button id="importButton" style="width:1.5em;height:1.5em;background-image: url('png/import.png');background-size:contain;"
+  --><button id="importButton" style="width:1.5em;height:1.5em;background-image:url('png/import.png');background-size:contain;"
       onclick="onClickImport()"
     ></button>
 </span>
