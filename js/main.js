@@ -975,7 +975,7 @@ var mergeData=function(data){
 //arg 3: list id,
 //arg 4: loop start, arg 4: loop end time
 //arg 5: playback speed
-var loadYT=function(vid,plist,lid,ta,tb,r){
+var loadYT=function(vid,plist,lid,ta,tb,r,lType="playlist"){
   initYT(); //initialize player-specific functions
   resetUI();
   //remove previous player, if there is one
@@ -997,13 +997,14 @@ var loadYT=function(vid,plist,lid,ta,tb,r){
   myResizable.appendChild(ytDiv);
   //create new YT player iframe, replacing ytDiv
   ytPlayer=new YT.Player("ytDiv", {
-    videoId: vid,
+    videoId: (vid && vid.substring(0,4)==="vid:" ? vid.substring(4) : vid),
     width: playerWidth,
     height: $("#myResizable").height(),
     playerVars: {
-      listType: "playlist",
-      playlist: plist,
+      index: (vid && vid.substring(0,4)==="idx:" ? vid.substring(4) : null),
       list: lid,
+      listType: lType,
+      playlist: plist,
       //autoplay: (vid ? 1 : 0),
       autoplay: 1,
       modestbranding: 1,
@@ -1017,8 +1018,14 @@ var loadYT=function(vid,plist,lid,ta,tb,r){
           searchStr=undefined;
         }
         if(e.target.getPlaylist()&&lid){
-          saveId(lid);
-          lstId=lid;
+          if(lType==="user_uploads"){
+            saveId("@"+lid);
+            lstId="@"+lid;
+          }
+          else{
+            saveId(lid);
+            lstId=lid;
+          }
         }
       },
       "onStateChange": function(e){
@@ -1035,7 +1042,8 @@ var loadYT=function(vid,plist,lid,ta,tb,r){
       "onError": function(e){
         console.log("Error: " + e.data);
         resetUI();
-        loadYT(null,null,null,null,null,null);
+        if(lid && lType==="playlist") loadYT(vid,plist,lid,ta,tb,r,"user_uploads");
+        else loadYT(null,null,null,null,null,null);
       }
     }
   });
@@ -1045,8 +1053,10 @@ var loadYT=function(vid,plist,lid,ta,tb,r){
 
 var onYouTubeIframeAPIReady=function(){
   inputYT.disabled=searchButtonYT.disabled=false;
-  if(document.location.search) searchStr=document.location.search;
-  queryYT(document.location.search);
+  if(document.location.search) {
+    searchStr=document.location.search.substring(1); //remove leading `?'
+    queryYT(searchStr);
+  }
 }
 
 var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id loop start & end time, rate
@@ -1132,32 +1142,63 @@ var saveId=function(id){
 }
 
 var queryYT=function(qu){
-  let vid, plist, lid;
-  // ABLoopPlayer share link
-  vid=qu.match(/(?<=[?&]videoid=)[0-9a-zA-Z_-]{11}/);
-  plist=qu.match(/(?<=[?&]playlist=)[0-9a-zA-Z_-]{11}(?:,[0-9a-zA-Z_-]{11})*/);
-  lid=qu.match(/(?<=[?&]listid=)[0-9a-zA-Z_-]{12,}/);
-  // regular YT url with video id and/or list id
-  if(!(vid||plist||lid)){
-    vid=qu.match(/(?<=youtu\.be\/|\/embed\/|\/v\/|[?&]v=)[0-9a-zA-Z_-]{11}/);
-    lid=qu.match(/(?<=[?&]list=)[0-9a-zA-Z_-]{12,}/);
-  }
-  // plain video id or list id
-  if(!(vid||plist||lid)){
+  let vid,plist,lid,lType="playlist";
+  if(
+    !qu.match(/videoid|listid|playlist|index/)
+    && !qu.match(/youtu\.be\/|youtube(?:-nocookie)?\..*/)
+  ){//plain video id, list id, handle, playlist (comma-separated video ids)
     vid=qu.trim().match(/^[0-9a-zA-Z_-]{11}$/);
-    lid=qu.trim().match(/^[0-9a-zA-Z_-]{12,}$/);
+    if(vid) vid="vid:"+vid[0];
+    lid=qu.trim().match(/^[0-9A-Za-z_-]{12,}$/);
+    if(!lid){
+      lid=qu.trim().match(/(?<=^@)[0-9A-Za-z_.-]{3,30}$/); //handle?
+      if(lid) lType="user_uploads";
+    }
+    plist=qu.trim().replace(/\s+/g,',').match(/^[0-9a-zA-Z_-]{11}(?:,[0-9a-zA-Z_-]{11})+$/);
   }
-  if(!(vid||plist||lid)) return;
+  else if(qu.match(/youtu\.be\/|youtube(?:-nocookie)?\..*/)){
+    //regular YT url with video id and/or list id or playlist
+    vid=qu.match(/(?<=\/embed\/|\/v\/|[?&]v=)[0-9a-zA-Z_-]{11}/);
+    if(vid) vid="vid:"+vid[0];
+    else{//try with index into list
+      vid=qu.match(/(?<=[?&]index=)[0-9]+/);
+      if(vid) vid="idx:"+vid[0];
+    }
+    lid=qu.match(/(?<=[?&]list=)[0-9A-Za-z_.-]{3,}/);
+    if(!lid){
+      lid=qu.match(/(?<=\/@)[0-9A-Za-z_.-]{3,30}/);
+      if(lid) lType="user_uploads";
+    }
+    plist=qu.match(/(?<=[?&]playlist=)[0-9a-zA-Z_-]{11}(?:,[0-9a-zA-Z_-]{11})*/);
+  }
+  else{//ABLoopPlayer share link
+    let q="?"+qu;
+    vid=q.match(/(?<=[?&]videoid=)[0-9a-zA-Z_-]{11}/);
+    if(vid) vid="vid:"+vid[0];
+    else{
+      vid=q.match(/(?<=[?&]index=)[0-9]+/);
+      if(vid) vid="idx:"+vid[0];
+    }
+    lid=q.match(/(?<=[?&]listid=)[0-9A-Za-z_-]{12,}/);
+    if(!lid){
+      lid=q.match(/(?<=[?&]listid=@)[0-9A-Za-z_.-]{3,30}/);
+      if(lid) lType="user_uploads";
+    }
+    plist=q.match(/(?<=[?&]playlist=)[0-9a-zA-Z_-]{11}(?:,[0-9a-zA-Z_-]{11})*/);
+  }
+  if(!(vid||lid||plist)) return;
   let ta=qu.match(/(?<=[?&](?:star)?t=)[0-9]+(?:\.[0-9]*)?/);
   let tb=qu.match(/(?<=[?&]end=)[0-9]+(?:\.[0-9]*)?/);
   let rate=qu.match(/(?<=[?&]rate=)[0-9]+(?:\.[0-9]*)?/);
   if(rate) rate=Math.min(Math.max(rate[0],0.25),2.0);
   else rate=1;
   loadYT(
-    vid ? vid[0] : null,
+    vid ? vid : null,
     plist ? plist[0] : null,
     lid ? lid[0] : null,
-    ta ? ta[0] : null, tb ? tb[0] : null, rate
+    ta ? ta[0] : null,
+    tb ? tb[0] : null,
+    rate, lType
   );
 }
 
@@ -1262,9 +1303,9 @@ var onClickShare=function(){
   if(idx>-1) sharelink=sharelink.substring(0,idx);
   let playlist=ytPlayer.getPlaylist();
   if(playlist){
-    sharelink+="?videoid="+playlist[ytPlayer.getPlaylistIndex()];
-    if(lstId) sharelink+="&listid="+lstId;
-    else sharelink+="&playlist="+playlist.join();
+    if(lstId) sharelink+="?listid="+lstId;
+    else sharelink+="?playlist="+playlist.join();
+    sharelink+="&index="+(ytPlayer.getPlaylistIndex()+1);
   }
   else{
     sharelink+="?videoid="+vidId;
