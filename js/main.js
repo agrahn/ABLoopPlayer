@@ -1241,6 +1241,7 @@ var initResizableYT=function(){
     resize: function(e,ui){
       $("#slider").width(ui.size.width);
       $("#scrub").width(ui.size.width);
+      $("#introText").width(Math.max(ui.size.width,$("#test").width()+1));
     }
   });
 }
@@ -1484,6 +1485,7 @@ var initResizableVT=function(){
       }
       $("#slider").width(ui.size.width);
       $("#scrub").width(ui.size.width);
+      $("#introText").width(Math.max(ui.size.width,$("#test").width()+1));
     }
   });
 };
