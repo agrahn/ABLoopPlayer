@@ -84,7 +84,7 @@ var YTids, inputYT, inputVT, ytPlayer, help, aonly, intro, myTimeA,
   trashButton, tapButton;
 
 $(document).ready(function(){
-  $("#introText").width($("#test").width()+1);
+  $("#introText").width($("#widthA").width()+1);
   //if we are online, asynchronously load YT player api
   if(navigator.onLine){
     let scripts=document.getElementsByTagName("script");
@@ -93,6 +93,7 @@ $(document).ready(function(){
     scriptTag2.src="https://www.youtube.com/iframe_api";
     scriptTag1.parentNode.insertBefore(scriptTag2, null);
   }
+  introTextBr=document.getElementById("introTextBr");
   inputYT=document.getElementById("inputYT");
   YTids=document.getElementById("YTids");
   help=document.getElementById("help");
@@ -1240,7 +1241,9 @@ var initResizableYT=function(){
     resize: function(e,ui){
       $("#slider").width(ui.size.width);
       $("#scrub").width(ui.size.width);
-      $("#introText").width(Math.max(ui.size.width,$("#test").width()+1));
+      $("#introText").width(Math.max(ui.size.width,$("#widthA").width()+1));
+      if(ui.size.width>$("#widthB").width()) introTextBr.style.display="none";
+      else introTextBr.style.display="block";
     }
   });
 }
@@ -1484,7 +1487,9 @@ var initResizableVT=function(){
       }
       $("#slider").width(ui.size.width);
       $("#scrub").width(ui.size.width);
-      $("#introText").width(Math.max(ui.size.width,$("#test").width()+1));
+      $("#introText").width(Math.max(ui.size.width,$("#widthA").width()+1));
+      if(ui.size.width>$("#widthB").width()) introTextBr.style.display="none";
+      else introTextBr.style.display="block";
     }
   });
 };
