@@ -740,9 +740,9 @@ var contextHelp=function(t){
     trashButton.title="Delete currently selected / delete all bookmarked loops.";
     $("#speed").attr("title", "Select playback rate. Reset to \"1\" with double click.");
     shareButton.title="Share player link with the current YouTube video or playlist, loop settings and playback rate.";
-    exportButton.title="Export loop data and player settings to file \"ABLoopPlayer.json\". "
+    exportButton.title="Export loop database and player settings to file \"ABLoopPlayer.json\". "
         + "Check your \"Downloads\" folder.";
-    importButton.title="Import file \"ABLoopPlayer.json\" with loop data and player settings "
+    importButton.title="Import file \"ABLoopPlayer.json\" with loop database and player settings "
         + "from another computer or browser.";
     $("#slider").attr("title", "Move slider handles to adjust the loop. "
         + "Press [Ctrl] while moving a handle to shift the entire loop window. "
@@ -1005,7 +1005,6 @@ var loadYT=function(vid,plist,lid,ta,tb,r,lType="playlist"){
       list: lid,
       listType: lType,
       playlist: plist,
-      //autoplay: (vid ? 1 : 0),
       autoplay: 1,
       modestbranding: 1,
       fs: 0,  //no fullscreen button
@@ -1036,7 +1035,7 @@ var loadYT=function(vid,plist,lid,ta,tb,r,lType="playlist"){
             ta,tb,r
           );
         } else {
-          onPlayerStateChange(e,vid,ta,tb,r);
+          onPlayerStateChange(e,vid.substring(4),ta,tb,r);
         }
       },
       "onError": function(e){
@@ -1158,7 +1157,7 @@ var queryYT=function(qu){
   }
   else if(qu.match(/youtu\.be\/|youtube(?:-nocookie)?\..*/)){
     //regular YT url with video id and/or list id or playlist
-    vid=qu.match(/(?<=\/embed\/|\/v\/|[?&]v=)[0-9a-zA-Z_-]{11}/);
+    vid=qu.match(/(?<=youtu\.be\/|\/embed\/|\/v\/|[?&]v=)[0-9a-zA-Z_-]{11}/);
     if(vid) vid="vid:"+vid[0];
     else{//try with index into list
       vid=qu.match(/(?<=[?&]index=)[0-9]+/);

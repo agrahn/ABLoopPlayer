@@ -72,9 +72,8 @@ A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playl
       onkeypress="if(event && event.keyCode == 13) queryYT(this.value)" onchange="queryYT(this.value)"
       style="margin-left:5px;margin-right:3px;flex: 1 1 auto;vertical-align:baseline;" disabled/><datalist id="YTids"></datalist>
     <span style="float:right;">
-      <button id="searchButtonYT" onclick="queryYT(inputYT.value)" style="width:2.2em;height:1.6em;background-position:center;
-        background-repeat:no-repeat;vertical-align:baseline;border:none;background-image:url('svg/yt-play.svg');"
-        disabled>&ensp;</button>
+      <button id="searchButtonYT" onclick="queryYT(inputYT.value)" disabled
+        style="width:2.2em;height:1.6em;vertical-align:baseline;border:none;background-image:url('svg/yt-play.svg');">&ensp;</button>
       <input type="checkbox" onchange="contextHelp(this)" id="help"/><label for="help">?</label>
     </span>
   </div>
@@ -91,8 +90,7 @@ A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playl
   <div style="margin:3px 0px 0px 0px;padding:5px;background-color: #ddd;">
   <label for="myTimeA">A:</label> <input id="myTimeA" onchange="onInputTime(this,0)" size="8"/>
   <label for="myTimeB">B:</label> <input id="myTimeB" onchange="onInputTime(this,1)" size="8"/>
-  <button id="bmkAddButton" style="width:1.5em;height:1.5em;background-image:url('svg/star.svg');background-size:80%;
-    background-position:center;background-repeat:no-repeat;vertical-align:bottom;"></button>&ensp;
+  <button id="bmkAddButton" style="width:1.5em;height:1.5em;vertical-align:bottom;background-size:80%;background-image:url('svg/star.svg');"></button>&ensp;
   <input type="checkbox" onchange="toggleQuant(this, help)" disabled id="quant"/><label for="quant">quantise</label>&emsp;&emsp;
   <button id="loopBackwardsButton" style="width:1.5em;height:1.5em;font-size:110%;" onmouseup="onLoopBackwards()">&laquo;</button><!--
   --><button id="loopHalveButton" style="width:2.4em;height:1.5em;font-size:110%;" onmouseup="onLoopHalve()">&times;&frac12;</button><!--
@@ -104,8 +102,7 @@ A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playl
 <div id="bottom" style="margin:3px 0px 0px 0px;padding:5px;background-color:#ddd;position:relative;">
 <label for="loopButton">A-B Loop:</label>
 <button id="loopButton" onmousedown="onLoopDown()" onmouseup="this.blur()"
-  style="width:1.6em;height:1.6em;padding:0px;margin:0px;background-size:80%;
-    background-position:center;background-repeat:no-repeat;vertical-align:baseline;">A</button>
+  style="width:1.6em;height:1.6em;padding:0px;margin:0px;background-size:80%;vertical-align:baseline;">A</button>
 <span id="myBmkSpan" hidden>
   <select id="myBookmarks" size="1"
     ontouchstart="showNote(this.options[this.selectedIndex]);"
@@ -116,25 +113,18 @@ A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playl
   >
     <option value="" selected disabled>Bookmarked</option>
   </select><!--
-  --><button id="annotButton" style="width:1.5em;height:1.5em;padding:0px;background-size:80%;background-position:center;
-       background-image:url('svg/comment.svg');background-repeat:no-repeat;vertical-align:baseline;"
+  --><button id="annotButton" style="width:1.5em;height:1.5em;padding:0px;vertical-align:baseline;background-size:80%;background-image:url('svg/comment.svg');"
        onclick="onClickAddNote(myBookmarks.selectedIndex)" disabled>&ensp;</button><!--
-  --><button id="trashButton" style="width:1.5em;height:1.5em;padding:0px;background-size:70%;background-position:center;
-       background-image:url('svg/trash.svg');background-repeat:no-repeat;vertical-align:baseline;"
+  --><button id="trashButton" style="width:1.5em;height:1.5em;padding:0px;vertical-align:baseline;background-size:70%;background-image:url('svg/trash.svg');"
        onclick="onClickTrash(myBookmarks.selectedIndex)">&ensp;</button>
 </span> <input type="checkbox" onchange="toggleIntro(this, help)" id="intro"/><label for="intro">play intro</label><br/>
 Speed:<div id="speed"><div id="speed-handle" class="ui-slider-handle"></div></div>&emsp;&emsp;
 <label for="tapButton">Tempo:</label>
 <button id="tapButton" onmousedown="onTap(this)" onmouseup="this.blur()"/>tap</button><label for="tapButton"> BPM</label>
 <span style="position:absolute;bottom:3px;right:5px;">
-  <button id="shareButton" style="width:1.5em;height:1.5em;background-image:url('png/sharelink.png');background-size:contain;"
-      onclick="onClickShare()"></button><!--
-  --><button id="exportButton" style="width:1.5em;height:1.5em;background-image:url('png/export.png');background-size:contain;"
-      onclick="onClickExport()"
-    ></button><!--
-  --><button id="importButton" style="width:1.5em;height:1.5em;background-image:url('png/import.png');background-size:contain;"
-      onclick="onClickImport()"
-    ></button>
+  <button id="shareButton" style="width:1.6em;height:1.6em;background-size:contain;background-image:url('svg/share.svg');" onclick="onClickShare()"></button><!--
+  --><button id="exportButton" style="width:1.6em;height:1.6em;background-size:90%;background-image:url('svg/export.svg');" onclick="onClickExport()"></button><!--
+  --><button id="importButton" style="width:1.6em;height:1.6em;background-size:90%;background-image:url('svg/import.svg');" onclick="onClickImport()"></button>
 </span>
 </div>
 <hr class="double" style="margin-top: 0px;"/>

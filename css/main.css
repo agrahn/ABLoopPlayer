@@ -97,6 +97,8 @@ button {
   border-right-color: #959595;
   border-bottom-color: #959595;
   font-size: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 button:disabled{opacity:0.5;}
