@@ -12,8 +12,8 @@ Firefox or Chrome on a Laptop or PC recommended.
 - Additional means for modifying loop duration and position are provided through buttons <kbd>&laquo;</kbd>&nbsp;<kbd>&times;&frac12;</kbd>&nbsp;<kbd>&times;2</kbd>&nbsp;<kbd>&raquo;</kbd>; contributed by P. Jänis (@pjanis).
 - A-B loops can be saved as bookmarks for the current and for later sessions.
 - Bookmarked A-B loops can be annotated individually with short description texts.
-- Share player link with the current YouTube video or playlist, loop settings and playback rate using <kbd><img src="https://agrahn.gitlab.io/ABLoopPlayer/png/sharelink.png" width="16px"/></kbd>.
-- Bookmarks and player settings can be exported and transferred between computers and different web browsers with buttons <kbd><img src="https://agrahn.gitlab.io/ABLoopPlayer/png/export.png" width="16px"/></kbd> and <kbd><img src="https://agrahn.gitlab.io/ABLoopPlayer/png/import.png" width="16px"/></kbd>.
+- Share player link with the current YouTube video or playlist, loop settings and playback rate using <kbd><img src="https://agrahn.gitlab.io/ABLoopPlayer/svg/share.svg" width="16px"/></kbd>.
+- Bookmarks and player settings can be exported and transferred between computers and different web browsers with buttons <kbd><img src="https://agrahn.gitlab.io/ABLoopPlayer/svg/export.svg" width="16px"/></kbd> and <kbd><img src="https://agrahn.gitlab.io/ABLoopPlayer/svg/import.svg" width="16px"/></kbd>.
 - Playback rates from slow to fast motion
 - Resizable video display
 

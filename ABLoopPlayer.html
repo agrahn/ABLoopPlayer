@@ -70,7 +70,7 @@ Firefox or Chrome/Chromium on PC or Laptop recommended.
     <label for="inputYT" style="padding-top:3px;vertical-align:baseline;">YT URL | video IDs | list ID | @handle:</label>
     <input id="inputYT" list="YTids" autocomplete="on" onfocus="this.select()"
       onkeypress="if(event && event.keyCode == 13) queryYT(this.value)" onchange="queryYT(this.value)"
-      style="margin-left:5px;margin-right:3px;flex: 1 1 auto;vertical-align:baseline;" disabled/><datalist id="YTids"></datalist>
+      style="margin-left:5px;margin-right:3px;flex:1 1 auto;vertical-align:baseline;" disabled/><datalist id="YTids"></datalist>
     <span style="float:right;">
       <button id="searchButtonYT" onclick="queryYT(inputYT.value)" disabled
         style="width:2.2em;height:1.6em;vertical-align:baseline;border:none;background-image:url('svg/yt-play.svg');">&ensp;</button>
@@ -81,13 +81,13 @@ Firefox or Chrome/Chromium on PC or Laptop recommended.
   <input type="checkbox" onchange="toggleAudio(this, help)" id="aonly"/><label for="aonly">audio only</label>
 </div>
 
-<div id="myResizable" style="background: #ddd;"></div><!-- takes one of the players -->
-<div id="scrub" style="margin-top: 4px;"></div>
+<div id="myResizable" style="background:#ddd;"></div><!-- takes one of the players -->
+<div id="scrub" style="margin-top:4px;"></div>
 
 <div id="timeInputs" style="margin:3px 0px 0px 0px;">
   <!-- placeholder for jQuery range slider -->
   <div id="slider" style="margin-top:0px;margin-bottom:2px;"></div>
-  <div style="margin:3px 0px 0px 0px;padding:5px;background-color: #ddd;">
+  <div style="margin:3px 0px 0px 0px;padding:5px;background-color:#ddd;">
   <label for="myTimeA">A:</label> <input id="myTimeA" onchange="onInputTime(this,0)" size="8"/>
   <label for="myTimeB">B:</label> <input id="myTimeB" onchange="onInputTime(this,1)" size="8"/>
   <button id="bmkAddButton" style="width:1.5em;height:1.5em;vertical-align:bottom;background-size:80%;background-image:url('svg/star.svg');"></button>&ensp;
@@ -127,10 +127,10 @@ Speed:<div id="speed"><div id="speed-handle" class="ui-slider-handle"></div></di
   --><button id="importButton" style="width:1.6em;height:1.6em;background-size:90%;background-image:url('svg/import.svg');" onclick="onClickImport()"></button>
 </span>
 </div>
-<hr class="double" style="margin-top: 0px;"/>
+<hr class="double" style="margin-top:0px;"/>
 </div>
-<div style="float: left;">© 2016–2023 Alexander Grahn</div>
-<div style="float: right;">Visit project on
+<div style="float:left;">© 2016–2023 Alexander Grahn</div>
+<div style="float:right;">Visit project on
 <a href="https://gitlab.com/agrahn/ABLoopPlayer" style="margin-left:3px;">
   <img src="svg/glfox2.svg" alt="GitLab logo" style="height:1.2em;margin-bottom:-0.3em;" title="GitLab"/></a>
 <a href="https://github.com/agrahn/ABLoopPlayer" style="margin-left:3px;">

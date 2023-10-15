@@ -32,6 +32,8 @@ hr.double {
   height: 3px; border: 1px solid #888;
 }
 
+#slider {border-width: 1px;}
+
 #slider .ui-slider-handle {
   text-align: center;
   height: 1em; width: 1em; top: 0px;
@@ -51,6 +53,8 @@ hr.double {
 #slider .ui-slider-range {
   background-color: #888;
 }
+
+#scrub {border-width: 1px;}
 
 #scrub .ui-slider-range {
   background-color: #F00;

@@ -1228,8 +1228,8 @@ var initResizableYT=function(){
     minWidth: 160,
     minHeight: 90,
     create: function(e,ui){
-      $("#slider").width($("#myResizable" ).width());
-      $("#scrub").width($("#myResizable" ).width());
+      $("#scrub").width($("#myResizable").width()-2);
+      $("#slider").width($("#myResizable").width()-2);
     },
     start: function(e,ui){
       $(ytDiv).hide();
@@ -1239,11 +1239,10 @@ var initResizableYT=function(){
       $(ytDiv).show();
     },
     resize: function(e,ui){
-      $("#slider").width(ui.size.width);
-      $("#scrub").width(ui.size.width);
+      $("#scrub").width(ui.size.width-2);
+      $("#slider").width(ui.size.width-2);
       $("#introText").width(Math.max(ui.size.width,$("#widthA").width()+1));
-      if(ui.size.width>$("#widthB").width()) introTextBr.style.display="none";
-      else introTextBr.style.display="block";
+      introTextBr.style.display=(ui.size.width > $("#widthB").width()+1 ? "none" : "block");
     }
   });
 }
@@ -1475,8 +1474,8 @@ var initResizableVT=function(){
     create: function(e,ui){
       myVideo.width=$("#myResizable").width();
       initHeight=$("#myResizable").height();
-      $("#slider").width($("#myResizable").width());
-      $("#scrub").width($("#myResizable").width());
+      $("#scrub").width($("#myResizable").width()-2);
+      $("#slider").width($("#myResizable").width()-2);
     },
     resize: function(e,ui){
       myVideo.width=ui.size.width;
@@ -1485,11 +1484,10 @@ var initResizableVT=function(){
       } else {
         myVideo.height=ui.size.height;
       }
-      $("#slider").width(ui.size.width);
-      $("#scrub").width(ui.size.width);
+      $("#scrub").width(ui.size.width-2);
+      $("#slider").width(ui.size.width-2);
       $("#introText").width(Math.max(ui.size.width,$("#widthA").width()+1));
-      if(ui.size.width>$("#widthB").width()) introTextBr.style.display="none";
-      else introTextBr.style.display="block";
+      introTextBr.style.display=(ui.size.width > $("#widthB").width()+1 ? "none" : "block");
     }
   });
 };
