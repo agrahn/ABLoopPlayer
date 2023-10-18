@@ -84,7 +84,8 @@ var YTids, inputYT, inputVT, ytPlayer, help, aonly, intro, myTimeA,
   trashButton, tapButton;
 
 $(document).ready(function(){
-  $("#introText").width($("#widthA").width()+1);
+  $("#introText").width($("#widthA").width()+1).show();
+  $("#mainDiv").show(); $("#foot").show();
   //if we are online, asynchronously load YT player api
   if(navigator.onLine){
     let scripts=document.getElementsByTagName("script");

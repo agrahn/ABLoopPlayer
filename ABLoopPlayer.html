@@ -56,14 +56,14 @@
 <body style="margin-left:1em;margin-right:1em;min-width:max-content;display:inline-block;font-family:serif;">
 
 <h1 style="font-size:150%;margin-top:0;margin-bottom:0.5em;">AB Loop Player</h1>
-<div id="introText">
+<div id="introText" hidden>
 Player for <em><b>YouTube</b></em> and <em><b>video and audio files</b></em> in various formats (MP4, WebM, Ogg, MP3, AAC, FLAC, WAV) with
 A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playlists</b></em>.
 <br id="introTextBr" style="display:block;content:'';margin-top:0.5em;"/>
 Firefox or Chrome/Chromium on PC or Laptop recommended.
 </div>
 
-<div style="font-size:87.5%;font-family:sans-serif;">
+<div id="mainDiv" style="font-size:87.5%;font-family:sans-serif;" hidden>
 <hr class="double" style="margin-bottom:0px;"/>
 <div style="margin-bottom:3px;padding:5px;background-color:#ddd;">
   <div style="display:flex;">
@@ -129,12 +129,14 @@ Speed:<div id="speed"><div id="speed-handle" class="ui-slider-handle"></div></di
 </div>
 <hr class="double" style="margin-top:0px;"/>
 </div>
+<div id="foot" hidden>
 <div style="float:left;">© 2016–2023 Alexander Grahn</div>
 <div style="float:right;">Visit project on
 <a href="https://gitlab.com/agrahn/ABLoopPlayer" style="margin-left:3px;">
   <img src="svg/glfox2.svg" alt="GitLab logo" style="height:1.2em;margin-bottom:-0.3em;" title="GitLab"/></a>
 <a href="https://github.com/agrahn/ABLoopPlayer" style="margin-left:3px;">
   <img src="svg/octocat.svg" alt="GitHub logo" style="height:1.2em;margin-bottom:-0.3em;" title="GitHub"/></a>
+</div>
 </div>
 
 <div id="widthA" style="visibility:hidden;white-space:nowrap;width:auto;position:absolute;">
