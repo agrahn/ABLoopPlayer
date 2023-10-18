@@ -56,93 +56,96 @@
 <body style="margin-left:1em;margin-right:1em;min-width:max-content;display:inline-block;font-family:serif;">
 
 <h1 style="font-size:150%;margin-top:0;margin-bottom:0.5em;">AB Loop Player</h1>
-<div id="introText" hidden>
-Player for <em><b>YouTube</b></em> and <em><b>video and audio files</b></em> in various formats (MP4, WebM, Ogg, MP3, AAC, FLAC, WAV) with
-A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playlists</b></em>.
-<br id="introTextBr" style="display:block;content:'';margin-top:0.5em;"/>
-Firefox or Chrome/Chromium on PC or Laptop recommended.
-</div>
-
-<div id="mainDiv" style="font-size:87.5%;font-family:sans-serif;" hidden>
-<hr class="double" style="margin-bottom:0px;"/>
-<div style="margin-bottom:3px;padding:5px;background-color:#ddd;">
-  <div style="display:flex;">
-    <label for="inputYT" style="padding-top:3px;vertical-align:baseline;">YT URL | video IDs | list ID | @handle:</label>
-    <input id="inputYT" list="YTids" autocomplete="on" onfocus="this.select()"
-      onkeypress="if(event && event.keyCode == 13) queryYT(this.value)" onchange="queryYT(this.value)"
-      style="margin-left:5px;margin-right:3px;flex:1 1 auto;vertical-align:baseline;" disabled/><datalist id="YTids"></datalist>
-    <span style="float:right;">
-      <button id="searchButtonYT" onclick="queryYT(inputYT.value)" disabled
-        style="width:2.2em;height:1.6em;vertical-align:baseline;border:none;background-image:url('svg/yt-play.svg');">&ensp;</button>
-      <input type="checkbox" onchange="contextHelp(this)" id="help"/><label for="help">?</label>
-    </span>
+<div id="mainDiv" hidden>
+  <div id="introText">
+    Player for <em><b>YouTube</b></em> and <em><b>video and audio files</b></em> in various formats (MP4, WebM, Ogg, MP3, AAC, FLAC, WAV) with
+    A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playlists</b></em>.
+    <br id="introTextBr" style="display:block;content:'';margin-top:0.5em;"/>
+    Firefox or Chrome/Chromium on PC or Laptop recommended.
   </div>
-  <label for="inputVT">Media file:</label> <input id="inputVT" accept="video/*,audio/*" type="file"/>
-  <input type="checkbox" onchange="toggleAudio(this, help)" id="aonly"/><label for="aonly">audio only</label>
-</div>
-
-<div id="myResizable" style="background:#ddd;"></div><!-- takes one of the players -->
-<div id="scrub" style="margin-top:4px;"></div>
-
-<div id="timeInputs" style="margin:3px 0px 0px 0px;">
-  <!-- placeholder for jQuery range slider -->
-  <div id="slider" style="margin-top:0px;margin-bottom:2px;"></div>
-  <div style="margin:3px 0px 0px 0px;padding:5px;background-color:#ddd;">
-  <label for="myTimeA">A:</label> <input id="myTimeA" onchange="onInputTime(this,0)" size="8"/>
-  <label for="myTimeB">B:</label> <input id="myTimeB" onchange="onInputTime(this,1)" size="8"/>
-  <button id="bmkAddButton" style="width:1.5em;height:1.5em;vertical-align:bottom;background-size:80%;background-image:url('svg/star.svg');"></button>&ensp;
-  <input type="checkbox" onchange="toggleQuant(this, help)" disabled id="quant"/><label for="quant">quantise</label>&emsp;&emsp;
-  <button id="loopBackwardsButton" style="width:1.5em;height:1.5em;font-size:110%;" onmouseup="onLoopBackwards()">&laquo;</button><!--
-  --><button id="loopHalveButton" style="width:2.4em;height:1.5em;font-size:110%;" onmouseup="onLoopHalve()">&times;&frac12;</button><!--
-  --><button id="loopDoubleButton" style="width:2.4em;height:1.5em;font-size:110%;" onmouseup="onLoopDouble()">&times;2</button><!--
-  --><button id="loopForwardsButton" style="width:1.5em;height:1.5em;font-size:110%;" onmouseup="onLoopForwards()">&raquo;</button>
+  
+  <div style="font-size:87.5%;font-family:sans-serif;">
+    <hr class="double" style="margin-bottom:0px;"/>
+    <div style="margin-bottom:3px;padding:5px;background-color:#ddd;">
+      <div style="display:flex;">
+        <label for="inputYT" style="padding-top:3px;vertical-align:baseline;">YT URL | video IDs | list ID | @handle:</label>
+        <input id="inputYT" list="YTids" autocomplete="on" onfocus="this.select()"
+          onkeypress="if(event && event.keyCode == 13) queryYT(this.value)" onchange="queryYT(this.value)"
+          style="margin-left:5px;margin-right:3px;flex:1 1 auto;vertical-align:baseline;" disabled/><datalist id="YTids"></datalist>
+        <span style="float:right;">
+          <button id="searchButtonYT" onclick="queryYT(inputYT.value)" disabled
+            style="width:2.2em;height:1.6em;vertical-align:baseline;border:none;background-image:url('svg/yt-play.svg');">&ensp;</button>
+          <input type="checkbox" onchange="contextHelp(this)" id="help"/><label for="help">?</label>
+        </span>
+      </div>
+      <label for="inputVT">Media file:</label> <input id="inputVT" accept="video/*,audio/*" type="file"/>
+      <input type="checkbox" onchange="toggleAudio(this, help)" id="aonly"/><label for="aonly">audio only</label>
+    </div>
+    
+    <div id="myResizable" style="background:#ddd;"></div><!-- takes one of the players -->
+    <div id="scrub" style="margin-top:4px;"></div>
+    
+    <div id="timeInputs" style="margin:3px 0px 0px 0px;">
+      <!-- placeholder for jQuery range slider -->
+      <div id="slider" style="margin-top:0px;margin-bottom:2px;"></div>
+      <div style="margin:3px 0px 0px 0px;padding:5px;background-color:#ddd;">
+      <label for="myTimeA">A:</label> <input id="myTimeA" onchange="onInputTime(this,0)" size="8"/>
+      <label for="myTimeB">B:</label> <input id="myTimeB" onchange="onInputTime(this,1)" size="8"/>
+      <button id="bmkAddButton" style="width:1.5em;height:1.5em;vertical-align:bottom;background-size:80%;background-image:url('svg/star.svg');"></button>&ensp;
+      <input type="checkbox" onchange="toggleQuant(this, help)" disabled id="quant"/><label for="quant">quantise</label>&emsp;&emsp;
+      <button id="loopBackwardsButton" style="width:1.5em;height:1.5em;font-size:110%;" onmouseup="onLoopBackwards()">&laquo;</button><!--
+      --><button id="loopHalveButton" style="width:2.4em;height:1.5em;font-size:110%;" onmouseup="onLoopHalve()">&times;&frac12;</button><!--
+      --><button id="loopDoubleButton" style="width:2.4em;height:1.5em;font-size:110%;" onmouseup="onLoopDouble()">&times;2</button><!--
+      --><button id="loopForwardsButton" style="width:1.5em;height:1.5em;font-size:110%;" onmouseup="onLoopForwards()">&raquo;</button>
+      </div>
+    </div>
+    
+    <div id="bottom" style="margin:3px 0px 0px 0px;padding:5px;background-color:#ddd;position:relative;">
+      <label for="loopButton">A-B Loop:</label>
+      <button id="loopButton" onmousedown="onLoopDown()" onmouseup="this.blur()"
+        style="width:1.6em;height:1.6em;padding:0px;margin:0px;background-size:80%;vertical-align:baseline;">A</button>
+      <span id="myBmkSpan" hidden>
+        <select id="myBookmarks" size="1"
+          ontouchstart="showNote(this.options[this.selectedIndex]);"
+          ontouchend="hideNote(this.options[this.selectedIndex]);"
+          ontouchcancel="hideNote(this.options[this.selectedIndex]);"
+          onmousedown="this.size=Math.min(5,this.options.length)"
+          onblur="onBmkSelect(this.selectedIndex);this.size=1;"
+        >
+          <option value="" selected disabled>Bookmarked</option>
+        </select><!--
+        --><button id="annotButton" style="width:1.5em;height:1.5em;padding:0px;vertical-align:baseline;background-size:80%;background-image:url('svg/comment.svg');"
+             onclick="onClickAddNote(myBookmarks.selectedIndex)" disabled>&ensp;</button><!--
+        --><button id="trashButton" style="width:1.5em;height:1.5em;padding:0px;vertical-align:baseline;background-size:70%;background-image:url('svg/trash.svg');"
+             onclick="onClickTrash(myBookmarks.selectedIndex)">&ensp;</button>
+      </span> <input type="checkbox" onchange="toggleIntro(this, help)" id="intro"/><label for="intro">play intro</label><br/>
+      Speed:<div id="speed"><div id="speed-handle" class="ui-slider-handle"></div></div>&emsp;&emsp;
+      <label for="tapButton">Tempo:</label>
+      <button id="tapButton" onmousedown="onTap(this)" onmouseup="this.blur()"/>tap</button><label for="tapButton"> BPM</label>
+      <span style="position:absolute;bottom:3px;right:5px;">
+        <button id="shareButton" style="width:1.6em;height:1.6em;background-size:contain;background-image:url('svg/share.svg');" onclick="onClickShare()"></button><!--
+        --><button id="exportButton" style="width:1.6em;height:1.6em;background-size:90%;background-image:url('svg/export.svg');" onclick="onClickExport()"></button><!--
+        --><button id="importButton" style="width:1.6em;height:1.6em;background-size:90%;background-image:url('svg/import.svg');" onclick="onClickImport()"></button>
+      </span>
+    </div>
+    <hr class="double" style="margin-top:0px;"/>
   </div>
-</div>
-
-<div id="bottom" style="margin:3px 0px 0px 0px;padding:5px;background-color:#ddd;position:relative;">
-<label for="loopButton">A-B Loop:</label>
-<button id="loopButton" onmousedown="onLoopDown()" onmouseup="this.blur()"
-  style="width:1.6em;height:1.6em;padding:0px;margin:0px;background-size:80%;vertical-align:baseline;">A</button>
-<span id="myBmkSpan" hidden>
-  <select id="myBookmarks" size="1"
-    ontouchstart="showNote(this.options[this.selectedIndex]);"
-    ontouchend="hideNote(this.options[this.selectedIndex]);"
-    ontouchcancel="hideNote(this.options[this.selectedIndex]);"
-    onmousedown="this.size=Math.min(5,this.options.length)"
-    onblur="onBmkSelect(this.selectedIndex);this.size=1;"
-  >
-    <option value="" selected disabled>Bookmarked</option>
-  </select><!--
-  --><button id="annotButton" style="width:1.5em;height:1.5em;padding:0px;vertical-align:baseline;background-size:80%;background-image:url('svg/comment.svg');"
-       onclick="onClickAddNote(myBookmarks.selectedIndex)" disabled>&ensp;</button><!--
-  --><button id="trashButton" style="width:1.5em;height:1.5em;padding:0px;vertical-align:baseline;background-size:70%;background-image:url('svg/trash.svg');"
-       onclick="onClickTrash(myBookmarks.selectedIndex)">&ensp;</button>
-</span> <input type="checkbox" onchange="toggleIntro(this, help)" id="intro"/><label for="intro">play intro</label><br/>
-Speed:<div id="speed"><div id="speed-handle" class="ui-slider-handle"></div></div>&emsp;&emsp;
-<label for="tapButton">Tempo:</label>
-<button id="tapButton" onmousedown="onTap(this)" onmouseup="this.blur()"/>tap</button><label for="tapButton"> BPM</label>
-<span style="position:absolute;bottom:3px;right:5px;">
-  <button id="shareButton" style="width:1.6em;height:1.6em;background-size:contain;background-image:url('svg/share.svg');" onclick="onClickShare()"></button><!--
-  --><button id="exportButton" style="width:1.6em;height:1.6em;background-size:90%;background-image:url('svg/export.svg');" onclick="onClickExport()"></button><!--
-  --><button id="importButton" style="width:1.6em;height:1.6em;background-size:90%;background-image:url('svg/import.svg');" onclick="onClickImport()"></button>
-</span>
-</div>
-<hr class="double" style="margin-top:0px;"/>
-</div>
-<div id="foot" hidden>
-<div style="float:left;">© 2016–2023 Alexander Grahn</div>
-<div style="float:right;">Visit project on
-<a href="https://gitlab.com/agrahn/ABLoopPlayer" style="margin-left:3px;">
-  <img src="svg/glfox2.svg" alt="GitLab logo" style="height:1.2em;margin-bottom:-0.3em;" title="GitLab"/></a>
-<a href="https://github.com/agrahn/ABLoopPlayer" style="margin-left:3px;">
-  <img src="svg/octocat.svg" alt="GitHub logo" style="height:1.2em;margin-bottom:-0.3em;" title="GitHub"/></a>
-</div>
-</div>
+  
+  <div style="float:left;">© 2016–2023 Alexander Grahn</div>
+  <div style="float:right;">
+    Visit project on
+    <a href="https://gitlab.com/agrahn/ABLoopPlayer" style="margin-left:3px;">
+      <img src="svg/glfox2.svg" alt="GitLab logo" style="height:1.2em;margin-bottom:-0.3em;" title="GitLab"/></a>
+    <a href="https://github.com/agrahn/ABLoopPlayer" style="margin-left:3px;">
+      <img src="svg/octocat.svg" alt="GitHub logo" style="height:1.2em;margin-bottom:-0.3em;" title="GitHub"/></a>
+  </div>
+</div><!-- mainDiv -->
 
 <div id="widthA" style="visibility:hidden;white-space:nowrap;width:auto;position:absolute;">
 FLAC, WAV) with A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playlists</b></em>.</div>
 <div id="widthB" style="visibility:hidden;white-space:nowrap;width:auto;position:absolute;">
 Player for <em><b>YouTube</b></em> and <em><b>video and audio files</b></em> in various formats (MP4, WebM, Ogg, MP3, AAC, FLAC, WAV) with
 A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playlists</b></em>. Firefox</div>
+
 </body>
 </html>

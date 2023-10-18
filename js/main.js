@@ -84,8 +84,7 @@ var YTids, inputYT, inputVT, ytPlayer, help, aonly, intro, myTimeA,
   trashButton, tapButton;
 
 $(document).ready(function(){
-  $("#introText").width($("#widthA").width()+1).show();
-  $("#mainDiv").show(); $("#foot").show();
+  $("#introText").width($("#widthA").width()+1);
   //if we are online, asynchronously load YT player api
   if(navigator.onLine){
     let scripts=document.getElementsByTagName("script");
@@ -183,6 +182,7 @@ $(document).ready(function(){
     stop: function(e,ui){mySetPlaybackRate(ui.value);},
   });
   bmkAddButton.addEventListener("mouseup", function(e){bmkAdd();});
+  $("#mainDiv").show();
   playSelectedFile("");
 });
 
