@@ -49,6 +49,7 @@
   <script src="js/main.js"></script>
 
   <link rel="shortcut icon" type="image/x-icon" href="png/favicon.ico">
+  <link rel="preload" type="image/svg+xml" href="svg/jump.svg" as="image"/>
   <link rel="preload" type="image/svg+xml" href="svg/trash.svg" as="image"/>
   <link rel="preload" type="image/svg+xml" href="svg/comment.svg" as="image"/>
 </head>
@@ -89,7 +90,9 @@
       <!-- placeholder for jQuery range slider -->
       <div id="slider" style="margin-top:0px;margin-bottom:2px;"></div>
       <div style="margin:3px 0px 0px 0px;padding:5px;background-color:#ddd;">
-      <label for="myTimeA">A:</label> <input id="myTimeA" onchange="onInputTime(this,0)" size="8"/>
+      <button id="jumpToA" style="width:1.5em;height:1.5em;margin-right:0.15em;vertical-align:bottom;background-size:contain;background-image:url('svg/jump.svg');"
+        onmousedown="onJumpToA()" onmouseup="myPlay()"></button><!--
+      --><label for="myTimeA">A:</label> <input id="myTimeA" onchange="onInputTime(this,0)" size="8"/>
       <label for="myTimeB">B:</label> <input id="myTimeB" onchange="onInputTime(this,1)" size="8"/>
       <button id="bmkAddButton" style="width:1.5em;height:1.5em;vertical-align:bottom;background-size:80%;background-image:url('svg/star.svg');"></button>&ensp;
       <input type="checkbox" onchange="toggleQuant(this, help)" disabled id="quant"/><label for="quant">quantise</label>&emsp;&emsp;

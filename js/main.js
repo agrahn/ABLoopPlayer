@@ -189,49 +189,45 @@ $(document).ready(function(){
 //add some hotkeys
 window.addEventListener("keydown", function(e){
   e.stopPropagation();
-  if(!$("input").is(":focus")) { e.preventDefault(); }
-  if (e.which==27
+  if($("input").is(":focus")) return;
+  else e.preventDefault();
+  if (e.which==27 || e.which==76 //"Esc" or "L"
     && !loopButton.disabled
-    && !$("input").is(":focus")
   ) onLoopDown();
   else if (e.which==36
     && !$("#slider .ui-slider-handle").is(":focus")
     && !$("#speed .ui-slider-handle").is(":focus")
-    && !$("input").is(":focus")
     && !$("select").is(":focus")
   ){ try{mySetCurrentTime(0);}catch(err){} }
   else if (e.which==35
     && !$("#slider .ui-slider-handle").is(":focus")
     && !$("#speed .ui-slider-handle").is(":focus")
-    && !$("input").is(":focus")
     && !$("select").is(":focus")
   ){ try{mySetCurrentTime(myGetDuration());}catch(err){} }
   else if (e.which==37
     && !$("#slider .ui-slider-handle").is(":focus")
     && !$("#speed .ui-slider-handle").is(":focus")
-    && !$("input").is(":focus")
     && !$("select").is(":focus")
   ){ try{mySetCurrentTime(myGetCurrentTime()-15);}catch(err){} }
   else if (e.which==39
     && !$("#slider .ui-slider-handle").is(":focus")
     && !$("#speed .ui-slider-handle").is(":focus")
-    && !$("input").is(":focus")
     && !$("select").is(":focus")
   ){ try{mySetCurrentTime(myGetCurrentTime()+15);}catch(err){} }
-  else if (e.which==32
-    && !$("input").is(":focus")
-  ){ try{myPlayPause();}catch(err){} }
-  else if (e.which==84 // "t"
-    && !tapButton.disabled
-    && !$("input").is(":focus")
-  ){ onTap(tapButton); }
-  else if (e.which==81 // "q"
-    && !quant.disabled
-    && !$("input").is(":focus")
-  ){
+  else if (e.which==32) {try{myPlayPause();}catch(err){}}
+  else if (e.which==84 && !tapButton.disabled) onTap(tapButton); // "t"
+  else if (e.which==81 && !quant.disabled) { // "q"
     quant.checked = !quant.checked;
     toggleQuant(quant, help);
   }
+  else if (e.which==65 && isTimeASet && isTimeBSet) onJumpToA(); //"a"
+});
+
+window.addEventListener("keyup", function(e){
+  e.stopPropagation();
+  if($("input").is(":focus")) return;
+  else e.preventDefault();
+  if (e.which==65 && isTimeASet && isTimeBSet) myPlay(); //"a"
 });
 
 // a modal prompt dialog based on jQuery
@@ -429,6 +425,12 @@ var onLoopTimerUpdate=function(){
   //don't allow tapping while looping
   if(tMedia>=timeA && !tapButton.disabled) tapButton.disabled=true;
   else if(tMedia<timeA && tapButton.disabled) tapButton.disabled=false;
+}
+
+var onJumpToA=function(){
+  loopArr.splice(0);
+  myPause();
+  mySetCurrentTime(timeA);
 }
 
 const timeRegExp=new RegExp('^\\s*'+timePattern+'\\s*$');
@@ -706,10 +708,10 @@ var aonlyTitleChecked="Uncheck to enable video display.";
 var aonlyTitleUnChecked="Suppress video display.";
 var introTitleChecked="Uncheck to always skip media section up to \"A\".";
 var introTitleUnChecked="If checked, media section up to \"A\""
-              + " is played before starting the loop.";
+      + " is played before starting the loop.";
 var quantTitleChecked="Uncheck to stop loop quantisation. Hotkey: [Q]";
 var quantTitleUnChecked="Start loop quantisation (auto-adjustment). Hotkey: [Q]\n"
-          + "Tempo (BPM) needs to be tapped beforehand.";
+      + "Tempo (BPM) needs to be tapped beforehand.";
 
 var contextHelp=function(t){
   myBlur();
@@ -723,25 +725,26 @@ var contextHelp=function(t){
     searchButtonYT.title="Play video.";
     inputVT.title="Browse the hard disk for media files (mp4/H.264, webm, ogg, mp3, wav, ...).";
     loopButton.title="Click twice to mark loop range. Third click cancels current loop."
-                     + " Hotkey: [Esc]";
+      + " Hotkeys: [Esc], [L]";
     myBookmarks.title="Choose from previously saved loops.";
     bmkAddButton.title="Save current loop to the list of bookmarks.";
     loopBackwardsButton.title="Shift loop window backwards by one loop duration.";
     loopHalveButton.title="Halve the loop duration.";
     loopDoubleButton.title="Double the loop duration.";
     loopForwardsButton.title="Shift loop window forwards by one loop duration.";
+    jumpToA.title="Jump to \"A\". Hotkey: [A]";
     myTimeA.title=myTimeB.title="Fine-tune the loop. Input format: [hh:]mm:ss[.sss]";
     annotButton.title="Add a note to the currently selected bookmark.";
     trashButton.title="Delete currently selected / delete all bookmarked loops.";
     $("#speed").attr("title", "Select playback rate. Reset to \"1\" with double click.");
     shareButton.title="Share player link with the current YouTube video or playlist, loop settings and playback rate.";
     exportButton.title="Export loop database and player settings to file \"ABLoopPlayer.json\". "
-        + "Check your \"Downloads\" folder.";
+      + "Check your \"Downloads\" folder.";
     importButton.title="Import file \"ABLoopPlayer.json\" with loop database and player settings "
-        + "from another computer or browser.";
+      + "from another computer or browser.";
     $("#slider").attr("title", "Move slider handles to adjust the loop. "
-        + "Press [Ctrl] while moving a handle to shift the entire loop window. "
-        + "Also, the handle that currently has keyboard focus can be moved with the arrow keys [←] , [→].");
+      + "Press [Ctrl] while moving a handle to shift the entire loop window. "
+      + "Also, the handle that currently has keyboard focus can be moved with the arrow keys [←] , [→].");
     tapButton.title="Tap tempo. Hotkey: [T]";
   } else {
     storageWriteKeyVal("ab.help", "unchecked");
@@ -755,6 +758,7 @@ var contextHelp=function(t){
     inputVT.title=
     loopButton.title=
     myBookmarks.title=
+    jumpToA.title=
     myTimeA.title=myTimeB.title=
     bmkAddButton.title=
     loopBackwardsButton.title=
@@ -1550,6 +1554,8 @@ var myGetDuration;
 var mySetPlaybackRate;
 var onLoopDown;
 var myPlayPause;
+var myPause;
+var myPlay;
 
 //initialization functions
 var initYT=function(){ // YT
@@ -1564,6 +1570,8 @@ var initYT=function(){ // YT
     if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING) ytPlayer.pauseVideo();
     else ytPlayer.playVideo();
   }
+  myPause=function(){ytPlayer.pauseVideo();}
+  myPlay=function(){ytPlayer.playVideo();}
 }
 
 var initVT=function(){ // <video> tag
@@ -1577,4 +1585,6 @@ var initVT=function(){ // <video> tag
   myPlayPause=function(){
     if(myVideo.paused) myVideo.play(); else myVideo.pause();
   }
+  myPause=function(){myVideo.pause();}
+  myPlay=function(){myVideo.play();}
 }
