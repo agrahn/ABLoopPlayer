@@ -1137,7 +1137,7 @@ var queryYT=function(qu){
   if(
     !qu.match(/videoid|listid|playlist|index/)
     && !qu.match(/youtu\.be\/|youtube(?:-nocookie)?\..*/)
-  ){//plain video id, list id, handle, playlist (comma-separated video ids)
+  ){//plain video id, list id, handle, playlist (comma or space separated video ids)
     vid=qu.trim().match(/^[0-9a-zA-Z_-]{11}$/);
     if(vid) vid="vid:"+vid[0];
     lid=qu.trim().match(/^[0-9A-Za-z_-]{12,}$/);
@@ -1145,7 +1145,7 @@ var queryYT=function(qu){
       lid=qu.trim().match(/(?<=^@)[0-9A-Za-z_.-]{3,30}$/); //handle?
       if(lid) lType="user_uploads";
     }
-    plist=qu.trim().replace(/\s+/g,',').match(/^[0-9a-zA-Z_-]{11}(?:,[0-9a-zA-Z_-]{11})+$/);
+    plist=qu.trim().replace(/\s*,\s*/g,',').replace(/\s+/g,',').match(/^[0-9a-zA-Z_-]{11}(?:,[0-9a-zA-Z_-]{11})+$/);
   }
   else if(qu.match(/youtu\.be\/|youtube(?:-nocookie)?\..*/)){
     //regular YT url with video id and/or list id or playlist
