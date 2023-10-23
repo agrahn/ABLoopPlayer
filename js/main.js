@@ -400,14 +400,16 @@ var onSliderSlide=function(e,ui){
 }
 
 var loopArr=[];
+var relax=1.0;
+// Chrome/Chromium needs some relaxion when computing the latency :(
+if(navigator.userAgent.indexOf("Firefox")==-1) relax=0.5;
 var onLoopTimerUpdate=function(){
   let tMedia=myGetCurrentTime();
-  const relax=1.0;
   if(tMedia<timeA && !intro.checked || tMedia>=timeB) {
     //quantise loop based on tapped tempo
     let curDate=Date.now();
     if(
-      quant.checked
+      quant.checked && tMedia>=timeB
       && (!loopArr.length || (curDate-loopArr.at(-1))/1000.0>=(timeB-timeA)/rate)
     ){
       loopArr.push(curDate);
