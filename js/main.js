@@ -407,17 +407,17 @@ var onLoopTimerUpdate=function(){
   let tMedia=myGetCurrentTime();
   if(tMedia<timeA && !intro.checked || tMedia>=timeB) {
     //quantise loop based on tapped tempo
-    let curDate=Date.now();
+    let curDate=Date.now()/1000; //[s]
     if(
       quant.checked && tMedia>=timeB
-      && (!loopArr.length || (curDate-loopArr.at(-1))/1000.0>=(timeB-timeA)/rate)
+      && (!loopArr.length || curDate-loopArr.at(-1)>=(timeB-timeA)/rate)
     ){
       loopArr.push(curDate);
       if(loopArr.length>1){
         loopArr.splice(0,loopArr.length-2);
-        let loopMeas=rate*(loopArr[1]-loopArr[0]);
-        let delay=loopMeas-Math.round(loopMeas/beatNormal)*beatNormal;
-        delay=toNearest5ms(delay*relax/1000.0);
+        let loopMeas=(loopArr[1]-loopArr[0])*rate; // normalised
+        let delay=loopMeas-Math.round((timeB-timeA)/beatNormal)*beatNormal;
+        delay=toNearest5ms(delay*relax);
         timeB-=delay;
         if(delay!=0.0) updateLoopUI();
       }
@@ -463,64 +463,64 @@ var updateLoopUI=function(){
   $("#slider").slider("option", "values", [ timeA, timeB ]);
 }
 
-var compDeltaByBeat=function(d, b){//d in s, b in ms!
-  return b/1000.0*Math.round(d*1000/b);
+var compDeltaByBeat=function(d, b){
+  return b*Math.round(d/b);
 }
 
 var onLoopBackwards=function(){
-  let delta=timeB-timeA;
+  let DT=timeB-timeA;
   if(beatNormal) {
-    delta=compDeltaByBeat(delta, beatNormal);
+    DT=compDeltaByBeat(DT, beatNormal);
   }
-  if(timeA-delta<0) return;
-  timeA-=delta;
-  timeB-=delta;
+  if(timeA-DT<0) return;
+  timeA-=DT;
+  timeB-=DT;
   updateLoopUI();
 }
 
 var onLoopHalve=function(){
-  let delta=timeB-timeA;
+  let DT=timeB-timeA;
   if(beatNormal) {
-    delta=compDeltaByBeat(delta, beatNormal);
+    DT=compDeltaByBeat(DT, beatNormal);
   }
-  timeB-=delta/2;
+  timeB-=DT/2;
   updateLoopUI();
 }
 
 var onLoopDouble=function(){
-  let delta=timeB-timeA;
+  let DT=timeB-timeA;
   if(beatNormal) {
-    delta=compDeltaByBeat(delta, beatNormal);
+    DT=compDeltaByBeat(DT, beatNormal);
   }
-  if(timeB+delta>myGetDuration()) return;
-  timeB+=delta;
+  if(timeB+DT>myGetDuration()) return;
+  timeB+=DT;
   updateLoopUI();
 }
 
 var onLoopForwards=function(){
-  let delta=timeB-timeA;
+  let DT=timeB-timeA;
   if(beatNormal) {
-    delta=compDeltaByBeat(delta, beatNormal);
+    DT=compDeltaByBeat(DT, beatNormal);
   }
-  if(timeB+delta>myGetDuration()) return;
-  timeA+=delta;
-  timeB+=delta;
+  if(timeB+DT>myGetDuration()) return;
+  timeA+=DT;
+  timeB+=DT;
   updateLoopUI();
 }
 
 var rate; //current playback rate (speed)
-var beatNormal; //beat length at normal speed in ms
+var beatNormal; //beat length at normal speed in s
 var beatsArr = [];
 var onTap=function(ui) {
-  beatsArr.push(Date.now());
+  beatsArr.push(Date.now()/1000);
   if(beatsArr.length>2) {
     let change=(beatsArr.at(-1)-beatsArr.at(-2))/(beatsArr.at(-2)-beatsArr.at(-3));
-    if(change>1.25||change<0.75) { beatsArr.splice(0,beatsArr.length-1); }
+    if(change>1.25||change<0.80) { beatsArr.splice(0,beatsArr.length-1); }
   }
   if (beatsArr.length>1) {
     let beat=(beatsArr.at(-1)-beatsArr[0])/(beatsArr.length-1);
     beatNormal=beat*rate;
-    ui.innerHTML=Math.round(60000.0/beat).toString();
+    ui.innerHTML=Math.round(60/beat).toString();
   }
 }
 
@@ -817,7 +817,7 @@ var onRateChange=function(e){
   $("#speed .ui-slider-handle").text(rate);
   loopArr.splice(0);
   if (beatNormal) {
-    tapButton.innerHTML=Math.round(60000.0/beatNormal*rate).toString();
+    tapButton.innerHTML=Math.round(60/beatNormal*rate).toString();
   }
 }
 
