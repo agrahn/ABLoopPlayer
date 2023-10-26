@@ -400,12 +400,11 @@ var onSliderSlide=function(e,ui){
 }
 
 var loopArr=[];
-var relax=1.0;
-// Chrome/Chromium needs some relaxation when computing the latency :(
-if(navigator.userAgent.indexOf("Firefox")==-1) relax=0.5;
+var tLavg=0;
+var tLcount=0;
 var onLoopTimerUpdate=function(){
   let tMedia=myGetCurrentTime();
-  if(tMedia<timeA && !intro.checked || tMedia>=timeB) {
+  if(tMedia<timeA && !intro.checked || tMedia>=timeB){
     //quantise loop based on tapped tempo
     let curDate=Date.now()/1000; //[s]
     if(
@@ -415,11 +414,14 @@ var onLoopTimerUpdate=function(){
       loopArr.push(curDate);
       if(loopArr.length>1){
         loopArr.splice(0,loopArr.length-2);
-        let loopMeas=(loopArr[1]-loopArr[0])*rate; // normalised
-        let delay=loopMeas-Math.round((timeB-timeA)/beatNormal)*beatNormal;
-        delay=toNearest5ms(delay*relax);
-        timeB-=delay;
-        if(delay!=0.0) updateLoopUI();
+        //long-term averaged latency of media rewind
+        tLavg=(tLavg*tLcount + (loopArr[1]-loopArr[0])*rate+timeA-timeB)/++tLcount;
+        let tBOld=timeB;
+        timeB=toNearest5ms(timeA+Math.round((timeB-timeA)/beatNormal)*beatNormal-tLavg);
+        if(timeB-tBOld!=0) updateLoopUI();
+      }
+      else{
+        tLavg=tLcount=0;
       }
     }
     mySetCurrentTime(timeA);
@@ -475,6 +477,7 @@ var onLoopBackwards=function(){
   if(timeA-DT<0) return;
   timeA-=DT;
   timeB-=DT;
+  loopArr.splice(0);
   updateLoopUI();
 }
 
@@ -484,6 +487,7 @@ var onLoopHalve=function(){
     DT=compDeltaByBeat(DT, beatNormal);
   }
   timeB-=DT/2;
+  loopArr.splice(0);
   updateLoopUI();
 }
 
@@ -494,6 +498,7 @@ var onLoopDouble=function(){
   }
   if(timeB+DT>myGetDuration()) return;
   timeB+=DT;
+  loopArr.splice(0);
   updateLoopUI();
 }
 
@@ -505,6 +510,7 @@ var onLoopForwards=function(){
   if(timeB+DT>myGetDuration()) return;
   timeA+=DT;
   timeB+=DT;
+  loopArr.splice(0);
   updateLoopUI();
 }
 
@@ -1102,6 +1108,7 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id loo
   }
   while(loopTimer.length) clearInterval(loopTimer.pop());
   while(scrubTimer.length) clearInterval(scrubTimer.pop());
+  loopArr.splice(0);
   if(e.data==YT.PlayerState.PLAYING){
     scrubTimer.push(setInterval(
       function(e){
