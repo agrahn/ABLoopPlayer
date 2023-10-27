@@ -420,8 +420,9 @@ var onLoopTimerUpdate=function(){
         if(tLcount>15) tLcount=15;
         //quantise loop based on tapped tempo and average latency
         if(quant.checked) {
+          let n=Math.max(1,Math.round((timeB-timeA)/beatNormal));//no less than one beat
           let tBOld=timeB;
-          timeB=toNearest5ms(timeA+Math.round((timeB-timeA)/beatNormal)*beatNormal-tLavg);
+          timeB=toNearest5ms(timeA+n*beatNormal-tLavg);
           if(timeB-tBOld!=0) updateLoopUI();
         }
       }
@@ -1252,7 +1253,6 @@ var initResizableYT=function(){
 
 var onBmkSelectYT=function(i){
   myBlur();
-  cancelABLoop();
   if(i==0) return;
   $("#slider").slider("option", "max", myGetDuration());
   let a,b;
@@ -1439,7 +1439,6 @@ var mySetPlaybackRateVT=function(r){
 
 var onBmkSelectVT=function(i){
   myBlur();
-  cancelABLoop();
   if(i==0) return;
   let a,b;
   [a,b]=myBookmarks.options[i].text.split("--").map(t => timeStringToSec(t));
