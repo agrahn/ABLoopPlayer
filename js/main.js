@@ -148,6 +148,7 @@ $(document).ready(function(){
   $("#scrub").slider({
     min: 0, step: 0.001, range: "min",
     slide: function(e,ui){
+      loopMeas.splice(0);
       mySetCurrentTime(ui.value);
     },
   })
@@ -396,6 +397,7 @@ var onSliderSlide=function(e,ui){
     timeA=ui.values[0];
     timeB=ui.values[1];
   }
+  loopMeas.splice(0);
   updateLoopUI();
 }
 
@@ -406,11 +408,9 @@ var onLoopTimerUpdate=function(){
   let tMedia=myGetCurrentTime();
   if(tMedia<timeA) loopMeas.splice(0);
   if(tMedia<timeA && !intro.checked || tMedia>=timeB){
-    //quantise loop based on tapped tempo
     let curDate=Date.now()/1000; //[s]
     if(
-      quant.checked && tMedia>=timeB
-      && (!loopMeas.length || curDate-loopMeas.at(-1)>=(timeB-timeA)/rate)
+      tMedia>=timeB && (!loopMeas.length || curDate-loopMeas.at(-1)>=(timeB-timeA)/rate)
     ){
       loopMeas.push(curDate);
       if(loopMeas.length>1){
@@ -418,9 +418,12 @@ var onLoopTimerUpdate=function(){
         //long-term averaged latency of media rewind (minimum weight of current value: 1/16)
         tLavg=(tLavg*tLcount + (loopMeas[1]-loopMeas[0])*rate+timeA-timeB)/++tLcount;
         if(tLcount>15) tLcount=15;
-        let tBOld=timeB;
-        timeB=toNearest5ms(timeA+Math.round((timeB-timeA)/beatNormal)*beatNormal-tLavg);
-        if(timeB-tBOld!=0) updateLoopUI();
+        //quantise loop based on tapped tempo and average latency
+        if(quant.checked) {
+          let tBOld=timeB;
+          timeB=toNearest5ms(timeA+Math.round((timeB-timeA)/beatNormal)*beatNormal-tLavg);
+          if(timeB-tBOld!=0) updateLoopUI();
+        }
       }
     }
     mySetCurrentTime(timeA);
@@ -1108,8 +1111,10 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id loo
         $("#scrub").slider("option", "value", myGetCurrentTimeYT());
       }, 5
     ));
-    if (isTimeASet && isTimeBSet && !loopTimer.length)
+    if (isTimeASet && isTimeBSet && !loopTimer.length){
+      loopMeas.splice(0);
       loopTimer.push(setInterval(onLoopTimerUpdate, 5));
+    }
   }
   else if(e.data==YT.PlayerState.PAUSED){
     while(loopTimer.length) clearInterval(loopTimer.pop());
