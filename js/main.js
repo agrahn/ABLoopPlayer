@@ -414,8 +414,9 @@ var onLoopTimerUpdate=function(){
       loopMeas.push(curDate);
       if(loopMeas.length>1){
         loopMeas.splice(0,loopMeas.length-2);
-        //long-term averaged latency of media rewind
+        //long-term averaged latency of media rewind (minimum weight of current value: 1/16)
         tLavg=(tLavg*tLcount + (loopMeas[1]-loopMeas[0])*rate+timeA-timeB)/++tLcount;
+        if(tLcount>15) tLcount=15;
         let tBOld=timeB;
         timeB=toNearest5ms(timeA+Math.round((timeB-timeA)/beatNormal)*beatNormal-tLavg);
         if(timeB-tBOld!=0) updateLoopUI();
