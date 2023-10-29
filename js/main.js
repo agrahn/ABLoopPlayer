@@ -404,6 +404,7 @@ var onSliderSlide=function(e,ui){
 var loopMeas=[];
 var tLavg=0;
 var tLcount=0;
+var winSize=7; //window size for sliding avarage of rewind latency
 var onLoopTimerUpdate=function(){
   let tMedia=myGetCurrentTime();
   if(tMedia<timeA) loopMeas.splice(0);
@@ -415,10 +416,10 @@ var onLoopTimerUpdate=function(){
       loopMeas.push(curDate);
       if(loopMeas.length>1){
         loopMeas.splice(0,loopMeas.length-2);
-        //long-term averaged latency of media rewind (minimum weight of current value: 1/16)
+        //media rewind latency (sliding avg)
         tLavg=(tLavg*tLcount + (loopMeas[1]-loopMeas[0])*rate+timeA-timeB)/++tLcount;
-        if(tLcount>15) tLcount=15;
-        //quantise loop based on tapped tempo and average latency
+        if(tLcount>winSize) tLcount=winSize;
+        //quantise loop based on tapped tempo and latency
         if(quant.checked) {
           let n=Math.max(1,Math.round((timeB-timeA)/beatNormal));//no less than one beat
           let tBOld=timeB;
@@ -973,6 +974,44 @@ var mergeData=function(data){
   if(data["ab.version"]) storageWriteKeyVal("ab.version", data["ab.version"]);
 }
 
+var onBmkSelect=function(i){
+  myBlur();
+  if(i==0) {cancelABLoop(); return;}
+  let a,b;
+  [a,b]=myBookmarks.options[i].text.split("--").map(t => timeStringToSec(t));
+  $("#slider").slider("option", "values", [a, b]);
+  isTimeASet=isTimeBSet=true;
+  quant.disabled=(beatNormal ? false : true);
+  $("#timeInputs").show();
+  loopButton.innerHTML="&emsp;";
+  loopButton.style.backgroundImage=crossMarkUrl;
+  annotButton.disabled=false;
+  while(loopTimer.length) clearInterval(loopTimer.pop());
+  mySetCurrentTime(a);
+  loopMeas.splice(0);
+  reStartLoopTimer();
+}
+
+var toggleIntro=function(t,h){
+  myBlur();
+  if(t.checked){
+    storageWriteKeyVal("ab.intro", "checked");
+    if(h.checked) t.title=introTitleChecked;
+  }else{
+    storageWriteKeyVal("ab.intro", "unchecked");
+    if(h.checked) t.title=introTitleUnChecked;
+  }
+}
+
+var toggleQuant=function(t,h){
+  myBlur();
+  if(t.checked){
+    if(h.checked) t.title=quantTitleChecked;
+  }else{
+    if(h.checked) t.title=quantTitleUnChecked;
+  }
+}
+
 ///////////////////////////
 // YT player specific code
 ///////////////////////////
@@ -1251,23 +1290,6 @@ var initResizableYT=function(){
   });
 }
 
-var onBmkSelectYT=function(i){
-  myBlur();
-  if(i==0) return;
-  $("#slider").slider("option", "max", myGetDuration());
-  let a,b;
-  [a,b]=myBookmarks.options[i].text.split("--").map(t => timeStringToSec(t));
-  $("#slider").slider("option", "values", [a, b]);
-  isTimeASet=isTimeBSet=true;
-  quant.disabled=(beatNormal ? false : true);
-  $("#timeInputs").show();
-  loopButton.innerHTML="&emsp;";
-  loopButton.style.backgroundImage=crossMarkUrl;
-  annotButton.disabled=false;
-  if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING && !loopTimer.length)
-    loopTimer.push(setInterval(onLoopTimerUpdate, 5));
-}
-
 var onLoopDownYT=function(){
   if(isTimeBSet){
     $("#timeInputs").hide();
@@ -1319,6 +1341,12 @@ var onClickShare=function(){
   if(isTimeBSet) sharelink+="&end="+secToString(timeB);
   if(rate!=1.0) sharelink+="&rate="+rate;
   myMessage("Share Link", sharelink);
+}
+
+var reStartLoopTimerYT=function(){
+  if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING) setTimeout(
+    function(){loopTimer.push(setInterval(onLoopTimerUpdate, 5));},50
+  );
 }
 
 /////////////////////////
@@ -1437,22 +1465,6 @@ var mySetPlaybackRateVT=function(r){
   myVideo.playbackRate=r;
 }
 
-var onBmkSelectVT=function(i){
-  myBlur();
-  if(i==0) return;
-  let a,b;
-  [a,b]=myBookmarks.options[i].text.split("--").map(t => timeStringToSec(t));
-  $("#slider").slider("option", "values", [a, b]);
-  isTimeASet=isTimeBSet=true;
-  quant.disabled=(beatNormal ? false : true);
-  $("#timeInputs").show();
-  loopButton.innerHTML="&emsp;";
-  loopButton.style.backgroundImage=crossMarkUrl;
-  annotButton.disabled=false;
-  if(!myVideo.paused && !loopTimer.length)
-    loopTimer.push(setInterval(onLoopTimerUpdate, 5));
-}
-
 var myGetDurationVT=function(){
   return myVideo.duration;
 }
@@ -1524,6 +1536,12 @@ var onLoopDownVT=function(){
   }
 }
 
+var reStartLoopTimerVT=function(){
+  if(!myVideo.paused) setTimeout(
+    function(){loopTimer.push(setInterval(onLoopTimerUpdate, 5));},50
+  );
+}
+
 var toggleAudio=function(t,h){
   myBlur();
   playSelectedFile(inputVT.files[0]);
@@ -1534,28 +1552,8 @@ var toggleAudio=function(t,h){
   else storageWriteKeyVal("ab.aonly", "unchecked");
 }
 
-var toggleIntro=function(t,h){
-  myBlur();
-  if(t.checked){
-    storageWriteKeyVal("ab.intro", "checked");
-    if(h.checked) t.title=introTitleChecked;
-  }else{
-    storageWriteKeyVal("ab.intro", "unchecked");
-    if(h.checked) t.title=introTitleUnChecked;
-  }
-}
-
-var toggleQuant=function(t,h){
-  myBlur();
-  if(t.checked){
-    if(h.checked) t.title=quantTitleChecked;
-  }else{
-    if(h.checked) t.title=quantTitleUnChecked;
-  }
-}
-
 //functions with player specific implementation
-var onBmkSelect;
+var reStartLoopTimer;
 var myGetCurrentTime;
 var mySetCurrentTime;
 var myGetDuration;
@@ -1567,7 +1565,7 @@ var myPlay;
 
 //initialization functions
 var initYT=function(){ // YT
-  onBmkSelect=onBmkSelectYT;
+  reStartLoopTimer=reStartLoopTimerYT;
   myGetCurrentTime=myGetCurrentTimeYT;
   mySetCurrentTime=mySetCurrentTimeYT;
   myGetDuration=myGetDurationYT;
@@ -1583,7 +1581,7 @@ var initYT=function(){ // YT
 }
 
 var initVT=function(){ // <video> tag
-  onBmkSelect=onBmkSelectVT;
+  reStartLoopTimer=reStartLoopTimerVT;
   myGetCurrentTime=myGetCurrentTimeVT;
   mySetCurrentTime=mySetCurrentTimeVT;
   myGetDuration=myGetDurationVT;
