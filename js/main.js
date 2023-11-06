@@ -401,10 +401,43 @@ var onSliderSlide=function(e,ui){
   updateLoopUI();
 }
 
+var onLoopDown=function(){
+  if(isTimeBSet){
+    $("#timeInputs").hide();
+    annotButton.disabled=true;
+    myBookmarks.options[0].selected=true;
+    cancelABLoop();
+  }else{
+    if(isTimeASet){
+      if(myGetCurrentTime()!=timeA){
+        if(myGetCurrentTime()<timeA){
+          timeB=timeA;
+          timeA=myGetCurrentTime();
+        }else{
+          timeB=myGetCurrentTime();
+        }
+        isTimeBSet=true;
+        loopButton.innerHTML="&emsp;";
+        loopButton.style.backgroundImage=crossMarkUrl;
+        updateLoopUI();
+        quant.disabled=(beatNormal ? false : true);
+        $("#timeInputs").show();
+        if(isPlaying() && !loopTimer.length)
+          loopTimer.push(setInterval(onLoopTimerUpdate, 5));
+      }
+    }else{
+      timeA=myGetCurrentTime();
+      isTimeASet=true;
+      loopButton.innerHTML="B";
+      loopButton.style.backgroundImage="none";
+    }
+  }
+}
+
 var loopMeas=[];
 var tLavg=0;
 var tLcount=0;
-var winSize=7; //window size for sliding avarage of rewind latency
+var winSize=7; //window size for sliding average of rewind latency
 var onLoopTimerUpdate=function(){
   let tMedia=myGetCurrentTime();
   if(tMedia<timeA) loopMeas.splice(0);
@@ -417,11 +450,11 @@ var onLoopTimerUpdate=function(){
       if(loopMeas.length>1){
         loopMeas.splice(0,loopMeas.length-2);
         //media rewind latency (sliding avg)
-        tLavg=(tLavg*tLcount + (loopMeas[1]-loopMeas[0])*rate+timeA-timeB)/++tLcount;
+        tLavg=(tLavg*tLcount + (loopMeas[1]-loopMeas[0])*rate + timeA-timeB)/++tLcount;
         if(tLcount>winSize) tLcount=winSize;
         //quantise loop based on tapped tempo and latency
         if(quant.checked) {
-          let n=Math.max(1,Math.round((timeB-timeA)/beatNormal));//no less than one beat
+          let n=Math.max(2,Math.round((loopMeas[1]-loopMeas[0])*rate/beatNormal));//no less than two beats
           let tBOld=timeB;
           timeB=toNearest5ms(timeA+n*beatNormal-tLavg);
           if(timeB-tBOld!=0) updateLoopUI();
@@ -524,7 +557,7 @@ var onTap=function(ui) {
   beatsArr.push(Date.now()/1000);
   if(beatsArr.length>2) {
     let change=(beatsArr.at(-1)-beatsArr.at(-2))/(beatsArr.at(-2)-beatsArr.at(-3));
-    if(change>1.25||change<0.80) { beatsArr.splice(0,beatsArr.length-1); }
+    if(change>=2||change<=0.5) { beatsArr.splice(0,beatsArr.length-1); }
   }
   if (beatsArr.length>1) {
     let beat=(beatsArr.at(-1)-beatsArr[0])/(beatsArr.length-1);
@@ -977,6 +1010,7 @@ var mergeData=function(data){
 var onBmkSelect=function(i){
   myBlur();
   if(i==0) {cancelABLoop(); return;}
+  $("#slider").slider("option", "max", myGetDuration());
   let a,b;
   [a,b]=myBookmarks.options[i].text.split("--").map(t => timeStringToSec(t));
   $("#slider").slider("option", "values", [a, b]);
@@ -989,7 +1023,9 @@ var onBmkSelect=function(i){
   while(loopTimer.length) clearInterval(loopTimer.pop());
   mySetCurrentTime(a);
   loopMeas.splice(0);
-  reStartLoopTimer();
+  if(isPlaying()) setTimeout(
+    function(){loopTimer.push(setInterval(onLoopTimerUpdate, 5));},50
+  );
 }
 
 var toggleIntro=function(t,h){
@@ -1290,39 +1326,6 @@ var initResizableYT=function(){
   });
 }
 
-var onLoopDownYT=function(){
-  if(isTimeBSet){
-    $("#timeInputs").hide();
-    annotButton.disabled=true;
-    myBookmarks.options[0].selected=true;
-    cancelABLoop();
-  }else{
-    if(isTimeASet){
-      if(myGetCurrentTimeYT()!=timeA){
-        if(myGetCurrentTimeYT()<timeA){
-          timeB=timeA;
-          timeA=myGetCurrentTimeYT();
-        }else{
-          timeB=myGetCurrentTimeYT();
-        }
-        isTimeBSet=true;
-        loopButton.innerHTML="&emsp;";
-        loopButton.style.backgroundImage=crossMarkUrl;
-        updateLoopUI();
-        quant.disabled=(beatNormal ? false : true);
-        $("#timeInputs").show();
-        if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING && !loopTimer.length)
-          loopTimer.push(setInterval(onLoopTimerUpdate, 5));
-      }
-    }else{
-      timeA=myGetCurrentTimeYT();
-      isTimeASet=true;
-      loopButton.innerHTML="B";
-      loopButton.style.backgroundImage="none";
-    }
-  }
-}
-
 var onClickShare=function(){
   myBlur();
   let sharelink=document.URL;
@@ -1341,12 +1344,6 @@ var onClickShare=function(){
   if(isTimeBSet) sharelink+="&end="+secToString(timeB);
   if(rate!=1.0) sharelink+="&rate="+rate;
   myMessage("Share Link", sharelink);
-}
-
-var reStartLoopTimerYT=function(){
-  if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING) setTimeout(
-    function(){loopTimer.push(setInterval(onLoopTimerUpdate, 5));},50
-  );
 }
 
 /////////////////////////
@@ -1503,45 +1500,6 @@ var initResizableVT=function(){
   });
 };
 
-var onLoopDownVT=function(){
-  if(isTimeBSet){
-    $("#timeInputs").hide();
-    annotButton.disabled=true;
-    myBookmarks.options[0].selected=true;
-    cancelABLoop();
-  }else{
-    if(isTimeASet){
-      if(myGetCurrentTimeVT()!=timeA){
-        if(myGetCurrentTimeVT()<timeA){
-          timeB=timeA;
-          timeA=myGetCurrentTimeVT();
-        }else{
-          timeB=myGetCurrentTimeVT();
-        }
-        isTimeBSet=true;
-        loopButton.innerHTML="&emsp;";
-        loopButton.style.backgroundImage=crossMarkUrl;
-        updateLoopUI();
-        quant.disabled=(beatNormal ? false : true);
-        $("#timeInputs").show();
-        if(!myVideo.paused && !loopTimer.length)
-          loopTimer.push(setInterval(onLoopTimerUpdate, 5));
-      }
-    }else{
-      timeA=myGetCurrentTimeVT();
-      isTimeASet=true;
-      loopButton.innerHTML="B";
-      loopButton.style.backgroundImage="none";
-    }
-  }
-}
-
-var reStartLoopTimerVT=function(){
-  if(!myVideo.paused) setTimeout(
-    function(){loopTimer.push(setInterval(onLoopTimerUpdate, 5));},50
-  );
-}
-
 var toggleAudio=function(t,h){
   myBlur();
   playSelectedFile(inputVT.files[0]);
@@ -1553,44 +1511,41 @@ var toggleAudio=function(t,h){
 }
 
 //functions with player specific implementation
-var reStartLoopTimer;
 var myGetCurrentTime;
 var mySetCurrentTime;
 var myGetDuration;
 var mySetPlaybackRate;
-var onLoopDown;
 var myPlayPause;
 var myPause;
 var myPlay;
+var isPlaying;
 
 //initialization functions
 var initYT=function(){ // YT
-  reStartLoopTimer=reStartLoopTimerYT;
   myGetCurrentTime=myGetCurrentTimeYT;
   mySetCurrentTime=mySetCurrentTimeYT;
   myGetDuration=myGetDurationYT;
   mySetPlaybackRate=mySetPlaybackRateYT;
   myGetPlaybackRate=myGetPlaybackRateYT;
-  onLoopDown=onLoopDownYT;
   myPlayPause=function(){
     if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING) ytPlayer.pauseVideo();
     else ytPlayer.playVideo();
   }
   myPause=function(){ytPlayer.pauseVideo();}
   myPlay=function(){ytPlayer.playVideo();}
+  isPlaying=function(){return (ytPlayer.getPlayerState()==YT.PlayerState.PLAYING);}
 }
 
 var initVT=function(){ // <video> tag
-  reStartLoopTimer=reStartLoopTimerVT;
   myGetCurrentTime=myGetCurrentTimeVT;
   mySetCurrentTime=mySetCurrentTimeVT;
   myGetDuration=myGetDurationVT;
   mySetPlaybackRate=mySetPlaybackRateVT;
   myGetPlaybackRate=myGetPlaybackRateVT;
-  onLoopDown=onLoopDownVT;
   myPlayPause=function(){
     if(myVideo.paused) myVideo.play(); else myVideo.pause();
   }
   myPause=function(){myVideo.pause();}
   myPlay=function(){myVideo.play();}
+  isPlaying=function(){return !myVideo.paused&&!myVideo.ended;}
 }
