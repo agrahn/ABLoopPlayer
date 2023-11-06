@@ -1184,7 +1184,7 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id loo
     }
     if (!scrubTimer.length) scrubTimer.push(setInterval(
       function(e){
-        $("#scrub").slider("option", "value", myGetCurrentTimeYT());
+        $("#scrub").slider("option", "value", myGetCurrentTime());
       }, 5
     ));
     if (isTimeASet && isTimeBSet && !loopTimer.length){
@@ -1281,26 +1281,6 @@ var queryYT=function(qu){
   );
 }
 
-var mySetPlaybackRateYT=function(r){
-  ytPlayer.setPlaybackRate(r);
-}
-
-var myGetPlaybackRateYT=function(){
-  return ytPlayer.getPlaybackRate();
-}
-
-var myGetDurationYT=function(){
-  return ytPlayer.getDuration();
-}
-
-var myGetCurrentTimeYT=function(){
-  return ytPlayer.getCurrentTime();
-}
-
-var mySetCurrentTimeYT=function(t){
-  ytPlayer.seekTo(t,true);
-}
-
 var initResizableYT=function(){
   $("#myResizable" ).resizable({
     aspectRatio: false,
@@ -1392,7 +1372,7 @@ var playSelectedFile=function(f){
     this.removeEventListener("timeupdate", onTimeUpdateVT);
     if (!scrubTimer.length) scrubTimer.push(setInterval(
       function(){
-        $("#scrub").slider("option", "value", myGetCurrentTimeVT());
+        $("#scrub").slider("option", "value", myGetCurrentTime());
       }, 0.025
     ));
     if (isTimeASet && isTimeBSet && !loopTimer.length)
@@ -1435,7 +1415,7 @@ var onLoadedData=function(e){
   }
   e.target.addEventListener("timeupdate", onTimeUpdateVT);
   loopButton.disabled=false;
-  $("#scrub").slider("option", "value", myGetCurrentTimeVT());
+  $("#scrub").slider("option", "value", myGetCurrentTime());
   initResizableVT();
   //look for bookmark items with the current video ID
   let bmkArr=JSON.parse(storage.getItem("ab."+vidId));
@@ -1452,26 +1432,6 @@ var saveMediaId=function(id){
   //now add to the head
   knownMedia.unshift(id);
   storageWriteKeyVal("ab.knownMedia",JSON.stringify(knownMedia));
-}
-
-var myGetPlaybackRateVT=function(){
-  return myVideo.playbackRate;
-}
-
-var mySetPlaybackRateVT=function(r){
-  myVideo.playbackRate=r;
-}
-
-var myGetDurationVT=function(){
-  return myVideo.duration;
-}
-
-var myGetCurrentTimeVT=function(){
-  return myVideo.currentTime;
-}
-
-var mySetCurrentTimeVT=function(t){
-  myVideo.currentTime=t;
 }
 
 var initHeight;
@@ -1514,6 +1474,7 @@ var toggleAudio=function(t,h){
 var myGetCurrentTime;
 var mySetCurrentTime;
 var myGetDuration;
+var myGetPlaybackRate;
 var mySetPlaybackRate;
 var myPlayPause;
 var myPause;
@@ -1522,11 +1483,11 @@ var isPlaying;
 
 //initialization functions
 var initYT=function(){ // YT
-  myGetCurrentTime=myGetCurrentTimeYT;
-  mySetCurrentTime=mySetCurrentTimeYT;
-  myGetDuration=myGetDurationYT;
-  mySetPlaybackRate=mySetPlaybackRateYT;
-  myGetPlaybackRate=myGetPlaybackRateYT;
+  myGetCurrentTime=function(){return ytPlayer.getCurrentTime();};
+  mySetCurrentTime=function(t){ytPlayer.seekTo(t,true);};
+  myGetDuration=function(){return ytPlayer.getDuration();};
+  myGetPlaybackRate=function(){return ytPlayer.getPlaybackRate();};
+  mySetPlaybackRate=function(r){ytPlayer.setPlaybackRate(r);};
   myPlayPause=function(){
     if(ytPlayer.getPlayerState()==YT.PlayerState.PLAYING) ytPlayer.pauseVideo();
     else ytPlayer.playVideo();
@@ -1537,11 +1498,11 @@ var initYT=function(){ // YT
 }
 
 var initVT=function(){ // <video> tag
-  myGetCurrentTime=myGetCurrentTimeVT;
-  mySetCurrentTime=mySetCurrentTimeVT;
-  myGetDuration=myGetDurationVT;
-  mySetPlaybackRate=mySetPlaybackRateVT;
-  myGetPlaybackRate=myGetPlaybackRateVT;
+  myGetCurrentTime=function(){return myVideo.currentTime;};
+  mySetCurrentTime=function(t){myVideo.currentTime=t;};
+  myGetDuration=function(){return myVideo.duration;};
+  myGetPlaybackRate=function(){return myVideo.playbackRate;};
+  mySetPlaybackRate=function(r){myVideo.playbackRate=r;};
   myPlayPause=function(){
     if(myVideo.paused) myVideo.play(); else myVideo.pause();
   }
