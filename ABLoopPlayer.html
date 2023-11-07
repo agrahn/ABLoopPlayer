@@ -21,7 +21,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
-<html lang="en"/>
+<html lang="en">
 <head>
   <title>AB Loop Player</title>
   <meta charset="utf-8"/>
@@ -32,7 +32,7 @@
   <meta name="keywords" content="AB, loop, looper, A-B, repeat, repeater,
     bookmark, YouTube, video, audio, file"/>
   <meta name="author" content="Alexander Grahn"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
   <!-- jQuery framework -->
   <link href="jquery-ui/jquery-ui.css" rel="stylesheet"/>
@@ -48,7 +48,7 @@
   <!-- main code that implements the video player -->
   <script src="js/main.js"></script>
 
-  <link rel="shortcut icon" type="image/x-icon" href="png/favicon.ico">
+  <link rel="shortcut icon" type="image/x-icon" href="png/favicon.ico"/>
   <link rel="preload" type="image/svg+xml" href="svg/star.svg" as="image"/>
   <link rel="preload" type="image/svg+xml" href="svg/jump.svg" as="image"/>
   <link rel="preload" type="image/svg+xml" href="svg/trash.svg" as="image"/>
@@ -92,7 +92,7 @@
       <div id="slider" style="margin-top:0px;margin-bottom:2px;"></div>
       <div style="margin:3px 0px 0px 0px;padding:5px;background-color:#eee;">
       <button id="jumpToA" style="width:1.5em;height:1.5em;margin-right:0.15em;vertical-align:bottom;background-size:contain;background-image:url('svg/jump.svg');"
-        onmousedown="onJumpToA()" onmouseup="myPlay()"></button><!--
+        onmousedown="onJumpToA()" onmouseup="playVideo()"></button><!--
       --><label for="myTimeA">A:</label> <input id="myTimeA" onchange="onInputTime(this,0)" size="8"/>
       <label for="myTimeB">B:</label> <input id="myTimeB" onchange="onInputTime(this,1)" size="8"/>
       <button id="bmkAddButton" style="width:1.5em;height:1.5em;vertical-align:bottom;background-size:80%;background-image:url('svg/star.svg');"></button>
@@ -125,7 +125,7 @@
       </span> <input type="checkbox" onchange="toggleIntro(this, help)" id="intro"/><label for="intro">play intro</label><br/>
       Speed:<div id="speed"><div id="speed-handle" class="ui-slider-handle"></div></div>&emsp;&emsp;
       <label for="tapButton">Tempo:</label>
-      <button id="tapButton" onmousedown="onTap(this)" onmouseup="this.blur()"/>tap</button><label for="tapButton"> BPM</label>
+      <button id="tapButton" onmousedown="onTap(this)" onmouseup="this.blur()">tap</button><label for="tapButton"> BPM</label>
       <span style="position:absolute;bottom:3px;right:5px;">
         <button id="shareButton" style="width:1.6em;height:1.6em;background-size:contain;background-image:url('svg/share.svg');" onclick="onClickShare()"></button><!--
         --><button id="exportButton" style="width:1.6em;height:1.6em;background-size:90%;background-image:url('svg/export.svg');" onclick="onClickExport()"></button><!--
