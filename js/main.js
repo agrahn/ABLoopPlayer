@@ -1007,6 +1007,11 @@ var mergeData=function(data){
   if(data["ab.version"]) storageWriteKeyVal("ab.version", data["ab.version"]);
 }
 
+var restartLoopTimer = function (t) {
+  if(t==toNearest5ms(getCurrentTime())) loopTimer.push(setInterval(onLoopTimerUpdate, 5));
+  else setTimeout(restartLoopTimer, 0, t);
+}
+
 var onBmkSelect=function(i){
   blur();
   if(i==0) {cancelABLoop(); return;}
@@ -1023,9 +1028,9 @@ var onBmkSelect=function(i){
   while(loopTimer.length) clearInterval(loopTimer.pop());
   setCurrentTime(a);
   loopMeas.splice(0);
-  if(isPlaying()) setTimeout(
-    function(){loopTimer.push(setInterval(onLoopTimerUpdate, 5));},50
-  );
+  //for correctly measuring rewind latency, restart loop timer only after
+  //seek operation has reached the starting time `a' of selected bookmark
+  if(isPlaying()) restartLoopTimer(a);
 }
 
 var toggleIntro=function(t,h){
