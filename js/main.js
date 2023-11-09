@@ -25,7 +25,6 @@ var searchStr; //url parameters
 var timeA, timeB, dtAB; // s
 var isTimeASet=false;
 var isTimeBSet=false;
-var loopTimer=[];
 var scrubTimer=[];
 var knownIDs=[];
 var knownMedia=[];
@@ -422,8 +421,6 @@ var onLoopDown=function(){
         updateLoopUI();
         quant.disabled=(beatNormal ? false : true);
         $("#timeInputs").show();
-        if(isPlaying() && !loopTimer.length)
-          loopTimer.push(setInterval(onLoopTimerUpdate, 5));
       }
     }else{
       timeA=getCurrentTime();
@@ -438,8 +435,12 @@ var loopMeas=[];
 var tLavg=0;
 var tLcount=0;
 var winSize=7; //window size for sliding average of rewind latency
-var onLoopTimerUpdate=function(){
+
+var onScrubTimerUpdate=function(){
   let tMedia=getCurrentTime();
+  $("#scrub").slider("option", "value", tMedia);//update the scrubbar
+  if(!isTimeASet||!isTimeBSet) return;
+  //loop control and latency measurement
   if(tMedia<timeA) loopMeas.splice(0);
   if(tMedia<timeA && !intro.checked || tMedia>=timeB){
     let curDate=Date.now()/1000; //[s]
@@ -821,7 +822,6 @@ var contextHelp=function(t){
 }
 
 var cancelABLoop=function(){
-  while(loopTimer.length) clearInterval(loopTimer.pop());
   isTimeASet=isTimeBSet=false;
   loopButton.innerHTML="A";
   loopButton.style.backgroundImage="none";
@@ -1007,9 +1007,9 @@ var mergeData=function(data){
   if(data["ab.version"]) storageWriteKeyVal("ab.version", data["ab.version"]);
 }
 
-var restartLoopTimer = function (t) {
-  if(t==toNearest5ms(getCurrentTime())) loopTimer.push(setInterval(onLoopTimerUpdate, 5));
-  else setTimeout(restartLoopTimer, 0, t);
+var restartLoopControl=function(t){
+  if(t==toNearest5ms(getCurrentTime())) isTimeASet=isTimeBSet=true;
+  else setTimeout(restartLoopControl,0,t);
 }
 
 var onBmkSelect=function(i){
@@ -1019,18 +1019,17 @@ var onBmkSelect=function(i){
   let a,b;
   [a,b]=myBookmarks.options[i].text.split("--").map(t => timeStringToSec(t));
   $("#slider").slider("option", "values", [a, b]);
-  isTimeASet=isTimeBSet=true;
   quant.disabled=(beatNormal ? false : true);
   $("#timeInputs").show();
   loopButton.innerHTML="&emsp;";
   loopButton.style.backgroundImage=crossMarkUrl;
   annotButton.disabled=false;
-  while(loopTimer.length) clearInterval(loopTimer.pop());
-  setCurrentTime(a);
+  //for correct measurement of rewind latency, briefly interrupt loop control and restart it
+  //only after seek operation has reached starting time `a' of the selected bookmark
+  isTimeASet=isTimeBSet=!isPlaying();
   loopMeas.splice(0);
-  //for correctly measuring rewind latency, restart loop timer only after
-  //seek operation has reached the starting time `a' of selected bookmark
-  if(isPlaying()) restartLoopTimer(a);
+  setCurrentTime(a);
+  if(isPlaying()) restartLoopControl(a);
 }
 
 var toggleIntro=function(t,h){
@@ -1187,20 +1186,15 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id loo
       }
       vidId=id;
     }
-    if (!scrubTimer.length) scrubTimer.push(setInterval(
-      function(e){
-        $("#scrub").slider("option", "value", getCurrentTime());
-      }, 5
-    ));
-    if (isTimeASet && isTimeBSet && !loopTimer.length){
-      loopMeas.splice(0);
-      loopTimer.push(setInterval(onLoopTimerUpdate, 5));
-    }
+    if (!scrubTimer.length) scrubTimer.push(setInterval(onScrubTimerUpdate, 5));
   }
-  else if(e.data==YT.PlayerState.PAUSED){
-    while(loopTimer.length) clearInterval(loopTimer.pop());
+  else if(e.data==YT.PlayerState.PAUSED||e.data==YT.PlayerState.ENDED){
     while(scrubTimer.length) clearInterval(scrubTimer.pop());
     loopMeas.splice(0);
+  }
+  else if (e.data==YT.PlayerState.UNSTARTED) {
+    cancelABLoop();
+    setCurrentTime(0);
   }
 }
 
@@ -1354,7 +1348,6 @@ var playSelectedFile=function(f){
   myVideo.width=$("#myResizable").width();
   myVideo.addEventListener("durationchange", function(e){
     while(scrubTimer.length) clearInterval(scrubTimer.pop());
-    while(loopTimer.length) clearInterval(loopTimer.pop());
     loopMeas.splice(0);
     if (isFinite(e.target.duration)){
       $("#slider").slider("option", "max", getDuration());
@@ -1376,19 +1369,12 @@ var playSelectedFile=function(f){
     loopMeas.splice(0);
     setPlaybackRate(Number($("#speed").slider("value")));
     this.removeEventListener("timeupdate", onTimeUpdateVT);
-    if (!scrubTimer.length) scrubTimer.push(setInterval(
-      function(){
-        $("#scrub").slider("option", "value", getCurrentTime());
-      }, 0.025
-    ));
-    if (isTimeASet && isTimeBSet && !loopTimer.length)
-      loopTimer.push(setInterval(onLoopTimerUpdate, 5));
+    if (!scrubTimer.length) scrubTimer.push(setInterval(onScrubTimerUpdate, 5));
   });
   myVideo.addEventListener("pause", function(e){
-    loopMeas.splice(0);
     this.addEventListener("timeupdate", onTimeUpdateVT);
     while(scrubTimer.length) clearInterval(scrubTimer.pop());
-    while(loopTimer.length) clearInterval(loopTimer.pop());
+    loopMeas.splice(0);
   });
   myVideo.addEventListener("error", function(e){
     console.log("Error: " + e.target);
