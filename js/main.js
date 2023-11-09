@@ -41,6 +41,7 @@ try{
 catch(e){
   alert("Cookies must be enabled for this page to work.");
 }
+
 // triggered when another player instance writes to storage
 window.onstorage = () => {
   if(storage.getItem("ab.knownIDs"))
@@ -184,6 +185,12 @@ $(document).ready(function(){
   bmkAddButton.addEventListener("mouseup", function(e){bmkAdd();});
   $("#mainDiv").show();
   playSelectedFile("");
+});
+
+//suspend rewind latency measurement and loop quantisation when
+//tab is in the background or part of a minimised window or lock screen is active
+document.addEventListener("visibilitychange", () => {
+  if(document.visibilityState=="hidden") loopMeas.splice(0);
 });
 
 //add some hotkeys
@@ -445,7 +452,8 @@ var onScrubTimerUpdate=function(){
   if(tMedia<timeA && !intro.checked || tMedia>=timeB){
     let curDate=Date.now()/1000; //[s]
     if(
-      tMedia>=timeB && (!loopMeas.length || curDate-loopMeas.at(-1)>=(timeB-timeA)/rate)
+      document.visibilityState=="visible" && tMedia>=timeB
+      && (!loopMeas.length || curDate-loopMeas.at(-1)>=(timeB-timeA)/rate)
     ){
       loopMeas.push(curDate);
       if(loopMeas.length>1){
@@ -1024,7 +1032,7 @@ var onBmkSelect=function(i){
   loopButton.innerHTML="&emsp;";
   loopButton.style.backgroundImage=crossMarkUrl;
   annotButton.disabled=false;
-  //for correct measurement of rewind latency, briefly interrupt loop control and restart it
+  //for correct measurement of rewind latency, briefly suspend loop control and restart it
   //only after seek operation has reached starting time `a' of the selected bookmark
   isTimeASet=isTimeBSet=!isPlaying();
   loopMeas.splice(0);
