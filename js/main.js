@@ -450,12 +450,12 @@ var onScrubTimerUpdate=function(){
   //loop control and latency measurement
   if(tMedia<timeA) loopMeas.splice(0);
   if(tMedia<timeA && !intro.checked || tMedia>=timeB){
-    let curDate=Date.now()/1000; //[s]
+    let curTime=performance.now()/1000; //[s]
     if(
       document.visibilityState=="visible" && tMedia>=timeB
-      && (!loopMeas.length || curDate-loopMeas.at(-1)>=(timeB-timeA)/rate)
+      && (!loopMeas.length || curTime-loopMeas.at(-1)>=(timeB-timeA)/rate)
     ){
-      loopMeas.push(curDate);
+      loopMeas.push(curTime);
       if(loopMeas.length>1){
         loopMeas.splice(0,loopMeas.length-2);
         //media rewind latency (sliding avg)
@@ -563,7 +563,7 @@ var rate; //current playback rate (speed)
 var beatNormal; //beat length at normal speed in s
 var beatsArr = [];
 var onTap=function(ui) {
-  beatsArr.push(Date.now()/1000);
+  beatsArr.push(performance.now()/1000);
   if(beatsArr.length>2) {
     let change=(beatsArr.at(-1)-beatsArr.at(-2))/(beatsArr.at(-2)-beatsArr.at(-3));
     if(change>=2||change<=0.5) { beatsArr.splice(0,beatsArr.length-1); }
