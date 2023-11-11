@@ -78,10 +78,11 @@ var storageWriteKeyVal=function(k,v){
 }
 
 //HTML elements
-var YTids, inputYT, inputVT, ytPlayer, help, aonly, intro, myTimeA,
-  myTimeB, myBookmarks, loopButton, bmkAddButton, loopBackwardsButton,
-  loopHalveButton, loopDoubleButton, loopForwardsButton, annotButton,
-  trashButton, tapButton;
+var YTids, introTextBr, inputYT, inputVT, ytPlayer, help, searchButtonYT,
+  aonly, intro, myTimeA, myTimeB, myBookmarks, loopButton, bmkAddButton,
+  loopBackwardsButton, loopHalveButton, loopDoubleButton, loopForwardsButton,
+  annotButton, trashButton, tapButton, importButton, exportButton, shareButton,
+  quant;
 
 $(document).ready(function(){
   $("#introText").width($("#widthA").width()+1);
@@ -187,11 +188,9 @@ $(document).ready(function(){
   playSelectedFile("");
 });
 
-//suspend rewind latency measurement and loop quantisation when
-//tab is in the background or part of a minimised window or lock screen is active
-document.addEventListener("visibilitychange", () => {
-  if(document.visibilityState=="hidden") loopMeas.splice(0);
-});
+//reset rewind latency measurement when tab visibility has changed (from and to
+//background, minimising or maximising window, lock screen [de]activation)
+document.addEventListener("visibilitychange", () => {loopMeas.splice(0);});
 
 //add some hotkeys
 window.addEventListener("keydown", function(e){
@@ -1015,9 +1014,9 @@ var mergeData=function(data){
   if(data["ab.version"]) storageWriteKeyVal("ab.version", data["ab.version"]);
 }
 
-var restartLoopControl=function(t){
+var resumeLoopControl=function(t){
   if(t==toNearest5ms(getCurrentTime())) isTimeASet=isTimeBSet=true;
-  else setTimeout(restartLoopControl,0,t);
+  else setTimeout(resumeLoopControl,0,t);
 }
 
 var onBmkSelect=function(i){
@@ -1032,12 +1031,12 @@ var onBmkSelect=function(i){
   loopButton.innerHTML="&emsp;";
   loopButton.style.backgroundImage=crossMarkUrl;
   annotButton.disabled=false;
-  //for correct measurement of rewind latency, briefly suspend loop control and restart it
+  //for correct measurement of rewind latency, briefly suspend loop control and resume it
   //only after seek operation has reached starting time `a' of the selected bookmark
   isTimeASet=isTimeBSet=!isPlaying();
   loopMeas.splice(0);
   setCurrentTime(a);
-  if(isPlaying()) restartLoopControl(a);
+  if(isPlaying()) resumeLoopControl(a);
 }
 
 var toggleIntro=function(t,h){
@@ -1194,7 +1193,7 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id loo
       }
       vidId=id;
     }
-    if (!scrubTimer.length) scrubTimer.push(setInterval(onScrubTimerUpdate, 5));
+    if (!scrubTimer.length) scrubTimer.push(setInterval(onScrubTimerUpdate,1));
   }
   else if(e.data==YT.PlayerState.PAUSED||e.data==YT.PlayerState.ENDED){
     while(scrubTimer.length) clearInterval(scrubTimer.pop());
@@ -1377,7 +1376,7 @@ var playSelectedFile=function(f){
     loopMeas.splice(0);
     setPlaybackRate(Number($("#speed").slider("value")));
     this.removeEventListener("timeupdate", onTimeUpdateVT);
-    if (!scrubTimer.length) scrubTimer.push(setInterval(onScrubTimerUpdate, 5));
+    if (!scrubTimer.length) scrubTimer.push(setInterval(onScrubTimerUpdate,1));
   });
   myVideo.addEventListener("pause", function(e){
     this.addEventListener("timeupdate", onTimeUpdateVT);
