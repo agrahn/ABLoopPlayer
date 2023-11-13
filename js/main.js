@@ -48,6 +48,10 @@ window.onstorage = () => {
     knownIDs=JSON.parse(storage.getItem("ab.knownIDs"));
   if(storage.getItem("ab.knownMedia"))
     knownMedia=JSON.parse(storage.getItem("ab.knownMedia"));
+  if(vidId && storage.getItem("ab."+vidId)) {
+    let bmkArr=JSON.parse(storage.getItem("ab."+vidId));
+    bookmarksUpdate(bmkArr,-1);
+  }
 };
 
 var storageWriteKeyVal=function(k,v){
@@ -204,22 +208,49 @@ window.addEventListener("keydown", function(e){
     && !$("#slider .ui-slider-handle").is(":focus")
     && !$("#speed .ui-slider-handle").is(":focus")
     && !$("select").is(":focus")
-  ){ try{setCurrentTime(0);}catch(err){} }
+  ){try{
+    setCurrentTime(0);
+    loopMeas.splice(0);
+  }catch(err){}}
   else if (e.which==35
     && !$("#slider .ui-slider-handle").is(":focus")
     && !$("#speed .ui-slider-handle").is(":focus")
     && !$("select").is(":focus")
-  ){ try{setCurrentTime(getDuration());}catch(err){} }
+  ){try{
+    if(isPlaying() && isTimeBSet){
+      pauseVideo();
+      setCurrentTime(timeA);
+      resumePlayAfterSeek(timeA);
+    }
+    else{
+      setCurrentTime(getDuration());
+      loopMeas.splice(0);
+    }
+  }catch(err){}}
   else if (e.which==37
     && !$("#slider .ui-slider-handle").is(":focus")
     && !$("#speed .ui-slider-handle").is(":focus")
     && !$("select").is(":focus")
-  ){ try{setCurrentTime(getCurrentTime()-15);}catch(err){} }
+  ){try{
+    setCurrentTime(getCurrentTime()-5);
+    loopMeas.splice(0);
+  }catch(err){}}
   else if (e.which==39
     && !$("#slider .ui-slider-handle").is(":focus")
     && !$("#speed .ui-slider-handle").is(":focus")
     && !$("select").is(":focus")
-  ){ try{setCurrentTime(getCurrentTime()+15);}catch(err){} }
+  ){try{
+    let t=getCurrentTime()+5;
+    if(isPlaying() && isTimeBSet && t>timeB){
+      pauseVideo();
+      setCurrentTime(timeA);
+      resumePlayAfterSeek(timeA);
+    }
+    else{
+      setCurrentTime(t);
+      loopMeas.splice(0);
+    }
+  }catch(err){}}
   else if (e.which==32) {try{playPause();}catch(err){}}
   else if (e.which==84 && !tapButton.disabled) onTap(tapButton); // "t"
   else if (e.which==81 && !quant.disabled) { // "q"
@@ -375,6 +406,7 @@ var onSliderChange=function(e,ui){
   timeB=ui.values[1];
   myTimeA.value=secToTimeString(Math.max(timeA,0));
   myTimeB.value=secToTimeString(Math.min(timeB,getDuration()));
+  loopMeas.splice(0);
 }
 
 var onSliderSlide=function(e,ui){
@@ -450,16 +482,19 @@ var onScrubTimerUpdate=function(){
   if(tMedia<timeA) loopMeas.splice(0);
   if(tMedia<timeA && !intro.checked || tMedia>=timeB){
     let curTime=performance.now()/1000; //[s]
+    let dtw=(timeB-timeA)/rate; //loop interval in walltime seceonds
     if(
-      document.visibilityState=="visible" && tMedia>=timeB
-      && (!loopMeas.length || curTime-loopMeas.at(-1)>=(timeB-timeA)/rate)
+      document.visibilityState=="visible" && tMedia>=timeB && dtw>0.2
+      && (!loopMeas.length || curTime-loopMeas.at(-1)>=dtw)
     ){
       loopMeas.push(curTime);
       if(loopMeas.length>1){
         loopMeas.splice(0,loopMeas.length-2);
-        //media rewind latency (sliding avg)
-        tLavg=(tLavg*tLcount + (loopMeas[1]-loopMeas[0])*rate + timeA-timeB)/++tLcount;
+        //media rewind latency
+        let tL=(loopMeas[1]-loopMeas[0])*rate + timeA-timeB;
+        tLavg=(tLavg*tLcount + tL)/++tLcount; // sliding avg
         if(tLcount>winSize) tLcount=winSize;
+        //console.log(tLavg, tL);
         //quantise loop based on tapped tempo and latency
         if(quant.checked) {
           let n=Math.max(2,Math.round((loopMeas[1]-loopMeas[0])*rate/beatNormal));//no less than two beats
@@ -476,9 +511,15 @@ var onScrubTimerUpdate=function(){
   else if(tMedia<timeA && tapButton.disabled) tapButton.disabled=false;
 }
 
+var updateScrubAfterSeek=function(t){
+  if(t!=toNearest5ms(getCurrentTime())) timeOutTimer=setTimeout(updateScrubAfterSeek,1,t);
+  else $("#scrub").slider("option", "value", t);
+}
+
 var onJumpToA=function(){
   pauseVideo();
   setCurrentTime(timeA);
+  updateScrubAfterSeek(timeA);
 }
 
 const timeRegExp=new RegExp('^\\s*'+timePattern+'\\s*$');
@@ -574,7 +615,7 @@ var onTap=function(ui) {
   }
 }
 
-var bmkAdd=function(note=null){
+var bmkAdd=function(){
   let bmk={ta: secToString(timeA), tb: secToString(timeB)};
   let bmkArr=[];
   if(storage.getItem("ab."+vidId))
@@ -583,10 +624,21 @@ var bmkAdd=function(note=null){
     toNearest5ms(Number(bmk.ta))==toNearest5ms(Number(bm.ta)) &&
     toNearest5ms(Number(bmk.tb))==toNearest5ms(Number(bm.tb))
   );
-  if(note && note.trim()) bmk.note=note.trim();
-  if(idx>-1 && bmkArr[idx].note && note===null) bmk.note=bmkArr[idx].note;
-  idx=insertBmk(bmk, bmkArr);
-  if(bmkArr.length) storageWriteKeyVal("ab."+vidId,JSON.stringify(bmkArr));
+  if(idx==-1){
+    idx=insertBmk(bmk, bmkArr);
+    if(bmkArr.length) storageWriteKeyVal("ab."+vidId,JSON.stringify(bmkArr));
+  }
+  bookmarksUpdate(bmkArr,idx);
+}
+
+var bmkAddNote=function(note,idx){
+  let bmkArr=[];
+  if(storage.getItem("ab."+vidId))
+    bmkArr=JSON.parse(storage.getItem("ab."+vidId));
+  if(!myBookmarks.options[0].selected){
+    bmkArr[idx].note=note.trim();
+    if(bmkArr.length) storageWriteKeyVal("ab."+vidId,JSON.stringify(bmkArr));
+  }
   bookmarksUpdate(bmkArr,idx);
 }
 
@@ -710,7 +762,7 @@ var onClickAddNote=function(idx){
   blur();
   let currentNote=myBookmarks.options[idx].title;
   promptDialog(
-    note => bmkAdd(note),
+    note => bmkAddNote(note,idx-1),
     null, "Enter description:", (currentNote ? null : "<Add note here>"), currentNote
   );
 }
@@ -743,8 +795,11 @@ var onClickImport=function(){
     reader.onload = e => {
       try{
         mergeData(convertData(JSON.parse(e.target.result)));
-        messageBox("Import",
-          "Loop data and app settings successfully imported.");
+        messageBox("Import", "Loop data and app settings successfully imported.");
+        if(vidId && storage.getItem("ab."+vidId)) {
+          let bmkArr=JSON.parse(storage.getItem("ab."+vidId));
+          bookmarksUpdate(bmkArr,-1);
+        }
       }catch(err){
         messageBox("Error",
           "<p>Loop data and app settings could not be imported.</p>"+
@@ -1014,9 +1069,9 @@ var mergeData=function(data){
   if(data["ab.version"]) storageWriteKeyVal("ab.version", data["ab.version"]);
 }
 
-var resumeLoopControl=function(t){
-  if(t==toNearest5ms(getCurrentTime())) isTimeASet=isTimeBSet=true;
-  else setTimeout(resumeLoopControl,0,t);
+var resumePlayAfterSeek=function(t){
+  if(t!=toNearest5ms(getCurrentTime())) timeOutTimer=setTimeout(resumePlayAfterSeek,1,t);
+  else playVideo();
 }
 
 var onBmkSelect=function(i){
@@ -1031,12 +1086,13 @@ var onBmkSelect=function(i){
   loopButton.innerHTML="&emsp;";
   loopButton.style.backgroundImage=crossMarkUrl;
   annotButton.disabled=false;
-  //for correct measurement of rewind latency, briefly suspend loop control and resume it
-  //only after seek operation has reached starting time `a' of the selected bookmark
-  isTimeASet=isTimeBSet=!isPlaying();
-  loopMeas.splice(0);
-  setCurrentTime(a);
-  if(isPlaying()) resumeLoopControl(a);
+  isTimeASet=isTimeBSet=true;
+  if(isPlaying()){
+    pauseVideo();
+    setCurrentTime(a);
+    resumePlayAfterSeek(a);
+  }
+  else setCurrentTime(a);
 }
 
 var toggleIntro=function(t,h){
@@ -1199,7 +1255,7 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id loo
     while(scrubTimer.length) clearInterval(scrubTimer.pop());
     loopMeas.splice(0);
   }
-  else if (e.data==YT.PlayerState.UNSTARTED) {
+  else if (e.data==YT.PlayerState.UNSTARTED){
     cancelABLoop();
     setCurrentTime(0);
   }
