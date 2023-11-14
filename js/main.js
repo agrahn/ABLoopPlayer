@@ -149,7 +149,7 @@ $(document).ready(function(){
       YTids.appendChild(z);
     }
   }
-  inputYT.value=(knownIDs.length ? knownIDs[0] : "https://youtu.be/2kotK9FNEYU");
+  inputYT.value=knownIDs.length ? knownIDs[0] : "https://youtu.be/2kotK9FNEYU";
   $("#scrub").slider({
     min: 0, step: 0.001, range: "min",
     slide: function(e,ui){
@@ -174,7 +174,7 @@ $(document).ready(function(){
   if(storage.getItem("ab.aonly")=="checked") aonly.checked=true;
   else {aonly.checked=false; storageWriteKeyVal("ab.aonly", "unchecked");}
   if(help.checked){
-    aonly.title=(aonly.checked ? aonlyTitleChecked : aonlyTitleUnChecked);
+    aonly.title=aonly.checked ? aonlyTitleChecked : aonlyTitleUnChecked;
   }
   if(storage.getItem("ab.intro")!="unchecked") intro.checked=true;
   toggleIntro(intro, help);
@@ -220,7 +220,7 @@ window.addEventListener("keydown", function(e){
     if(isPlaying() && isTimeBSet){
       pauseVideo();
       setCurrentTime(timeA);
-      resumePlayAfterSeek(timeA);
+      doAfterSeek(playVideo, timeA);
     }
     else{
       setCurrentTime(getDuration());
@@ -244,7 +244,7 @@ window.addEventListener("keydown", function(e){
     if(isPlaying() && isTimeBSet && t>timeB){
       pauseVideo();
       setCurrentTime(timeA);
-      resumePlayAfterSeek(timeA);
+      doAfterSeek(playVideo, timeA);
     }
     else{
       setCurrentTime(t);
@@ -283,7 +283,7 @@ var promptDialog=function(onclose, title, text, placeholder, input){
   $(z).dialog({
     autoOpen: true,
     modal: true,
-    classes: {"ui-dialog": (title ? "" : "noTitlebar")},
+    classes: {"ui-dialog": title ? "" : "noTitlebar"},
     title: title,
     closeOnEscape: false,
     closeText: "hide",
@@ -457,7 +457,7 @@ var onLoopDown=function(){
         loopButton.innerHTML="&emsp;";
         loopButton.style.backgroundImage=crossMarkUrl;
         updateLoopUI();
-        quant.disabled=(beatNormal ? false : true);
+        quant.disabled=beatNormal ? false : true;
         $("#timeInputs").show();
       }
     }else{
@@ -511,15 +511,10 @@ var onScrubTimerUpdate=function(){
   else if(tMedia<timeA && tapButton.disabled) tapButton.disabled=false;
 }
 
-var updateScrubAfterSeek=function(t){
-  if(t!=toNearest5ms(getCurrentTime())) timeOutTimer=setTimeout(updateScrubAfterSeek,1,t);
-  else $("#scrub").slider("option", "value", t);
-}
-
 var onJumpToA=function(){
   pauseVideo();
   setCurrentTime(timeA);
-  updateScrubAfterSeek(timeA);
+  doAfterSeek((t)=>{$("#scrub").slider("option", "value", t);},timeA,timeA);
 }
 
 const timeRegExp=new RegExp('^\\s*'+timePattern+'\\s*$');
@@ -825,9 +820,9 @@ var contextHelp=function(t){
   if(t.checked){
     storageWriteKeyVal("ab.help", "checked");
     t.title="Uncheck to disable context-sensitive help.";
-    aonly.title=(aonly.checked ? aonlyTitleChecked : aonlyTitleUnChecked);
-    intro.title=(intro.checked ? introTitleChecked : introTitleUnChecked);
-    quant.title=(quant.checked ? quantTitleChecked : quantTitleUnChecked);
+    aonly.title=aonly.checked ? aonlyTitleChecked : aonlyTitleUnChecked;
+    intro.title=intro.checked ? introTitleChecked : introTitleUnChecked;
+    quant.title=quant.checked ? quantTitleChecked : quantTitleUnChecked;
     inputYT.title="Paste a valid YouTube URL, video or playlist ID.";
     searchButtonYT.title="Play video.";
     inputVT.title="Browse the hard disk for media files (mp4/H.264, webm, ogg, mp3, wav, ...).";
@@ -1069,19 +1064,19 @@ var mergeData=function(data){
   if(data["ab.version"]) storageWriteKeyVal("ab.version", data["ab.version"]);
 }
 
-var resumePlayAfterSeek=function(t){
-  if(t!=toNearest5ms(getCurrentTime())) timeOutTimer=setTimeout(resumePlayAfterSeek,1,t);
-  else playVideo();
+var doAfterSeek=function(callback,t,arg=null){
+  if(t!=toNearest5ms(getCurrentTime())) setTimeout(doAfterSeek,1,callback,t,arg);
+  else arg ? callback(arg) : callback();
 }
 
 var onBmkSelect=function(i){
   blur();
-  if(i==0) {cancelABLoop(); return;}
+  if(i==0) return;
   $("#slider").slider("option", "max", getDuration());
   let a,b;
   [a,b]=myBookmarks.options[i].text.split("--").map(t => timeStringToSec(t));
   $("#slider").slider("option", "values", [a, b]);
-  quant.disabled=(beatNormal ? false : true);
+  quant.disabled=beatNormal ? false : true;
   $("#timeInputs").show();
   loopButton.innerHTML="&emsp;";
   loopButton.style.backgroundImage=crossMarkUrl;
@@ -1090,7 +1085,7 @@ var onBmkSelect=function(i){
   if(isPlaying()){
     pauseVideo();
     setCurrentTime(a);
-    resumePlayAfterSeek(a);
+    doAfterSeek(playVideo, a);
   }
   else setCurrentTime(a);
 }
@@ -1147,16 +1142,16 @@ var loadYT=function(vid,plist,lid,ta,tb,r,lType="playlist"){
   myResizable.appendChild(ytDiv);
   //create new YT player iframe, replacing ytDiv
   ytPlayer=new YT.Player("ytDiv", {
-    videoId: (vid && vid.substring(0,4)==="vid:" ? vid.substring(4) : vid),
+    videoId: vid && vid.substring(0,4)==="vid:" ? vid.substring(4) : vid,
     width: playerWidth,
     height: $("#myResizable").height(),
     playerVars: {
-      index: (vid && vid.substring(0,4)==="idx:" ? vid.substring(4) : null),
+      index: vid && vid.substring(0,4)==="idx:" ? vid.substring(4) : null,
       list: lid,
       listType: lType,
       playlist: plist,
       //loop: 1, //loop over playlist
-      //playlist: (vid && !plist && !lid ? vid.substring(4) : plist), //loop single video
+      //playlist: vid && !plist && !lid ? vid.substring(4) : plist, //loop single video
       autoplay: 1,
       modestbranding: 1,
       fs: 0,  //no fullscreen button
@@ -1169,7 +1164,7 @@ var loadYT=function(vid,plist,lid,ta,tb,r,lType="playlist"){
           searchStr=undefined;
         }
         if(e.target.getPlaylist()&&lid){
-          let l=(lType==="user_uploads" ? "@"+lid : lid);
+          let l=lType==="user_uploads" ? "@"+lid : lid;
           saveId(l);
           lstId=l;
         }
@@ -1222,7 +1217,7 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id loo
       shareButton.disabled=false;
       //populate bookmark list with saved items for the current video ID
       let bmkArr=JSON.parse(storage.getItem("ab."+id));
-      bookmarksUpdate((bmkArr ? bmkArr : []),-1);
+      bookmarksUpdate(bmkArr ? bmkArr : [],-1);
       annotButton.disabled=true;
       saveId(id);
       //set ab loop from ta, tb args only upon new player instantiation
@@ -1242,7 +1237,7 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id loo
         setCurrentTime(a);
         $("#slider").slider("option", "values", [a, b]);
         isTimeASet=isTimeBSet=true;
-        quant.disabled=(beatNormal ? false : true);
+        quant.disabled=beatNormal ? false : true;
         $("#timeInputs").show();
         loopButton.innerHTML="&emsp;";
         loopButton.style.backgroundImage=crossMarkUrl;
@@ -1332,7 +1327,7 @@ var queryYT=function(qu){
   let ta=qu.match(/(?<=[?&](?:star)?t=)[0-9]+(?:\.[0-9]*)?/);
   let tb=qu.match(/(?<=[?&]end=)[0-9]+(?:\.[0-9]*)?/);
   let r=qu.match(/(?<=[?&]rate=)[0-9]+(?:\.[0-9]*)?/);
-  r=(r ? Math.min(Math.max(r[0],0.25),2.0) : 1);
+  r=r ? Math.min(Math.max(r[0],0.25),2.0) : 1;
   loadYT(
     vid ? vid : null,
     plist ? plist[0] : null,
@@ -1363,7 +1358,7 @@ var initResizableYT=function(){
       $("#scrub").width(ui.size.width-2);
       $("#slider").width(ui.size.width-2);
       $("#introText").width(Math.max(ui.size.width,$("#widthA").width()+1));
-      introTextBr.style.display=(ui.size.width > $("#widthB").width()+1 ? "none" : "block");
+      introTextBr.style.display=ui.size.width > $("#widthB").width()+1 ? "none" : "block";
     }
   });
 }
@@ -1474,7 +1469,7 @@ var onLoadedData=function(e){
   initResizableVT();
   //look for bookmark items with the current video ID
   let bmkArr=JSON.parse(storage.getItem("ab."+vidId));
-  bookmarksUpdate((bmkArr ? bmkArr : []),-1);
+  bookmarksUpdate(bmkArr ? bmkArr : [],-1);
   annotButton.disabled=true;
   saveMediaId(vidId);
 }
@@ -1493,7 +1488,7 @@ var initHeight;
 var initResizableVT=function(){
   $("#myResizable").resizable({
     aspectRatio: !aonly.checked,
-    minWidth: (aonly.checked ? $("#myResizable").width() : 160),
+    minWidth: aonly.checked ? $("#myResizable").width() : 160,
     create: function(e,ui){
       myVideo.width=$("#myResizable").width();
       initHeight=$("#myResizable").height();
@@ -1510,7 +1505,7 @@ var initResizableVT=function(){
       $("#scrub").width(ui.size.width-2);
       $("#slider").width(ui.size.width-2);
       $("#introText").width(Math.max(ui.size.width,$("#widthA").width()+1));
-      introTextBr.style.display=(ui.size.width > $("#widthB").width()+1 ? "none" : "block");
+      introTextBr.style.display=ui.size.width > $("#widthB").width()+1 ? "none" : "block";
     }
   });
 };
@@ -1519,7 +1514,7 @@ var toggleAudio=function(t,h){
   blur();
   playSelectedFile(inputVT.files[0]);
   if(h.checked){
-    t.title=(t.checked ? aonlyTitleChecked : aonlyTitleUnChecked);
+    t.title=t.checked ? aonlyTitleChecked : aonlyTitleUnChecked;
   }
   if(t.checked) storageWriteKeyVal("ab.aonly", "checked");
   else storageWriteKeyVal("ab.aonly", "unchecked");
