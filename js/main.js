@@ -86,7 +86,7 @@ var YTids, introTextBr, inputYT, inputVT, ytPlayer, help, searchButtonYT,
   aonly, intro, myTimeA, myTimeB, myBookmarks, loopButton, bmkAddButton,
   loopBackwardsButton, loopHalveButton, loopDoubleButton, loopForwardsButton,
   annotButton, trashButton, tapButton, importButton, exportButton, shareButton,
-  quant;
+  quant, handleA, handleB;
 
 $(document).ready(function(){
   $("#introText").width($("#widthA").width()+1);
@@ -103,6 +103,7 @@ $(document).ready(function(){
   YTids=document.getElementById("YTids");
   help=document.getElementById("help");
   searchButtonYT=document.getElementById("searchButtonYT");
+  searchButtonYT.focus();
   inputVT=document.getElementById("inputVT");
   aonly=document.getElementById("aonly");
   intro=document.getElementById("intro");
@@ -157,7 +158,6 @@ $(document).ready(function(){
       setCurrentTime(ui.value);
     },
   })
-  $("#scrub").css("height", "6px").hide();
   $("#slider").slider({
     min: 0,
     step: 0.005,
@@ -166,9 +166,16 @@ $(document).ready(function(){
     slide: function(e,ui){onSliderSlide(e,ui);},
     change: function(e,ui){onSliderChange(e,ui);},
   });
-  $("#slider").css("height", "1em");
-  $("#slider .ui-slider-handle").first().css("margin-left", "-1em").text("A");
-  $("#slider .ui-slider-handle").last().css("margin-left", "0em").text("B");
+  $("#slider .ui-slider-handle").first().html(
+    '<span id="handleA" class="abhandle" style="margin-left: -16px;">'+'A'+'</span>'
+  ).focus(0,()=>{handleA.style.backgroundColor="#fcc";})
+   .on("blur", ()=>{handleA.style.background="none";});
+  $("#slider .ui-slider-handle").last().html(
+    '<span id="handleB" class="abhandle" style="margin-right: -16px;">'+'B'+'</span>'
+  ).focus(0,()=>{handleB.style.backgroundColor="#fcc";})
+   .on("blur", ()=>{handleB.style.background="none";});
+  handleA=document.getElementById("handleA");
+  handleB=document.getElementById("handleB");
   if(storage.getItem("ab.help")!="unchecked") help.checked=true;
   contextHelp(help);
   if(storage.getItem("ab.aonly")=="checked") aonly.checked=true;
@@ -241,7 +248,7 @@ window.addEventListener("keydown", function(e){
     && !$("select").is(":focus")
   ){try{
     let t=getCurrentTime()+5;
-    if(isPlaying() && isTimeBSet && t>timeB){
+    if(isPlaying() && isTimeBSet && t>=timeB){
       pauseVideo();
       setCurrentTime(timeA);
       doAfterSeek(playVideo, timeA);
@@ -402,37 +409,34 @@ var onSliderStart=function(e,ui){
 }
 
 var onSliderChange=function(e,ui){
-  timeA=ui.values[0];
-  timeB=ui.values[1];
-  myTimeA.value=secToTimeString(Math.max(timeA,0));
-  myTimeB.value=secToTimeString(Math.min(timeB,getDuration()));
+  if(ui.handleIndex==0){
+    timeA=ui.values[0];
+    myTimeA.value=secToTimeString(Math.max(timeA,0));
+  }
+  else{
+    timeB=ui.values[1];
+    myTimeB.value=secToTimeString(Math.min(timeB,getDuration()));
+  }
   loopMeas.splice(0);
 }
 
 var onSliderSlide=function(e,ui){
+  e.preventDefault();
   if(e.ctrlKey){
     if(ui.handleIndex==0){
-      if(timeB>=getDuration()-0.005) {
-        e.preventDefault();
-        timeA=getDuration()-dtAB;
-        timeB=getDuration();
-      }else{
-        timeA=ui.values[0];
-        timeB=timeA+dtAB;
-      }
+      ui.values[0]=Math.min(getDuration()-dtAB,ui.values[0]);
+      timeA=ui.values[0];
+      timeB=timeA+dtAB;
     }else{
-      if(timeA<=0.005) {
-        e.preventDefault();
-        timeA=0;
-        timeB=dtAB;
-      }else{
-        timeB=ui.values[1];
-        timeA=timeB-dtAB;
-      }
+      ui.values[1]=Math.max(dtAB,ui.values[1]);
+      timeB=ui.values[1];
+      timeA=timeB-dtAB;
     }
-  }else{
-    timeA=ui.values[0];
-    timeB=ui.values[1];
+  }
+  else{
+    if(ui.handleIndex==0) timeA=ui.values[0];
+    else timeB=ui.values[1];
+    dtAB=timeB-timeA;
   }
   loopMeas.splice(0);
   updateLoopUI();
