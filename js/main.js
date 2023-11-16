@@ -1167,6 +1167,12 @@ var loadYT=function(vid,plist,lid,ta,tb,r,lType="playlist"){
           let l=lType==="user_uploads" ? "@"+lid : lid;
           saveId(l);
           lstId=l;
+          if(lType==="user_uploads"){
+            if(vid && vid.substring(0,4)==="vid:"){
+              let i=e.target.getPlaylist().indexOf(vid.substring(4))+1;
+              if(i>0) loadYT("idx:"+i,null,lid,ta,tb,r,lType);
+            }
+          }
         }
         aonly.disabled=true;
       },
@@ -1180,7 +1186,7 @@ var loadYT=function(vid,plist,lid,ta,tb,r,lType="playlist"){
       "onError": function(e){
         console.log("Error: " + e.data);
         resetUI();
-        if(lid && lType==="playlist") loadYT(vid,plist,lid,ta,tb,r,"user_uploads");
+        if(lid && lType==="playlist") loadYT(vid,null,lid,ta,tb,r,"user_uploads");
         else loadYT(null,null,null,null,null,null);
       }
     }
@@ -1372,7 +1378,7 @@ var onClickShare=function(){
   if(playlist){
     if(lstId) sharelink+="?listid="+lstId;
     else sharelink+="?playlist="+playlist.join();
-    sharelink+="&index="+(ytPlayer.getPlaylistIndex()+1);
+    sharelink+="&videoid="+ytPlayer.getPlaylist()[ytPlayer.getPlaylistIndex()];
   }
   else{
     sharelink+="?videoid="+vidId;
@@ -1381,7 +1387,7 @@ var onClickShare=function(){
   if(isTimeBSet) sharelink+="&end="+secToString(timeB);
   if(rate!=1.0) sharelink+="&rate="+rate;
   navigator.clipboard.writeText(sharelink);
-  messageBox("Link copied to the clipboard", sharelink);
+  messageBox("Link copied to the clipboard:", sharelink);
 }
 
 /////////////////////////
