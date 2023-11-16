@@ -168,12 +168,12 @@ $(document).ready(function(){
   });
   $("#slider .ui-slider-handle").first().html(
     '<span id="handleA" class="abhandle" style="margin-left: -16px;">'+'A'+'</span>'
-  ).focus(0,()=>{handleA.style.backgroundColor="#fcc";})
-   .on("blur", ()=>{handleA.style.background="none";});
+  ).on("focus",()=>{handleA.style.backgroundColor="#fcc";})
+   .on("blur",()=>{handleA.style.background="none";});
   $("#slider .ui-slider-handle").last().html(
     '<span id="handleB" class="abhandle" style="margin-right: -16px;">'+'B'+'</span>'
-  ).focus(0,()=>{handleB.style.backgroundColor="#fcc";})
-   .on("blur", ()=>{handleB.style.background="none";});
+  ).on("focus",()=>{handleB.style.backgroundColor="#fcc";})
+   .on("blur",()=>{handleB.style.background="none";});
   handleA=document.getElementById("handleA");
   handleB=document.getElementById("handleB");
   if(storage.getItem("ab.help")!="unchecked") help.checked=true;
@@ -410,32 +410,33 @@ var onSliderStart=function(e,ui){
 
 var onSliderChange=function(e,ui){
   if(ui.handleIndex==0){
-    timeA=ui.values[0];
-    myTimeA.value=secToTimeString(Math.max(timeA,0));
+    timeA=Math.min(ui.values[0],ui.values[1]-0.005);
   }
   else{
-    timeB=ui.values[1];
-    myTimeB.value=secToTimeString(Math.min(timeB,getDuration()));
+    timeB=Math.max(ui.values[1],ui.values[0]+0.005);
   }
   loopMeas.splice(0);
+  updateLoopUI(false);
 }
 
 var onSliderSlide=function(e,ui){
   e.preventDefault();
   if(e.ctrlKey){
     if(ui.handleIndex==0){
-      ui.values[0]=Math.min(getDuration()-dtAB,ui.values[0]);
-      timeA=ui.values[0];
+      timeA=Math.min(getDuration()-dtAB,ui.values[0]);
       timeB=timeA+dtAB;
     }else{
-      ui.values[1]=Math.max(dtAB,ui.values[1]);
-      timeB=ui.values[1];
+      timeB=Math.max(dtAB,ui.values[1]);
       timeA=timeB-dtAB;
     }
   }
   else{
-    if(ui.handleIndex==0) timeA=ui.values[0];
-    else timeB=ui.values[1];
+    if(ui.handleIndex==0){
+      timeA=Math.min(ui.values[0],ui.values[1]-0.005);
+    }
+    else{
+      timeB=Math.max(ui.values[1],ui.values[0]+0.005);
+    }
     dtAB=timeB-timeA;
   }
   loopMeas.splice(0);
@@ -522,31 +523,26 @@ var onJumpToA=function(){
 }
 
 const timeRegExp=new RegExp('^\\s*'+timePattern+'\\s*$');
-var onInputTime=function(whichInput, sliderIdx){
-  let time=whichInput.value.match(timeRegExp);  //validate user input
-  if(!time){
+var onInputTime=function(user, sliderIdx){
+  let time=user.value.match(timeRegExp);  //validate user input
+  if(time){
+    let sec=timeStringToSec(time[0]);
     if(sliderIdx==0){
-      $("#slider").slider("values", 0, timeA);
+      timeA=Math.min(sec,timeB-0.005);
     }else{
-      $("#slider").slider("values", 1, timeB);
+      timeB=Math.max(Math.min(sec,getDuration()),timeA+0.005);
     }
-    return;
   }
-  let sec=timeStringToSec(time[0]);
-  if(sliderIdx==0){
-    sec=Math.min(sec,timeB);
-    $("#slider").slider("values", 0, sec);
-  }else{
-    sec=Math.min(sec,getDuration()); sec=Math.max(sec,timeA);
-    $("#slider").slider("values", 1, sec);
-  }
+  updateLoopUI();
 }
 
-var updateLoopUI=function(){
+var updateLoopUI=function(updateSlider=true){
   myTimeA.value=secToTimeString(Math.max(timeA,0));
   myTimeB.value=secToTimeString(Math.min(timeB,getDuration()));
-  $("#slider").slider("option", "max", getDuration());
-  $("#slider").slider("option", "values", [ timeA, timeB ]);
+  if(updateSlider){
+    $("#slider").slider("option", "max", getDuration());
+    $("#slider").slider("option", "values", [ timeA, timeB ]);
+  }
 }
 
 var compDeltaByBeat=function(d, b){
