@@ -7,7 +7,7 @@ A media player based on HTML5, jQuery UI and JavaScript, with **A-B repeat**, **
 Firefox or Chrome on a Laptop or PC recommended.
 
 **Features:**
-- The A-B loop window can be adjusted with a double-handled slider, by pressing <kbd>&larr;</kbd> & <kbd>&rarr;</kbd> on the keyboard, or, more accurately, via two time input fields. Loop quantisation (self-adjustment of the loop length) for music sequences is also available. It requires manual tapping of the tempo. Suggestion by P. Jänis (@pjanis).
+- The A-B loop window can be adjusted with a double-handled slider, by pressing <kbd>&larr;</kbd> & <kbd>&rarr;</kbd> on the keyboard, or, more accurately, via two time input fields. Loop quantisation (self-adjustment of the loop length) for music sequences is also available. The tempo needs to be tapped or entered via context menu beforehand. Suggestion by P. Jänis (@pjanis).
 - The entire A-B loop window can be moved by pressing <kbd>Ctrl</kbd> while moving one of the slider handles with the mouse or the arrow keys.
 - Additional means for modifying loop duration and position are provided through buttons <kbd>&laquo;</kbd>&nbsp;<kbd>&times;&frac12;</kbd>&nbsp;<kbd>&times;2</kbd>&nbsp;<kbd>&raquo;</kbd>; contributed by P. Jänis (@pjanis).
 - A-B loops can be saved as bookmarks for the current and for later sessions.

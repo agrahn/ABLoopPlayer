@@ -125,7 +125,7 @@
       </span> <input type="checkbox" onchange="toggleIntro(this, help)" id="intro"/><label for="intro">play intro</label><br/>
       Speed:<div id="speed"><div id="speed-handle" class="ui-slider-handle"></div></div>&emsp;&emsp;
       <label for="tapButton">Tempo:</label>
-      <button id="tapButton" onmousedown="onTap(this)" onmouseup="this.blur()">tap</button><label for="tapButton"> BPM</label>
+      <button id="tapButton" onmousedown="onTap(this,event.button)" onmouseup="this.blur()" oncontextmenu="onContextTap(event)">tap</button><label for="tapButton"> BPM</label>
       <span style="position:absolute;bottom:3px;right:5px;">
         <button id="shareButton" style="width:1.6em;height:1.6em;background-size:contain;background-image:url('svg/share.svg');" onclick="onClickShare()"></button><!--
         --><button id="exportButton" style="width:1.6em;height:1.6em;background-size:90%;background-image:url('svg/export.svg');" onclick="onClickExport()"></button><!--

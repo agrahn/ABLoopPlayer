@@ -597,7 +597,8 @@ var onLoopForwards=function(){
 var rate; //current playback rate (speed)
 var beatNormal; //beat length at normal speed in s
 var beatsArr = [];
-var onTap=function(ui) {
+var onTap=function(ui,button=0) {
+  if(button>0) return;
   beatsArr.push(performance.now()/1000);
   if(beatsArr.length>2) {
     let change=(beatsArr.at(-1)-beatsArr.at(-2))/(beatsArr.at(-2)-beatsArr.at(-3));
@@ -608,6 +609,20 @@ var onTap=function(ui) {
     beatNormal=beat*rate;
     ui.innerHTML=Math.round(60/beat).toString();
   }
+}
+
+var onContextTap=function(e){
+  e.preventDefault();
+  let curTempo;
+  if(beatNormal){curTempo=60/beatNormal*rate;}
+  promptDialog(
+    tempo => {
+      if(!isNaN(Number(tempo))&&Number(tempo)>0){
+        beatNormal=60*rate/tempo;e.target.innerHTML=Math.round(tempo).toString();
+      }
+    },
+    null, "Enter tempo (BPM):", (beatNormal ? null : "<a number, e. g. 120.345>"), curTempo
+  );
 }
 
 var bmkAdd=function(){
@@ -813,7 +828,7 @@ var introTitleUnChecked="If checked, media section up to \"A\""
       + " is played before starting the loop.";
 var quantTitleChecked="Uncheck to stop loop quantisation. Hotkey: [Q]";
 var quantTitleUnChecked="Start loop quantisation (auto-adjustment). Hotkey: [Q]\n"
-      + "Tempo (BPM) needs to be tapped beforehand.";
+      + "Tempo (BPM) needs to be tapped or entered via the tap button's context menu beforehand.";
 
 var contextHelp=function(t){
   blur();
@@ -847,7 +862,7 @@ var contextHelp=function(t){
     $("#slider").attr("title", "Move slider handles to adjust the loop. "
       + "Press [Ctrl] while moving a handle to shift the entire loop window. "
       + "Also, the handle that currently has keyboard focus can be moved with the arrow keys [←] , [→].");
-    tapButton.title="Tap tempo. Hotkey: [T]";
+    tapButton.title="Tap tempo, or enter a number via mouse right-click. Hotkey: [T]";
   } else {
     storageWriteKeyVal("ab.help", "unchecked");
     t.title="Enable context-sensitive help.";
