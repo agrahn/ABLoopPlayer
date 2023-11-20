@@ -47,17 +47,17 @@ hr.double {
   margin-right: 0;
 }
 
+.ui-slider-handle:focus {
+  /* background-color: #fcc; */
+  outline: none; /* suppress focus rect */
+}
+
 .abhandle {
   display: flex;
   justify-content: center;
   width:16px;
   height:15px;
 }
-
-/* #slider .ui-slider-handle:focus {
-  background-color: #fcc;
-  background: none;
-} */
 
 #slider .ui-state-default {
   background: none;
