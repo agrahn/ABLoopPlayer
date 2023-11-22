@@ -17,7 +17,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-var appversion=1.01;
+var appversion=1.02;
 
 var vidId; //current YT video ID or file name + size
 var lstId; //current YT playlist ID
@@ -42,15 +42,37 @@ catch(e){
   alert("Cookies must be enabled for this page to work.");
 }
 
+//function returning ref to bookmarks array and beat length
+//for given id, if present in local storage or in optional array argument
+var queryBmksAndBn = function(id, where=null) {
+  let entry;
+  if(id && where) {
+    if(JSON.parse(where["ab."+id])) entry=JSON.parse(where["ab."+id]);
+  }
+  else if(id && JSON.parse(storage.getItem("ab."+id))) {
+    entry=JSON.parse(storage.getItem("ab."+id));
+  }
+  if(id && entry){
+    return [
+      (Array.isArray(entry.bmks) && entry.bmks.length ? entry.bmks : null),
+      (!isNaN(Number(entry.bn)) && Number(entry.bn)>0 ? Number(entry.bn) : null)
+    ];
+  }
+  return [null,null];
+}
+
 // triggered when another player instance writes to storage
 window.onstorage = () => {
   if(storage.getItem("ab.knownIDs"))
     knownIDs=JSON.parse(storage.getItem("ab.knownIDs"));
   if(storage.getItem("ab.knownMedia"))
     knownMedia=JSON.parse(storage.getItem("ab.knownMedia"));
-  if(vidId && storage.getItem("ab."+vidId)) {
-    let bmkArr=JSON.parse(storage.getItem("ab."+vidId));
-    bookmarksUpdate(bmkArr,-1);
+  let bmks, bn;
+  [bmks, bn]=queryBmksAndBn(vidId);
+  if(bmks) bookmarksUpdate(bmks,-1);
+  if(bn){
+    beatNormal=bn;
+    tapButton.innerHTML=Math.round(60/beatNormal*rate).toString();
   }
 };
 
@@ -377,12 +399,6 @@ var messageBox=function(title, msg){
 }
 
 //pretty printing the media time
-var secToString=function(t){ // S[.sss] (sss == millseconds)
-  let s=Math.floor(t);
-  let ms=t-s;
-  ms=ms > 0.0 ? ms.toFixed(3).substring(1) : "";
-  return s.toString() + ms;
-}
 var secToTimeString=function(t){ // H:MM:SS.sss or M:SS.sss
   let h=Math.floor(t/3600);
   let m=Math.floor((t-h*3600)/60).toString();
@@ -405,7 +421,7 @@ var timeStringToSec=function(ts){
 }
 
 var onSliderStart=function(e,ui){
-  dtAB=Math.round((timeB-timeA)*1000)/1000;
+  dtAB=toNearest5ms(timeB-timeA);
 }
 
 var onSliderChange=function(e,ui){
@@ -450,13 +466,14 @@ var onLoopDown=function(){
     myBookmarks.options[0].selected=true;
     cancelABLoop();
   }else{
+    let cur=toNearest5ms(Math.min(getCurrentTime(),getDuration()));
     if(isTimeASet){
-      if(getCurrentTime()!=timeA){
-        if(getCurrentTime()<timeA){
+      if(cur!=timeA){
+        if(cur<timeA){
           timeB=timeA;
-          timeA=getCurrentTime();
+          timeA=cur;
         }else{
-          timeB=getCurrentTime();
+          timeB=cur;
         }
         isTimeBSet=true;
         loopButton.innerHTML="&emsp;";
@@ -466,7 +483,7 @@ var onLoopDown=function(){
         $("#timeInputs").show();
       }
     }else{
-      timeA=getCurrentTime();
+      timeA=cur;
       isTimeASet=true;
       loopButton.innerHTML="B";
       loopButton.style.backgroundImage="none";
@@ -526,7 +543,7 @@ const timeRegExp=new RegExp('^\\s*'+timePattern+'\\s*$');
 var onInputTime=function(user, sliderIdx){
   let time=user.value.match(timeRegExp);  //validate user input
   if(time){
-    let sec=timeStringToSec(time[0]);
+    let sec=toNearest5ms(timeStringToSec(time[0]));
     if(sliderIdx==0){
       timeA=Math.min(sec,timeB-0.005);
     }else{
@@ -597,6 +614,7 @@ var onLoopForwards=function(){
 var rate; //current playback rate (speed)
 var beatNormal; //beat length at normal speed in s
 var beatsArr = [];
+var tapTimeout;
 var onTap=function(ui,button=0) {
   if(button>0) return;
   beatsArr.push(performance.now()/1000);
@@ -608,6 +626,17 @@ var onTap=function(ui,button=0) {
     let beat=(beatsArr.at(-1)-beatsArr[0])/(beatsArr.length-1);
     beatNormal=beat*rate;
     ui.innerHTML=Math.round(60/beat).toString();
+    //save beat to storage
+    if(tapTimeout) clearTimeout(tapTimeout);
+    tapTimeout=null;
+    tapTimeout=setTimeout((id,bn)=>{
+      if(id) {
+         let entry={};
+         if(storage.getItem("ab."+id)) entry=JSON.parse(storage.getItem("ab."+id));
+         entry.bn=bn;
+         storageWriteKeyVal("ab."+id,JSON.stringify(entry));
+      }
+    },4000,vidId,beatNormal);
   }
 }
 
@@ -618,56 +647,49 @@ var onContextTap=function(e){
   promptDialog(
     tempo => {
       if(!isNaN(Number(tempo))&&Number(tempo)>0){
-        beatNormal=60*rate/tempo;e.target.innerHTML=Math.round(tempo).toString();
+        beatNormal=60*rate/tempo;
+        e.target.innerHTML=Math.round(tempo).toString();
+        if(vidId) {
+           let entry={};
+           if(storage.getItem("ab."+vidId)) entry=JSON.parse(storage.getItem("ab."+vidId));
+           entry.bn=beatNormal;
+           storageWriteKeyVal("ab."+vidId,JSON.stringify(entry));
+        }
       }
     },
     null, "Enter tempo (BPM):", (beatNormal ? null : "<a number, e. g. 120.345>"), curTempo
   );
 }
 
-var bmkAdd=function(){
-  let bmk={ta: secToString(timeA), tb: secToString(timeB)};
-  let bmkArr=[];
-  if(storage.getItem("ab."+vidId))
-    bmkArr=JSON.parse(storage.getItem("ab."+vidId));
-  let idx=bmkArr.findIndex(bm =>
-    toNearest5ms(Number(bmk.ta))==toNearest5ms(Number(bm.ta)) &&
-    toNearest5ms(Number(bmk.tb))==toNearest5ms(Number(bm.tb))
-  );
-  if(idx==-1){
-    idx=insertBmk(bmk, bmkArr);
-    if(bmkArr.length) storageWriteKeyVal("ab."+vidId,JSON.stringify(bmkArr));
+var bmkAdd=function(note=undefined,idx=undefined){
+  let bmks, bn;
+  [bmks, bn]=queryBmksAndBn(vidId);
+  if(idx===undefined){ //new bookmark
+    if(!bmks) bmks=[];
+    let bmk={ta: timeA, tb: timeB};
+    idx=bmks.findIndex(bm => bmk.ta==bm.ta && bmk.tb==bm.tb);
+    if(idx==-1) idx=insertBmk(bmk, bmks);
   }
-  bookmarksUpdate(bmkArr,idx);
-}
-
-var bmkAddNote=function(note,idx){
-  let bmkArr=[];
-  if(storage.getItem("ab."+vidId))
-    bmkArr=JSON.parse(storage.getItem("ab."+vidId));
-  if(!myBookmarks.options[0].selected){
-    bmkArr[idx].note=note.trim();
-    if(bmkArr.length) storageWriteKeyVal("ab."+vidId,JSON.stringify(bmkArr));
+  else{ //add note to existing
+    bmks[idx]={ta: bmks[idx].ta, tb: bmks[idx].tb};
+    if(note.trim()) bmks[idx].note=note.trim();
   }
-  bookmarksUpdate(bmkArr,idx);
+  let entry={bmks: bmks};
+  if(bn) entry.bn=bn;
+  if(beatNormal) entry.bn=beatNormal; //update
+  storageWriteKeyVal("ab."+vidId,JSON.stringify(entry));
+  bookmarksUpdate(bmks,idx);
 }
 
 //insert a bookmark at its correct position (sorted by time)
 //into a bookmarks array
 var insertBmk=function(sbm, tbmArr){
-  let idx=tbmArr.findIndex(tbm =>
-    toNearest5ms(Number(sbm.ta))==toNearest5ms(Number(tbm.ta)) &&
-    toNearest5ms(Number(sbm.tb))==toNearest5ms(Number(tbm.tb))
-  );
+  let idx=tbmArr.findIndex(tbm => sbm.ta==tbm.ta && sbm.tb==tbm.tb);
   if(idx>-1) { //update existing
     tbmArr.splice(idx, 1, sbm);
     return idx;
   }
-  idx=tbmArr.findIndex(tbm =>
-    toNearest5ms(Number(sbm.ta))< toNearest5ms(Number(tbm.ta)) ||
-    toNearest5ms(Number(sbm.ta))==toNearest5ms(Number(tbm.ta)) &&
-    toNearest5ms(Number(sbm.tb))< toNearest5ms(Number(tbm.tb))
-  );
+  idx=tbmArr.findIndex(tbm => sbm.ta<tbm.ta || sbm.ta==tbm.ta && sbm.tb<tbm.tb);
   if(idx>-1){ //insert as new
     tbmArr.splice(idx, 0, sbm);
     return idx;
@@ -724,27 +746,35 @@ var bookmarksUpdate=function(bmkArr,idx){//selected idx
 }
 
 var bmkDelete=function(idx){
+  let bmks, bn;
+  [bmks, bn]=queryBmksAndBn(vidId);
   if(idx==0){
-    storage.removeItem("ab."+vidId);
+    if(!bn && !beatNormal) storage.removeItem("ab."+vidId);
+    else {
+      let entry={};
+      if(bn) entry.bn=bn;
+      if(beatNormal) entry.bn=beatNormal; //overwrite
+      storageWriteKeyVal("ab."+vidId,JSON.stringify(entry));
+    }
     bookmarksUpdate([],-1);
   }
   else{
     let a,b;
     [a,b]=myBookmarks.options[idx].text.split("--").map(t => timeStringToSec(t));
-    let bmkArr=JSON.parse(storage.getItem("ab."+vidId));
-    if(!bmkArr) bmkArr=[];
-    let i = bmkArr.findIndex(bmk =>
-      toNearest5ms(a)==toNearest5ms(Number(bmk.ta)) &&
-      toNearest5ms(b)==toNearest5ms(Number(bmk.tb))
-    );
+    if(!bmks) bmks=[];
+    let i = bmks.findIndex(bmk => a==bmk.ta && b==bmk.tb);
     if(i>-1) {
-      bmkArr.splice(i,1);
-      if(bmkArr.length>0) storageWriteKeyVal("ab."+vidId,JSON.stringify(bmkArr));
+      bmks.splice(i,1);
+      let entry={};
+      if(bmks.length) entry.bmks=bmks;
+      if(bn) entry.bn=bn;
+      if(beatNormal) entry.bn=beatNormal;
+      if(bmks.length || bn || beatNormal) storageWriteKeyVal("ab."+vidId,JSON.stringify(entry));
       else storage.removeItem("ab."+vidId);
-      bookmarksUpdate(bmkArr,Math.min(i,bmkArr.length-1));
+      bookmarksUpdate(bmks,Math.min(i,bmks.length-1));
     }
     else{
-      bookmarksUpdate(bmkArr,Math.min(idx-1,bmkArr.length-1));
+      bookmarksUpdate(bmks,Math.min(idx-1,bmks.length-1));
     }
   }
 }
@@ -772,7 +802,7 @@ var onClickAddNote=function(idx){
   blur();
   let currentNote=myBookmarks.options[idx].title;
   promptDialog(
-    note => bmkAddNote(note,idx-1),
+    note => bmkAdd(note,idx-1),
     null, "Enter description:", (currentNote ? null : "<Add note here>"), currentNote
   );
 }
@@ -806,9 +836,12 @@ var onClickImport=function(){
       try{
         mergeData(convertData(JSON.parse(e.target.result)));
         messageBox("Import", "Loop data and app settings successfully imported.");
-        if(vidId && storage.getItem("ab."+vidId)) {
-          let bmkArr=JSON.parse(storage.getItem("ab."+vidId));
-          bookmarksUpdate(bmkArr,-1);
+        let bmks, bn;
+        [bmks, bn]=queryBmksAndBn(vidId);
+        if(bmks) bookmarksUpdate(bmks,-1);
+        if(bn){
+          beatNormal=bn;
+          tapButton.innerHTML=Math.round(60/beatNormal*rate).toString();
         }
       }catch(err){
         messageBox("Error",
@@ -938,78 +971,37 @@ var onRateChange=function(e){
 var blur=function(){document.activeElement.blur();}
 
 //loop & app data conversion to current format
-const timeRangePattern=timePattern+'--'+timePattern;
-const timeRangeRegExp=new RegExp('^'+timeRangePattern+'(?:,'+timeRangePattern+')*$');
 var convertData=function(data){
   let storageFormat=Number(data["ab.version"]);
   if(storageFormat==appversion) return data;
+  let ytubeids=[];//YouTube data
+  let mediaids=[];//media files >= 100 Bytes
+  if(data["ab.knownIDs"]) ytubeids=JSON.parse(data["ab.knownIDs"]);
+  if(data["ab.knownMedia"]) mediaids=JSON.parse(data["ab.knownMedia"]);
   if(storageFormat==1.0){
-    //fix list of known media files
-    let mediaids=[];
+    //fix (create) list of known media files
     Object.entries(data).forEach(([k,v])=>{
       let id=k.match(/^ab\.(.+\.[a-zA-Z0-9]{3,4}-\d{3,})$/);
       if(id&&id[1]) mediaids.push(id[1]);
     });
-    delete data["ab.knownMedia"];
-    if(mediaids.length) data["ab.knownMedia"]=JSON.stringify(mediaids);
-    data["ab.version"]=appversion;
-    return data;
   }
-  //YouTube data
-  let ytubeids=[];
-  if(data.knownIDs){
-    ytubeids=data.knownIDs.split(',');
-    delete data.knownIDs;
-  }
-  else{
-    Object.entries(data).forEach(([k,v])=>{
-      let id=k.match(/^[0-9a-zA-Z_-]{11}$/);
-      if(id&&id[0]) ytubeids.push(id[0]);
-    });
-  }
-  //media files >= 100 Bytes
-  let mediaids=[];
-  delete data.knownMedia;
-  Object.entries(data).forEach(([k,v])=>{
-    let id=k.match(/^.+\.[a-zA-Z0-9]{3,4}-\d{3,}$/);
-    if(id&&id[0]) mediaids.push(id[0]);
-  });
+  if(data["ab.knownMedia"]) delete data["ab.knownMedia"];
+  if(mediaids.length) data["ab.knownMedia"]=JSON.stringify(mediaids);
   //now, process both lists
-  let knownIDs, knownMedia;
-  [knownIDs, knownMedia] = [ytubeids, mediaids].map(ids => {
-    let known=[];
+  [ytubeids, mediaids].forEach(ids=>{
     if(ids.length){
       ids.forEach(id => {
-        let bmks=data[id];
-        delete data[id];
-        if(
-          bmks && typeof(bmks)==='string' &&
-          bmks.match(timeRangeRegExp)
-        ){
-          if(known.indexOf(id)<0) known.push(id);
-          let bmkArr=[];
-          bmks.split(",").forEach(bmk => {
-            let sbm={};
-            [sbm.ta,sbm.tb]=bmk.split("--").map(t => timeStringToSec(t));
-            let note=data[id+"-"+bmk];
-            delete data[id+"-"+bmk];
-            if(note && typeof(note)==='string') sbm.note=note;
-            insertBmk(sbm, bmkArr);
+        if(data["ab."+id] && JSON.parse(data["ab."+id]).length){
+          let bmks=JSON.parse(data["ab."+id]);
+          bmks=bmks.map(bmk=>{
+            if(bmk.note) return {ta: Number(bmk.ta), tb: Number(bmk.tb), note: bmk.note};
+            else return {ta: Number(bmk.ta), tb: Number(bmk.tb)};
           });
-          data["ab."+id]=JSON.stringify(bmkArr);
+          data["ab."+id]=JSON.stringify({bmks: bmks});
         }
       });
     }
-    return known;
   });
-  if(knownIDs.length); data["ab.knownIDs"]=JSON.stringify(knownIDs);
-  if(knownMedia.length); data["ab.knownMedia"]=JSON.stringify(knownMedia);
-  if(data.help)  data["ab.help"] =data.help;
-  if(data.aonly) data["ab.aonly"]=data.aonly;
-  if(data.intro) data["ab.intro"]=data.intro;
-  delete data.help;
-  delete data.aonly;
-  delete data.intro;
   data["ab.version"]=appversion;
   return data;
 }
@@ -1018,43 +1010,38 @@ var convertData=function(data){
 var mergeData=function(data){
   let ytSrcIds=[], mmSrcIds=[];
   if(data["ab.knownIDs"]){
-    let tmp=JSON.parse(data["ab.knownIDs"]);
-    if(Array.isArray(tmp)){
-      let idx;// remove erroneous `null' entries
-      while((idx=tmp.indexOf(null))>-1) tmp.splice(idx,1);
-      tmp.forEach(id=>{
-        let iid=id.match(/^[0-9a-zA-Z_-]{11,}$/); //videos & playlists
-        if(iid&&iid[0]) ytSrcIds.push(iid[0]);
-      });
-    }
+    ytSrcIds=JSON.parse(data["ab.knownIDs"]);
+    let idx;// remove erroneous `null' entries
+    while((idx=ytSrcIds.indexOf(null))>-1) ytSrcIds.splice(idx,1);
   }
-  if(data["ab.knownMedia"]){
-    let tmp=JSON.parse(data["ab.knownMedia"]);
-    if(Array.isArray(tmp)){
-      tmp.forEach(id=>{
-        let iid=id.match(/^.+\.[a-zA-Z0-9]{3,4}-\d{3,}$/);
-        if(iid&&iid[0]) mmSrcIds.push(iid[0]);
-      });
-    }
-  }
+  if(data["ab.knownMedia"]) mmSrcIds=JSON.parse(data["ab.knownMedia"]);
   [[ytSrcIds, knownIDs], [mmSrcIds, knownMedia]].forEach(([src,trg]) => {
     src.reverse().forEach(id => {
       if(trg.indexOf(id)==-1) trg.unshift(id);
       if(data["ab."+id]) {
-        let trgBmks=[];
-        if(storage.getItem("ab."+id))
-          trgBmks=JSON.parse(storage.getItem("ab."+id));
-        let srcBmks=JSON.parse(data["ab."+id]);
-        if(Array.isArray(srcBmks)){
-          srcBmks.forEach(sbm=>{
-            if(
-              sbm.ta && !isNaN(Number(sbm.ta)) && Number(sbm.ta)>0 &&
-              sbm.tb && !isNaN(Number(sbm.tb)) && Number(sbm.tb)>0 &&
-              Number(sbm.ta)<=Number(sbm.tb) && (!sbm.note || typeof(sbm.note)==='string')
-            ) insertBmk(sbm, trgBmks);
+        let entry={}; //entry with merged data (bmks array and beat length)
+        let trgBmks, trgBn;
+        [trgBmks, trgBn]=queryBmksAndBn(id); //local storage
+        if(trgBn) entry.bn=trgBn;
+        if(!trgBmks) trgBmks=[];
+        let srcBmks, srcBn;
+        [srcBmks, srcBn]=queryBmksAndBn(id, data); //data arg
+        if(srcBn) entry.bn=srcBn; //overwrite with imported
+        if(srcBmks){
+          srcBmks.forEach(sbm=>{ //import with some sanity checks applied
+            sbm.ta=Number(sbm.ta);
+            sbm.tb=Number(sbm.tb);
+            if(!isNaN(sbm.ta) && !isNaN(sbm.tb)){
+              let ta=toNearest5ms(Math.min(Math.abs(sbm.ta),Math.abs(sbm.tb)));
+              let tb=toNearest5ms(Math.max(Math.abs(sbm.ta),Math.abs(sbm.tb)));
+              sbm.ta=ta;
+              sbm.tb = ta==tb ? toNearest5ms(tb+0.005) : tb;
+              insertBmk(sbm,trgBmks);
+            }
           });
         }
-        if(trgBmks.length) storageWriteKeyVal("ab."+id,JSON.stringify(trgBmks));
+        if(trgBmks.length) entry.bmks=trgBmks;
+        storageWriteKeyVal("ab."+id,JSON.stringify(entry));
       }
     });
   });
@@ -1237,8 +1224,14 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id loo
       tapButton.disabled=false;
       shareButton.disabled=false;
       //populate bookmark list with saved items for the current video ID
-      let bmkArr=JSON.parse(storage.getItem("ab."+id));
-      bookmarksUpdate(bmkArr ? bmkArr : [],-1);
+      //and set bpm, if known
+      let bmks, bn;
+      [bmks, bn]=queryBmksAndBn(id);
+      bookmarksUpdate(bmks ? bmks : [],-1);
+      if(bn){
+        beatNormal=bn;
+        tapButton.innerHTML=Math.round(60/beatNormal*rate).toString();
+      }
       annotButton.disabled=true;
       saveId(id);
       //set ab loop from ta, tb args only upon new player instantiation
@@ -1398,8 +1391,8 @@ var onClickShare=function(){
   else{
     sharelink+="?videoid="+vidId;
   }
-  if(isTimeASet) sharelink+="&start="+secToString(timeA);
-  if(isTimeBSet) sharelink+="&end="+secToString(timeB);
+  if(isTimeASet) sharelink+="&start="+timeA.toString();
+  if(isTimeBSet) sharelink+="&end="+timeB.toString();
   if(rate!=1.0) sharelink+="&rate="+rate;
   navigator.clipboard.writeText(sharelink);
   messageBox("Link copied to the clipboard:", sharelink);
@@ -1489,8 +1482,13 @@ var onLoadedData=function(e){
   $("#scrub").slider("option", "value", getCurrentTime());
   initResizableVT();
   //look for bookmark items with the current video ID
-  let bmkArr=JSON.parse(storage.getItem("ab."+vidId));
-  bookmarksUpdate(bmkArr ? bmkArr : [],-1);
+  let bmks, bn;
+  [bmks, bn]=queryBmksAndBn(vidId);
+  bookmarksUpdate(bmks ? bmks : [],-1);
+  if(bn){
+    beatNormal=bn;
+    tapButton.innerHTML=Math.round(60/beatNormal*rate).toString();
+  }
   annotButton.disabled=true;
   saveMediaId(vidId);
 }
@@ -1556,7 +1554,7 @@ var isPlaying;
 var initYT=function(){ // YT
   getCurrentTime=function(){return ytPlayer.getCurrentTime();};
   setCurrentTime=function(t){ytPlayer.seekTo(t,true);};
-  getDuration=function(){return ytPlayer.getDuration();};
+  getDuration=function(){return Math.floor(ytPlayer.getDuration()*200)/200;};
   getPlaybackRate=function(){return ytPlayer.getPlaybackRate();};
   setPlaybackRate=function(r){ytPlayer.setPlaybackRate(r);};
   playPause=function(){
@@ -1571,7 +1569,7 @@ var initYT=function(){ // YT
 var initVT=function(){ // <video> tag
   getCurrentTime=function(){return myVideo.currentTime;};
   setCurrentTime=function(t){myVideo.currentTime=t;};
-  getDuration=function(){return myVideo.duration;};
+  getDuration=function(){return Math.floor(myVideo.duration*200)/200;};
   getPlaybackRate=function(){return myVideo.playbackRate;};
   setPlaybackRate=function(r){myVideo.playbackRate=r;};
   playPause=function(){
