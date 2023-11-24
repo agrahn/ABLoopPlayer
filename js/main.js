@@ -714,11 +714,8 @@ var bookmarksUpdate=function(bmkArr,idx){//selected idx
   bmkArr.forEach((bmk,i) => {
     let c=document.createElement("OPTION");
     c.text=secToTimeString(Number(bmk.ta))+"--"+secToTimeString(Number(bmk.tb));
-    c.addEventListener("mouseover", e => e.target.selected=true);
-    c.addEventListener("mouseup", e => {
-      onBmkSelect(e.target.index);
-      e.target.parentNode.size=1;
-    });
+    c.addEventListener("mouseover", e => {e.target.selected=true});
+    c.addEventListener("mouseup", e => {blur()});
     c.addEventListener("touchstart", e => {showNote(e.target)});
     c.addEventListener("touchend", e => {hideNote(e.target)});
     c.addEventListener("touchcancel", e => {hideNote(e.target)});
@@ -1072,7 +1069,6 @@ var doAfterSeek=function(callback,t,arg=null){
 }
 
 var onBmkSelect=function(i){
-  blur();
   if(i==0) return;
   $("#slider").slider("option", "max", getDuration());
   let a,b;

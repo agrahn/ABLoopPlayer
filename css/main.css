@@ -48,7 +48,6 @@ hr.double {
 }
 
 .ui-slider-handle:focus {
-  /* background-color: #fcc; */
   outline: none; /* suppress focus rect */
 }
 
