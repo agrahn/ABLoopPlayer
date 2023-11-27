@@ -40,7 +40,7 @@
   <script src="jquery-ui/jquery-ui.js"></script>
 
   <!-- hack for mobile devices -->
-  <script src="js/jquery.ui.touch-punch.min.js"></script>
+  <script src="js/jquery.ui.touch-punch.js"></script>
 
   <!-- styles used in this document -->
   <link href="css/main.css" rel="stylesheet"/>
@@ -108,7 +108,7 @@
 
     <div id="bottom" style="margin:3px 0px 0px 0px;padding:5px;background-color:#ddd;position:relative;">
       <label for="loopButton" style="vertical-align:middle;">A-B Loop:</label>
-      <button id="loopButton" onmousedown="onLoopDown()" onmouseup="this.blur()"
+      <button id="loopButton" onmousedown="onLoopDown()" onmouseup="this.blur()" ontouchstart="onLoopDown()"
         style="width:1.6em;height:1.6em;padding:0px;margin:0px;background-size:80%;vertical-align:middle;">A</button>
       <span id="myBmkSpan" hidden>
         <span id="myBmkSpanInner"><!--
@@ -123,7 +123,10 @@
       </span> <input type="checkbox" onchange="toggleIntro(this, help)" id="intro"/><label for="intro">play intro</label><br/>
       Speed:<div id="speed"><div id="speed-handle" class="ui-slider-handle"></div></div>&emsp;&emsp;
       <label for="tapButton">Tempo:</label>
-      <button id="tapButton" onmousedown="onTap(this,event.button)" onmouseup="this.blur()" oncontextmenu="onContextTap(event)">tap</button><label for="tapButton"> BPM</label>
+      <button id="tapButton"
+        onmousedown="onTap(this,event.button)" onmouseup="this.blur()" oncontextmenu="onContextTap(event)"
+        ontouchstart="onTap(this,event.button)"
+      >tap</button><label for="tapButton"> BPM</label>
       <span style="position:absolute;bottom:3px;right:5px;">
         <button id="shareButton" style="width:1.6em;height:1.6em;background-size:contain;background-image:url('svg/share.svg');" onclick="onClickShare()"></button><!--
         --><button id="exportButton" style="width:1.6em;height:1.6em;background-size:90%;background-image:url('svg/export.svg');" onclick="onClickExport()"></button><!--
