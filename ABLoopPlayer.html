@@ -92,7 +92,9 @@
       <div id="slider" style="margin-top:0px;margin-bottom:2px;"></div>
       <div style="margin:3px 0px 0px 0px;padding:5px;background-color:#eee;">
       <button id="jumpToA" style="width:1.5em;height:1.5em;margin-right:0.15em;vertical-align:bottom;background-size:contain;background-image:url('svg/jump.svg');"
-        onmousedown="onJumpToA()" onmouseup="playVideo()"></button><!--
+        onmousedown="onJumpToA()" onmouseup="playVideo()"
+        ontouchstart="onJumpToA()" ontouchend="playVideo()" ontouchcancel="playVideo()"
+      ></button><!--
       --><label for="myTimeA">A:</label> <input id="myTimeA" onchange="onInputTime(this,0)" size="8"/>
       <label for="myTimeB">B:</label> <input id="myTimeB" onchange="onInputTime(this,1)" size="8"/>
       <button id="bmkAddButton" style="width:1.5em;height:1.5em;vertical-align:bottom;background-size:80%;background-image:url('svg/star.svg');"></button>
@@ -105,22 +107,18 @@
     </div>
 
     <div id="bottom" style="margin:3px 0px 0px 0px;padding:5px;background-color:#ddd;position:relative;">
-      <label for="loopButton">A-B Loop:</label>
+      <label for="loopButton" style="vertical-align:middle;">A-B Loop:</label>
       <button id="loopButton" onmousedown="onLoopDown()" onmouseup="this.blur()"
-        style="width:1.6em;height:1.6em;padding:0px;margin:0px;background-size:80%;vertical-align:baseline;">A</button>
+        style="width:1.6em;height:1.6em;padding:0px;margin:0px;background-size:80%;vertical-align:middle;">A</button>
       <span id="myBmkSpan" hidden>
-        <select id="myBookmarks" size="1"
-          ontouchstart="showNote(this.options[this.selectedIndex]);"
-          ontouchend="hideNote(this.options[this.selectedIndex]);"
-          ontouchcancel="hideNote(this.options[this.selectedIndex]);"
-          onmousedown="this.size=Math.min(5,this.options.length)"
-          onblur="onBmkSelect(this.selectedIndex);this.size=1;"
-        >
-          <option value="" selected disabled>Bookmarked</option>
-        </select><!--
-        --><button id="annotButton" style="width:1.5em;height:1.5em;padding:0px;vertical-align:baseline;background-size:80%;background-image:url('svg/comment.svg');"
+        <span id="myBmkSpanInner"><!--
+          --><select id="myBookmarks">
+            <option value="" selected disabled>Bookmarked</option>
+          </select><!--
+        --></span><!--
+        --><button id="annotButton" style="width:1.5em;height:1.5em;padding:0px;vertical-align:middle;background-size:80%;background-image:url('svg/comment.svg');"
              onclick="onClickAddNote(myBookmarks.selectedIndex)" disabled>&ensp;</button><!--
-        --><button id="trashButton" style="width:1.5em;height:1.5em;padding:0px;vertical-align:baseline;background-size:70%;background-image:url('svg/trash.svg');"
+        --><button id="trashButton" style="width:1.5em;height:1.5em;padding:0px;vertical-align:middle;background-size:70%;background-image:url('svg/trash.svg');"
              onclick="onClickTrash(myBookmarks.selectedIndex)">&ensp;</button>
       </span> <input type="checkbox" onchange="toggleIntro(this, help)" id="intro"/><label for="intro">play intro</label><br/>
       Speed:<div id="speed"><div id="speed-handle" class="ui-slider-handle"></div></div>&emsp;&emsp;

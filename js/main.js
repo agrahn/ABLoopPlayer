@@ -105,7 +105,7 @@ var storageWriteKeyVal=function(k,v){
 
 //HTML elements
 var YTids, introTextBr, inputYT, inputVT, ytPlayer, help, searchButtonYT,
-  aonly, intro, myTimeA, myTimeB, myBookmarks, loopButton, bmkAddButton,
+  aonly, intro, myTimeA, myTimeB, myBmkSpanInner, myBookmarks, loopButton, bmkAddButton,
   loopBackwardsButton, loopHalveButton, loopDoubleButton, loopForwardsButton,
   annotButton, trashButton, tapButton, importButton, exportButton, shareButton,
   quant, handleA, handleB;
@@ -132,6 +132,7 @@ $(document).ready(function(){
   myTimeA=document.getElementById("myTimeA");
   myTimeB=document.getElementById("myTimeB");
   loopButton=document.getElementById("loopButton");
+  myBmkSpanInner=document.getElementById("myBmkSpanInner");
   myBookmarks=document.getElementById("myBookmarks");
   loopBackwardsButton=document.getElementById("loopBackwardsButton");
   loopHalveButton=document.getElementById("loopHalveButton");
@@ -217,6 +218,18 @@ $(document).ready(function(){
     stop: function(e,ui){setPlaybackRate(ui.value);},
   });
   bmkAddButton.addEventListener("mouseup", function(e){bmkAdd();});
+  $("#myBookmarks").selectmenu({
+    width: null, //allow sizing via css
+    change: function(e,ui) {onBmkSelect(ui.item.index);}
+  }).selectmenu("menuWidget")
+    .addClass("bookmarklist")
+    .tooltip({
+      position: {
+        my: "left bottom",
+        at: "right+5px bottom",
+        collision: "none"
+      }
+    });
   $("#mainDiv").show();
   playSelectedFile("");
 });
@@ -463,7 +476,8 @@ var onLoopDown=function(){
   if(isTimeBSet){
     $("#timeInputs").hide();
     annotButton.disabled=true;
-    myBookmarks.options[0].selected=true;
+    //$("#myBookmarks").val("").selectmenu("refresh");
+    $("#myBookmarks").prop("selectedIndex",0).selectmenu("refresh");
     cancelABLoop();
   }else{
     let cur=toNearest5ms(Math.min(getCurrentTime(),getDuration()));
@@ -628,7 +642,6 @@ var onTap=function(ui,button=0) {
     ui.innerHTML=Math.round(60/beat).toString();
     //save beat to storage
     if(tapTimeout) clearTimeout(tapTimeout);
-    tapTimeout=null;
     tapTimeout=setTimeout((id,bn)=>{
       if(id) {
          let entry={};
@@ -701,37 +714,18 @@ var insertBmk=function(sbm, tbmArr){
 
 const toNearest5ms = t => Math.round(t*200)/200;
 
-var showNote=function(o){// option ref
-  try{$(o).tooltip("open");}catch(e){}
-};
-var hideNote=function(o){// option ref
-  try{$(o).tooltip("close");}catch(e){}
-};
-
 var bookmarksUpdate=function(bmkArr,idx){//selected idx
   while(myBookmarks.options.length>1)
     myBookmarks.remove(myBookmarks.options.length-1);
   bmkArr.forEach((bmk,i) => {
     let c=document.createElement("OPTION");
-    c.text=secToTimeString(Number(bmk.ta))+"--"+secToTimeString(Number(bmk.tb));
-    c.addEventListener("mouseover", e => {e.target.selected=true});
-    c.addEventListener("mouseup", e => {blur()});
-    c.addEventListener("touchstart", e => {showNote(e.target)});
-    c.addEventListener("touchend", e => {hideNote(e.target)});
-    c.addEventListener("touchcancel", e => {hideNote(e.target)});
+    c.text=secToTimeString(bmk.ta)+"--"+secToTimeString(bmk.tb);
+    c.value=JSON.stringify([bmk.ta,bmk.tb]);
     c.title="";
     if(bmk.note){
       c.title=bmk.note;
-      //enable tooltip for current <option> element
-      $(c).tooltip({
-        position: {
-          my: "left bottom",
-          at: "right+5px bottom",
-          collision: "none"
-        }
-      });
     }
-    myBookmarks.appendChild(c);
+    myBookmarks.add(c);
     if(i==idx){
       c.selected=true;
       onBmkSelect(c.index);
@@ -740,6 +734,7 @@ var bookmarksUpdate=function(bmkArr,idx){//selected idx
   if(idx<0) myBookmarks.options[0].selected=true;
   if(myBookmarks.options.length>1) $("#myBmkSpan").show();
   else $("#myBmkSpan").hide();
+  $("#myBookmarks").selectmenu("refresh");
 }
 
 var bmkDelete=function(idx){
@@ -757,7 +752,7 @@ var bmkDelete=function(idx){
   }
   else{
     let a,b;
-    [a,b]=myBookmarks.options[idx].text.split("--").map(t => timeStringToSec(t));
+    [a,b]=JSON.parse(myBookmarks.options[idx].value);
     if(!bmks) bmks=[];
     let i = bmks.findIndex(bmk => a==bmk.ta && b==bmk.tb);
     if(i>-1) {
@@ -873,7 +868,7 @@ var contextHelp=function(t){
     inputVT.title="Browse the hard disk for media files (mp4/H.264, webm, ogg, mp3, wav, ...).";
     loopButton.title="Click twice to mark loop range. Third click cancels current loop."
       + " Hotkeys: [Esc], [L]";
-    myBookmarks.title="Choose from previously saved loops.";
+    myBmkSpanInner.title="Choose from previously saved loops.";
     bmkAddButton.title="Save current loop to the list of bookmarks.";
     loopBackwardsButton.title="Shift loop window backwards by one loop duration.";
     loopHalveButton.title="Halve the loop duration.";
@@ -904,7 +899,7 @@ var contextHelp=function(t){
     searchButtonYT.title=
     inputVT.title=
     loopButton.title=
-    myBookmarks.title=
+    myBmkSpanInner.title=
     jumpToA.title=
     myTimeA.title=myTimeB.title=
     bmkAddButton.title=
@@ -1068,11 +1063,11 @@ var doAfterSeek=function(callback,t,arg=null){
   else arg ? callback(arg) : callback();
 }
 
-var onBmkSelect=function(i){
-  if(i==0) return;
+var onBmkSelect=function(idx){
+  if(idx==0) return;
   $("#slider").slider("option", "max", getDuration());
   let a,b;
-  [a,b]=myBookmarks.options[i].text.split("--").map(t => timeStringToSec(t));
+  [a,b]=JSON.parse(myBookmarks.options[idx].value);
   $("#slider").slider("option", "values", [a, b]);
   quant.disabled=beatNormal ? false : true;
   $("#timeInputs").show();

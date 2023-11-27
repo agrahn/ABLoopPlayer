@@ -127,4 +127,21 @@ button:disabled{opacity:0.5;}
 
 input[type=checkbox] {vertical-align:middle;}
 
-select:invalid {color:gray;}
+.bookmarklist {
+  max-height: 8em;
+}
+
+#myBookmarks {
+  width: 15em;
+}
+
+.ui-selectmenu-button.ui-button {
+  padding: 2px 4px;
+  vertical-align: middle;
+}
+
+.ui-tooltip {
+  max-width: 800px;
+  white-space: nowrap;
+  overflow: hidden;
+}
