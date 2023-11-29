@@ -145,3 +145,7 @@ input[type=checkbox] {vertical-align:middle;}
   white-space: nowrap;
   overflow: hidden;
 }
+
+.ui-widget {
+  font-family: sans-serif;
+}

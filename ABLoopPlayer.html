@@ -91,27 +91,31 @@
       <!-- placeholder for jQuery range slider -->
       <div id="slider" style="margin-top:0px;margin-bottom:2px;"></div>
       <div style="margin:3px 0px 0px 0px;padding:5px;background-color:#eee;">
-      <button id="jumpToA" style="width:1.5em;height:1.5em;margin-right:0.15em;vertical-align:bottom;background-size:contain;background-image:url('svg/jump.svg');"
+      <button id="jumpToA" style="width:1.5em;height:1.5em;margin-right:0.15em;vertical-align:middle;background-size:contain;background-image:url('svg/jump.svg');"
         onmousedown="onJumpToA()" onmouseup="playVideo()"
         ontouchstart="onJumpToA()" ontouchend="playVideo()" ontouchcancel="playVideo()"
       ></button><!--
-      --><label for="myTimeA">A:</label> <input id="myTimeA" onchange="onInputTime(this,0)" size="8"/>
-      <label for="myTimeB">B:</label> <input id="myTimeB" onchange="onInputTime(this,1)" size="8"/>
-      <button id="bmkAddButton" style="width:1.5em;height:1.5em;vertical-align:bottom;background-size:80%;background-image:url('svg/star.svg');"></button>
+      --><span style="vertical-align:middle;"><!--
+        --><label for="myTimeA">A:</label> <input id="myTimeA" onchange="onInputTime(this,0)" size="8"/>
+        <label for="myTimeB">B:</label> <input id="myTimeB" onchange="onInputTime(this,1)" size="8"/><!--
+      --></span>
+      <button id="bmkAddButton" style="width:1.5em;height:1.5em;vertical-align:middle;background-size:80%;background-image:url('svg/star.svg');"></button>
       <input type="checkbox" onchange="toggleQuant(this, help)" disabled id="quant"/><label for="quant">quantise</label>&emsp;&emsp;
-      <button id="loopBackwardsButton" style="width:1.5em;height:1.5em;font-size:110%;" onmouseup="onLoopBackwards()">&laquo;</button><!--
-      --><button id="loopHalveButton" style="width:2.4em;height:1.5em;font-size:110%;" onmouseup="onLoopHalve()">&times;&frac12;</button><!--
-      --><button id="loopDoubleButton" style="width:2.4em;height:1.5em;font-size:110%;" onmouseup="onLoopDouble()">&times;2</button><!--
-      --><button id="loopForwardsButton" style="width:1.5em;height:1.5em;font-size:110%;" onmouseup="onLoopForwards()">&raquo;</button>
+      <button id="loopBackwardsButton" style="width:1.5em;height:1.5em;vertical-align:middle;font-size:110%;" onmouseup="onLoopBackwards()">&laquo;</button><!--
+      --><button id="loopHalveButton" style="width:2.4em;height:1.5em;vertical-align:middle;font-size:110%;" onmouseup="onLoopHalve()">&times;&frac12;</button><!--
+      --><button id="loopDoubleButton" style="width:2.4em;height:1.5em;vertical-align:middle;font-size:110%;" onmouseup="onLoopDouble()">&times;2</button><!--
+      --><button id="loopForwardsButton" style="width:1.5em;height:1.5em;vertical-align:middle;font-size:110%;" onmouseup="onLoopForwards()">&raquo;</button>
       </div>
     </div>
 
     <div id="bottom" style="margin:3px 0px 0px 0px;padding:5px;background-color:#ddd;position:relative;">
-      <label for="loopButton" style="vertical-align:middle;">A-B Loop:</label>
-      <button id="loopButton" onmousedown="onLoopDown()" onmouseup="this.blur()" ontouchstart="onLoopDown()"
-        style="width:1.6em;height:1.6em;padding:0px;margin:0px;background-size:80%;vertical-align:middle;">A</button>
+      <span style="vertical-align:middle"><!--
+        --><label for="loopButton">A-B Loop:</label>
+        <button id="loopButton" onmousedown="onLoopDown()" onmouseup="this.blur()" ontouchstart="onLoopDown()"
+        style="width:2em;height:2em;padding:0px;margin:0px;background-size:80%;">A</button><!--
+      --></span>
       <span id="myBmkSpan" hidden>
-        <span id="myBmkSpanInner"><!--
+        <span id="myBmkSpanInner" onkeydown='event.stopPropagation()' onkeyup='event.stopPropagation()'><!--
           --><select id="myBookmarks">
             <option value="" selected disabled>Bookmarked</option>
           </select><!--
@@ -120,7 +124,8 @@
              onclick="onClickAddNote(myBookmarks.selectedIndex)" disabled>&ensp;</button><!--
         --><button id="trashButton" style="width:1.5em;height:1.5em;padding:0px;vertical-align:middle;background-size:70%;background-image:url('svg/trash.svg');"
              onclick="onClickTrash(myBookmarks.selectedIndex)">&ensp;</button>
-      </span> <input type="checkbox" onchange="toggleIntro(this, help)" id="intro"/><label for="intro">play intro</label><br/>
+      </span>
+      <input type="checkbox" onchange="toggleIntro(this, help)" id="intro"/><label for="intro">play intro</label><br/>
       Speed:<div id="speed"><div id="speed-handle" class="ui-slider-handle"></div></div>&emsp;&emsp;
       <label for="tapButton">Tempo:</label>
       <button id="tapButton"
