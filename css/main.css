@@ -149,3 +149,7 @@ input[type=checkbox] {vertical-align:middle;}
 .ui-widget {
   font-family: sans-serif;
 }
+
+.ui-menu {
+  font-size:87.5%
+}

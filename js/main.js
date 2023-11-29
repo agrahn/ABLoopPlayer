@@ -110,6 +110,14 @@ var YTids, introTextBr, inputYT, inputVT, ytPlayer, help, searchButtonYT,
   annotButton, trashButton, tapButton, importButton, exportButton, shareButton,
   quant, handleA, handleB;
 
+var tooltipOpts={ position: {
+  my: "left bottom",
+  at: "right+5px bottom",
+  collision: "none"
+}};
+
+var myBmkSpanInnerTitleBak;
+
 $(document).ready(function(){
   $("#introText").width($("#widthA").width()+1);
   //if we are online, asynchronously load YT player api
@@ -220,16 +228,25 @@ $(document).ready(function(){
   bmkAddButton.addEventListener("mouseup", function(e){bmkAdd();});
   $("#myBookmarks").selectmenu({
     width: null, //allow sizing via css
-    change: function(e,ui) {onBmkSelect(ui.item.index);}
+    change: function(e,ui) {
+      myBmkSpanInner.title=myBmkSpanInnerTitleBak;
+      if($("#myBmkSpanInner").tooltip("instance")) $("#myBmkSpanInner").tooltip("destroy");
+      onBmkSelect(ui.item.index);
+    }
   }).selectmenu("menuWidget")
     .addClass("bookmarklist")
-    .tooltip({
-      position: {
-        my: "left bottom",
-        at: "right+5px bottom",
-        collision: "none"
+    .tooltip(tooltipOpts);
+  $("#myBookmarks-button").on("mouseenter",
+    function(){
+      myBmkSpanInner.title=myBmkSpanInnerTitleBak;
+      if($("#myBmkSpanInner").tooltip("instance")) $("#myBmkSpanInner").tooltip("destroy");
+      let bmk=document.getElementById("bmk"+$("#myBookmarks").prop("selectedIndex"));
+      if(bmk && bmk.title) {
+         myBmkSpanInner.title=bmk.title;
+         $("#myBmkSpanInner").tooltip(tooltipOpts).tooltip("open");
       }
-    });
+    }
+  );
   $("#mainDiv").show();
   playSelectedFile("");
 });
@@ -721,10 +738,8 @@ var bookmarksUpdate=function(bmkArr,idx){//selected idx
     let c=document.createElement("OPTION");
     c.text=secToTimeString(bmk.ta)+"--"+secToTimeString(bmk.tb);
     c.value=JSON.stringify([bmk.ta,bmk.tb]);
-    c.title="";
-    if(bmk.note){
-      c.title=bmk.note;
-    }
+    c.title=bmk.note ? bmk.note : "";
+    c.id="bmk"+(i+1).toString();
     myBookmarks.add(c);
     if(i==idx){
       c.selected=true;
@@ -868,7 +883,7 @@ var contextHelp=function(t){
     inputVT.title="Browse the hard disk for media files (mp4/H.264, webm, ogg, mp3, wav, ...).";
     loopButton.title="Click twice to mark loop range. Third click cancels current loop."
       + " Hotkeys: [Esc], [L]";
-    myBmkSpanInner.title="Choose from previously saved loops.";
+    myBmkSpanInner.title=myBmkSpanInnerTitleBak="Choose from previously saved loops.";
     bmkAddButton.title="Save current loop to the list of bookmarks.";
     loopBackwardsButton.title="Shift loop window backwards by one loop duration.";
     loopHalveButton.title="Halve the loop duration.";
@@ -899,7 +914,7 @@ var contextHelp=function(t){
     searchButtonYT.title=
     inputVT.title=
     loopButton.title=
-    myBmkSpanInner.title=
+    myBmkSpanInner.title=myBmkSpanInnerTitleBak=
     jumpToA.title=
     myTimeA.title=myTimeB.title=
     bmkAddButton.title=
