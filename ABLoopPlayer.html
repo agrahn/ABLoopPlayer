@@ -92,8 +92,8 @@
       <div id="slider" style="margin-top:0px;margin-bottom:2px;"></div>
       <div style="margin:3px 0px 0px 0px;padding:5px;background-color:#eee;">
       <button id="jumpToA" style="width:1.5em;height:1.5em;margin-right:0.15em;vertical-align:middle;background-size:contain;background-image:url('svg/jump.svg');"
-        onmousedown="onJumpToA()" onmouseup="playVideo()"
-        ontouchstart="onJumpToA()" ontouchend="playVideo()" ontouchcancel="playVideo()"
+        onmousedown="if(touchStartHandled) touchStartHandled=false; else onJumpToA();" onmouseup="if(touchEndHandled) touchEndHandled=false; else playVideo();"
+        ontouchstart="touchStartHandled=true;onJumpToA();" ontouchend="touchEndHandled=true;playVideo();"
       ></button><!--
       --><span style="vertical-align:middle;"><!--
         --><label for="myTimeA">A:</label> <input id="myTimeA" onchange="onInputTime(this,0)" size="8"/>
@@ -111,7 +111,9 @@
     <div id="bottom" style="margin:3px 0px 0px 0px;padding:5px;background-color:#ddd;position:relative;">
       <span style="vertical-align:middle"><!--
         --><label for="loopButton">A-B Loop:</label>
-        <button id="loopButton" onmousedown="onLoopDown()" onmouseup="this.blur()" ontouchstart="onLoopDown()"
+        <button id="loopButton"
+          onmousedown="if(touchStartHandled) touchStartHandled=false; else onLoopDown();" onmouseup="this.blur()"
+          ontouchstart="touchStartHandled=true;onLoopDown();"
         style="width:1.6em;height:1.6em;padding:0px;margin:0px;background-size:80%;">A</button><!--
       --></span>
       <span id="myBmkSpan" hidden>
@@ -129,8 +131,8 @@
       Speed:<div id="speed"><div id="speed-handle" class="ui-slider-handle"></div></div>&emsp;&emsp;
       <label for="tapButton">Tempo:</label>
       <button id="tapButton"
-        onmousedown="onTap(this,event.button)" onmouseup="this.blur()" oncontextmenu="onContextTap(event)"
-        ontouchstart="onTap(this,event.button)"
+        onmousedown="if(touchStartHandled) touchStartHandled=false; else onTap(this,event.button);" onmouseup="this.blur()" oncontextmenu="onContextTap(event)"
+        ontouchstart="touchStartHandled=true; onTap(this,event.button);"
       >tap</button><label for="tapButton"> BPM</label>
       <span style="position:absolute;bottom:3px;right:5px;">
         <button id="shareButton" style="width:1.6em;height:1.6em;background-size:contain;background-image:url('svg/share.svg');" onclick="onClickShare()"></button><!--
