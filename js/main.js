@@ -118,15 +118,6 @@ var tooltipOpts={position:{
   collision: "none"
 }};
 
-var tooltipOptsBmk={
-  position: {
-    my: "left bottom",
-    at: "right+5px bottom",
-    collision: "none"
-  },
-  classes: {"ui-tooltip": "ui-tooltip-bmk ui-corner-all ui-widget-shadow"}
-};
-
 var myBmkSpanInnerTitleBak;
 
 $(document).ready(function(){
@@ -248,7 +239,7 @@ $(document).ready(function(){
     close: ()=>{blur();}
   }).selectmenu("menuWidget")
     .addClass("bookmarklist")
-    .tooltip(tooltipOptsBmk);
+    .tooltip(tooltipOpts);
   $("#myBookmarks-button").on("mouseenter",
     function(){
       myBmkSpanInner.title=myBmkSpanInnerTitleBak;
