@@ -141,9 +141,16 @@ input[type=checkbox] {vertical-align:middle;}
 }
 
 .ui-tooltip {
+  max-width: 340px;
+}
+
+.ui-tooltip-bmk {
+/*  white-space: nowrap;
   max-width: 800px;
-  white-space: nowrap;
-  overflow: hidden;
+  overflow: hidden; */
+  min-width: fit-content;
+  width: max-content;
+  max-width: 340px;
 }
 
 .ui-widget {

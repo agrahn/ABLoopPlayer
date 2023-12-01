@@ -112,11 +112,20 @@ var YTids, introTextBr, inputYT, inputVT, ytPlayer, help, searchButtonYT,
   annotButton, trashButton, tapButton, importButton, exportButton, shareButton,
   quant, handleA, handleB;
 
-var tooltipOpts={ position: {
+var tooltipOpts={position:{
   my: "left bottom",
   at: "right+5px bottom",
   collision: "none"
 }};
+
+var tooltipOptsBmk={
+  position: {
+    my: "left bottom",
+    at: "right+5px bottom",
+    collision: "none"
+  },
+  classes: {"ui-tooltip": "ui-tooltip-bmk ui-corner-all ui-widget-shadow"}
+};
 
 var myBmkSpanInnerTitleBak;
 
@@ -239,7 +248,7 @@ $(document).ready(function(){
     close: ()=>{blur();}
   }).selectmenu("menuWidget")
     .addClass("bookmarklist")
-    .tooltip(tooltipOpts);
+    .tooltip(tooltipOptsBmk);
   $("#myBookmarks-button").on("mouseenter",
     function(){
       myBmkSpanInner.title=myBmkSpanInnerTitleBak;
