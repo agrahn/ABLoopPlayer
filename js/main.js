@@ -678,6 +678,7 @@ var onTap=function(ui,button=0) {
 }
 
 var onContextTap=function(e){
+  if(e.target.disabled) return;
   e.preventDefault();
   let curTempo;
   if(beatNormal){curTempo=60/beatNormal*rate;}
@@ -693,9 +694,22 @@ var onContextTap=function(e){
            storageWriteKeyVal("ab."+vidId,JSON.stringify(entry));
         }
       }
+      else if(tempo==""){
+        beatNormal=undefined;
+        e.target.innerHTML="tap";
+        if(vidId) {
+           let entry={}, old;
+           if(storage.getItem("ab."+vidId)) old=JSON.parse(storage.getItem("ab."+vidId));
+           if(old && old.bmks) {
+             entry.bmks=old.bmks;
+             storageWriteKeyVal("ab."+vidId,JSON.stringify(entry));
+           }
+           else storage.removeItem("ab."+vidId);
+        }
+      }
     },
     null, "Enter tempo (BPM):", (beatNormal ? null : "<a number, e. g. 120.345>"), curTempo,
-    {r:1, c:24}
+    {r:1, c:28}
   );
 }
 
