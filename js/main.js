@@ -262,7 +262,7 @@ document.addEventListener("visibilitychange", () => {loopMeas.splice(0);});
 //add some hotkeys
 window.addEventListener("keydown", function(e){
   e.stopPropagation();
-  if($("input").is(":focus")) return;
+  if($("input").is(":focus")||$("textarea").is(":focus")) return;
   else e.preventDefault();
   if (e.which==27 || e.which==76 //"Esc" or "L"
     && !loopButton.disabled
@@ -331,15 +331,17 @@ window.addEventListener("keyup", function(e){
 });
 
 // a modal prompt dialog based on jQuery
-// Usage: promptDialog( <callback>(ret), <title>, <text> [, <default input>] );
-var promptDialog=function(onclose, title, text, placeholder, input){
+// Usage: promptDialog(<callback>(ret), <title>, <text>, <default input>,
+//   [{r:<rows>, c:<cols>}]);
+var promptDialog=function(onclose, title, text, placeholder, input, size={r:4,c:50}){
   let z=$(
-    '<div style="width: fit-content; display: inline-block;"><p>'
-    +text+
-    '</p><input '+
-    (placeholder ? ' placeholder="'+placeholder+'"' : "") +
-    (input ? ' value="'+input+'"' : "") +
-    '" size="50" onfocus="this.select();"></input></div>'
+    '<div style="width: fit-content; display: inline-block;"><p>' +
+    text +
+    '</p><textarea'+
+    (placeholder ? ' placeholder="'+placeholder+'"' : "")+
+    ' rows=' + size.r + ' cols=' + size.c +
+    ' onfocus="this.select();">'+
+    (input ? input : "")+'</textarea></div>'
   );
   $(document.body).append(z);
   let ret=null;
@@ -352,6 +354,7 @@ var promptDialog=function(onclose, title, text, placeholder, input){
     closeText: "hide",
     width: "auto",
     minHeight: 0,
+    resizable: false,
     buttons: [
       {
         text: "Cancel",
@@ -363,7 +366,7 @@ var promptDialog=function(onclose, title, text, placeholder, input){
       {
         text: "Ok",
         click: function(){
-          ret=$(this).find("input").prop("value");
+          ret=$(this).find("textarea").val();
           $(this).dialog( "close" );
         }
       },
@@ -691,7 +694,8 @@ var onContextTap=function(e){
         }
       }
     },
-    null, "Enter tempo (BPM):", (beatNormal ? null : "<a number, e. g. 120.345>"), curTempo
+    null, "Enter tempo (BPM):", (beatNormal ? null : "<a number, e. g. 120.345>"), curTempo,
+    {r:1, c:24}
   );
 }
 
