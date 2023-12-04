@@ -673,7 +673,7 @@ var onTap=function(ui,button=0) {
          entry.bn=bn;
          storageWriteKeyVal("ab."+id,JSON.stringify(entry));
       }
-    },4000,vidId,beatNormal);
+    },3000,vidId,beatNormal);
   }
 }
 
@@ -694,7 +694,7 @@ var onContextTap=function(e){
            storageWriteKeyVal("ab."+vidId,JSON.stringify(entry));
         }
       }
-      else if(tempo==""){
+      else if(tempo.toString().trim()==""){
         beatNormal=undefined;
         e.target.innerHTML="tap";
         if(vidId) {
