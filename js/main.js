@@ -662,8 +662,9 @@ var onTap=function(ui,button=0) {
   }
   if (beatsArr.length>1) {
     let beat=(beatsArr.at(-1)-beatsArr[0])/(beatsArr.length-1);
-    beatNormal=beat*rate;
-    ui.innerHTML=Math.round(60/beat).toString();
+    let tempo=Math.round(60/beat*1e6)/1e6;
+    beatNormal=60*rate/tempo;
+    ui.innerHTML=Math.round(tempo).toString();
     //save beat to storage
     if(tapTimeout) clearTimeout(tapTimeout);
     tapTimeout=setTimeout((id,bn)=>{
@@ -681,11 +682,11 @@ var onContextTap=function(e){
   if(e.target.disabled) return;
   e.preventDefault();
   let curTempo;
-  if(beatNormal){curTempo=60/beatNormal*rate;}
+  if(beatNormal){curTempo=Math.round(60/beatNormal*rate*1e6)/1e6;}
   promptDialog(
     tempo => {
       if(!isNaN(Number(tempo))&&Number(tempo)>0){
-        beatNormal=60*rate/tempo;
+        beatNormal=60*rate/Math.round(tempo*1e6)*1e6;
         e.target.innerHTML=Math.round(tempo).toString();
         if(vidId) {
            let entry={};
