@@ -600,51 +600,35 @@ var updateLoopUI=function(updateSlider=true){
   }
 }
 
-var compDeltaByBeat=function(d, b){
-  return b*Math.round(d/b);
-}
-
 var onLoopBackwards=function(){
   let dt=timeB-timeA;
-  if(beatNormal) {
-    dt=compDeltaByBeat(dt, beatNormal);
-  }
-  if(timeA-dt<0) return;
-  timeA-=dt;
-  timeB-=dt;
+  if(timeA-tLavg-dt<0) return;
+  timeB=timeA-tLavg;
+  timeA=timeB-dt;
   loopMeas.splice(0);
   updateLoopUI();
 }
 
 var onLoopHalve=function(){
   let dt=timeB-timeA;
-  if(beatNormal) {
-    dt=compDeltaByBeat(dt, beatNormal);
-  }
-  timeB-=dt/2;
+  timeB=timeA+(dt-tLavg)/2;
   loopMeas.splice(0);
   updateLoopUI();
 }
 
 var onLoopDouble=function(){
   let dt=timeB-timeA;
-  if(beatNormal) {
-    dt=compDeltaByBeat(dt, beatNormal);
-  }
-  if(timeB+dt>getDuration()) return;
-  timeB+=dt;
+  if(timeB+tLavg+dt>getDuration()) return;
+  timeB+=tLavg+dt;
   loopMeas.splice(0);
   updateLoopUI();
 }
 
 var onLoopForwards=function(){
   let dt=timeB-timeA;
-  if(beatNormal) {
-    dt=compDeltaByBeat(dt, beatNormal);
-  }
-  if(timeB+dt>getDuration()) return;
-  timeA+=dt;
-  timeB+=dt;
+  if(timeB+tLavg+dt>getDuration()) return;
+  timeA=timeB+tLavg;
+  timeB=timeA+dt;
   loopMeas.splice(0);
   updateLoopUI();
 }
