@@ -231,7 +231,7 @@ $(document).ready(function(){
   $("#myBookmarks").selectmenu({
     width: null, //allow sizing via css
     position: { my: "left top", at: "left bottom", collision: "flip" },
-    change: function(e,ui) {
+    select: function(e,ui) {
       myBmkSpanInner.title=myBmkSpanInnerTitleBak;
       if($("#myBmkSpanInner").tooltip("instance")) $("#myBmkSpanInner").tooltip("destroy");
       onBmkSelect(ui.item.index);
