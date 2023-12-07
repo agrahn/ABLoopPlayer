@@ -262,7 +262,11 @@ document.addEventListener("visibilitychange", () => {loopMeas.splice(0);});
 //add some hotkeys
 window.addEventListener("keydown", function(e){
   e.stopPropagation();
-  if($("input").is(":focus")||$("textarea").is(":focus")) return;
+  if($("input").is(":focus")) return;
+  else if ($("textarea").is(":focus")){
+    if(e.which==13) e.preventDefault(); //prevent newline in textarea
+    return;
+  }
   else e.preventDefault();
   if (e.which==27 || e.which==76 //"Esc" or "L"
     && !loopButton.disabled
@@ -335,7 +339,7 @@ window.addEventListener("keyup", function(e){
 //   [{r:<rows>, c:<cols>}]);
 var promptDialog=function(onclose, title, text, placeholder, input, size={r:4,c:50}){
   let z=$(
-    '<div style="width: fit-content; display: inline-block;"><p>' +
+    '<div style="width:fit-content;display:inline-block;"><p>' +
     text +
     '</p><textarea'+
     (placeholder ? ' placeholder="'+placeholder+'"' : "")+
@@ -360,14 +364,14 @@ var promptDialog=function(onclose, title, text, placeholder, input, size={r:4,c:
         text: "Cancel",
         click: function(){
           ret=input;
-          $(this).dialog( "close" );
+          $(this).dialog("close");
         }
       },
       {
         text: "Ok",
         click: function(){
           ret=$(this).find("textarea").val();
-          $(this).dialog( "close" );
+          $(this).dialog("close");
         }
       },
     ],
