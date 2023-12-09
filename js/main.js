@@ -502,10 +502,6 @@ var onSliderSlide=function(e,ui){
 
 var onLoopDown=function(){
   if(isTimeBSet){
-    $("#timeInputs").hide();
-    annotButton.disabled=true;
-    //$("#myBookmarks").val("").selectmenu("refresh");
-    $("#myBookmarks").prop("selectedIndex",0).selectmenu("refresh");
     cancelABLoop();
   }else{
     let cur=toNearest5ms(Math.min(getCurrentTime(),getDuration()));
@@ -757,10 +753,10 @@ var bookmarksUpdate=function(bmkArr,idx){//selected idx
       onBmkSelect(c.index);
     }
   });
-  if(idx<0) myBookmarks.options[0].selected=true;
+  if(idx<0) $("#myBookmarks").prop("selectedIndex",0);
+  $("#myBookmarks").selectmenu("refresh");
   if(myBookmarks.options.length>1) $("#myBmkSpan").show();
   else $("#myBmkSpan").hide();
-  $("#myBookmarks").selectmenu("refresh");
 }
 
 var bmkDelete=function(idx){
@@ -945,12 +941,14 @@ var contextHelp=function(t){
 }
 
 var cancelABLoop=function(){
+  $("#timeInputs").hide();
   isTimeASet=isTimeBSet=false;
   loopButton.innerHTML="A";
   loopButton.style.backgroundImage="none";
   tapButton.disabled=false;
   quant.disabled=true;
   quant.checked=false;
+  $("#myBookmarks").prop("selectedIndex",0).selectmenu("refresh");
   loopMeas.splice(0);
   toggleQuant(quant, help);
 }
@@ -958,7 +956,6 @@ var cancelABLoop=function(){
 var resetUI=function(){
   vidId=undefined;
   lstId=undefined;
-  $("#timeInputs").hide();
   cancelABLoop();
   while(scrubTimer.length) clearInterval(scrubTimer.pop());
   $("#scrub").slider("option", "value", 0).hide();
@@ -1090,7 +1087,10 @@ var doAfterSeek=function(callback,t,arg=null){
 }
 
 var onBmkSelect=function(idx){
-  if(idx==0) return;
+  if(idx==0) {
+    annotButton.disabled=true;
+    return;
+  }
   $("#slider").slider("option", "max", getDuration());
   let a,b;
   [a,b]=JSON.parse(myBookmarks.options[idx].value);
@@ -1226,7 +1226,6 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id loo
     if(id!=vidId){//the video has changed
       $("#scrub").slider("option", "max", getDuration()).show();
       loopButton.disabled=false;
-      $("#timeInputs").hide();
       cancelABLoop();
       let rates=e.target.getAvailablePlaybackRates();
       let min=rates[0];
@@ -1238,7 +1237,6 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id loo
       $("#speed").slider("option", "value", s);
       setPlaybackRate(s); //custom rate via url parameter
       $("#speed").slider("option", "disabled", false);
-      tapButton.disabled=false;
       shareButton.disabled=false;
       //populate bookmark list with saved items for the current video ID
       //and set bpm, if known
@@ -1249,7 +1247,6 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id loo
         beatNormal=bn;
         tapButton.innerHTML=Math.round(60/beatNormal*rate).toString();
       }
-      annotButton.disabled=true;
       saveId(id);
       //set ab loop from ta, tb args only upon new player instantiation
       if((ta||tb)&&!vidId){
@@ -1453,7 +1450,7 @@ var playSelectedFile=function(f){
       e.target.src=e.target.currentSrc;
     }
   });
-  myVideo.addEventListener("loadeddata", onLoadedData);
+  myVideo.addEventListener("loadeddata", onLoadedDataVT);
   myVideo.addEventListener("play", function(){
     loopMeas.splice(0);
     setPlaybackRate(Number($("#speed").slider("value")));
@@ -1489,7 +1486,7 @@ var playSelectedFile=function(f){
 
 var onTimeUpdateVT=function(e){$("#scrub").slider("option", "value", e.target.currentTime);};
 
-var onLoadedData=function(e){
+var onLoadedDataVT=function(e){
   if(!aonly.checked){
     e.target.addEventListener("mouseover", function(e){e.target.controls=true;});
     e.target.addEventListener("mouseout", function(e){e.target.controls=false;});
@@ -1506,7 +1503,6 @@ var onLoadedData=function(e){
     beatNormal=bn;
     tapButton.innerHTML=Math.round(60/beatNormal*rate).toString();
   }
-  annotButton.disabled=true;
   saveMediaId(vidId);
 }
 
