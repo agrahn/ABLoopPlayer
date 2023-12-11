@@ -263,8 +263,12 @@ document.addEventListener("visibilitychange", () => {loopMeas.splice(0);});
 window.addEventListener("keydown", function(e){
   e.stopPropagation();
   if($("input").is(":focus")) return;
-  else if ($("textarea").is(":focus")){
-    if(e.which==13) e.preventDefault(); //prevent newline in textarea
+  else if ($(event.target).closest('.ui-dialog').length>0){
+    if(e.which==13||e.which==27) { // [Esc] and [Enter] handling in dialog
+      e.preventDefault();
+      if(e.which==13 && e.target.id!="Cancel") dialogBtns[1].click(); // trigger "ok" instead of enter
+      else dialogBtns[0].click(); // "cancel" on esc or if event target is the cancel button
+    }
     return;
   }
   else e.preventDefault();
@@ -334,21 +338,22 @@ window.addEventListener("keyup", function(e){
   if (e.which==65 && isTimeASet && isTimeBSet) playVideo(); //"a"
 });
 
-// a modal prompt dialog based on jQuery
-// Usage: promptDialog(<callback>(ret), <title>, <text>, <default input>,
+// a modal prompt dialog based on jQuery; returns array of "cancel" and "ok" button instances
+// Usage: dialogBtns=promptDialog(<callback>(ret), <title>, <text>, <default input>,
 //   [{r:<rows>, c:<cols>}]);
+var dialogBtns;
 var promptDialog=function(onclose, title, text, placeholder, input, size={r:4,c:50}){
   let z=$(
     '<div style="width:fit-content;display:inline-block;"><p>' +
     text +
-    '</p><textarea'+
+    '</p><textarea id="txtarea"'+
     (placeholder ? ' placeholder="'+placeholder+'"' : "")+
     ' rows=' + size.r + ' cols=' + size.c +
     ' onfocus="this.select();">'+
     (input ? input : "")+'</textarea></div>'
   );
   $(document.body).append(z);
-  let ret=null;
+  let ret=input;
   $(z).dialog({
     autoOpen: true,
     modal: true,
@@ -361,25 +366,26 @@ var promptDialog=function(onclose, title, text, placeholder, input, size={r:4,c:
     resizable: false,
     buttons: [
       {
+        id: "Cancel",
         text: "Cancel",
         click: function(){
-          ret=input;
-          $(this).dialog("close");
+          $(z).dialog("close");
         }
       },
       {
         text: "Ok",
         click: function(){
-          ret=$(this).find("textarea").val();
-          $(this).dialog("close");
+          ret=$("#txtarea").val();
+          $(z).dialog("close");
         }
-      },
+      }
     ],
     close: function(e,ui){
       onclose(ret);
       this.parentNode.removeChild(this);
-    }
+    },
   }).focus();
+  return $(z).dialog("option", "buttons");
 }
 
 // a modal confirm dialog
@@ -399,24 +405,26 @@ var confirmDialog=function(msg, onclose){
     width: "auto",
     buttons: [
       {
+        id: "Cancel",
         text: "Cancel",
         click: function(){
-          $(this).dialog( "close" );
+          $(z).dialog("close");
         }
       },
       {
         text: "Ok",
         click: function(){
           ret=true;
-          $(this).dialog( "close" );
+          $(z).dialog("close");
         }
-      },
+      }
     ],
     close: function(e,ui){
       onclose(ret);
       this.parentNode.removeChild(this);
     }
-  })
+  }).focus();
+  return $(z).dialog("option", "buttons");
 }
 
 // a modal message box
@@ -428,15 +436,21 @@ var messageBox=function(title, msg){
     title: title,
     autoOpen: true,
     modal: true,
-    buttons: {
-      Ok: function() {
-        $( this ).dialog( "close" );
+    closeOnEscape: false,
+    buttons: [
+      {
+        text: "Ok",
+        click: function(){
+          $(z).dialog("close");
+        }
       }
-    },
+    ],
     close: function(e,ui){
       this.parentNode.removeChild(this);
     }
-  })
+  }).focus();
+  let cancelok=$(z).dialog("option", "buttons")[0];
+  return [cancelok,cancelok];
 }
 
 //pretty printing the media time
@@ -667,7 +681,7 @@ var onContextTap=function(e){
   e.preventDefault();
   let curTempo;
   if(beatNormal){curTempo=Math.round(60/beatNormal*rate*1e6)/1e6;}
-  promptDialog(
+  dialogBtns=promptDialog(
     tempo => {
       if(!isNaN(Number(tempo))&&Number(tempo)>0){
         beatNormal=60*rate/Math.round(tempo*1e6)*1e6;
@@ -741,6 +755,7 @@ const toNearest5ms = t => Math.round(t*200)/200;
 var bookmarksUpdate=function(bmkArr,idx){//selected idx
   while(myBookmarks.options.length>1)
     myBookmarks.remove(myBookmarks.options.length-1);
+  onBmkSelect(0);
   bmkArr.forEach((bmk,i) => {
     let c=document.createElement("OPTION");
     c.text=secToTimeString(bmk.ta)+"--"+secToTimeString(bmk.tb);
@@ -796,14 +811,14 @@ var bmkDelete=function(idx){
 var onClickTrash=function(idx){
   blur();
   if(idx==0){ //all items
-    confirmDialog(
+    dialogBtns=confirmDialog(
       "Really delete <b>ALL</b> bookmarked loops?",
       function(res){
         if(res) bmkDelete(0);
       }
     );
   }else{ //selected item
-    confirmDialog(
+    dialogBtns=confirmDialog(
       "Delete this loop?",
       function(res){
         if(res) bmkDelete(idx);
@@ -815,7 +830,7 @@ var onClickTrash=function(idx){
 var onClickAddNote=function(idx){
   blur();
   let currentNote=myBookmarks.options[idx].title;
-  promptDialog(
+  dialogBtns=promptDialog(
     note => bmkAdd(note,idx-1),
     null, "Enter description:", (currentNote ? null : "<Add note here>"), currentNote
   );
@@ -849,7 +864,7 @@ var onClickImport=function(){
     reader.onload = e => {
       try{
         mergeData(convertData(JSON.parse(e.target.result)));
-        messageBox("Import", "Loop data and app settings successfully imported.");
+        dialogBtns=messageBox("Import", "Loop data and app settings successfully imported.");
         let bmks, bn;
         [bmks, bn]=queryBmksAndBn(vidId);
         if(bmks) bookmarksUpdate(bmks,-1);
@@ -858,7 +873,7 @@ var onClickImport=function(){
           tapButton.innerHTML=Math.round(60/beatNormal*rate).toString();
         }
       }catch(err){
-        messageBox("Error",
+        dialogBtns=messageBox("Error",
           "<p>Loop data and app settings could not be imported.</p>"+
           err.name+": "+err.message);
       }
@@ -1409,7 +1424,7 @@ var onClickShare=function(){
   if(isTimeBSet) sharelink+="&end="+timeB.toString();
   if(rate!=1.0) sharelink+="&rate="+rate;
   navigator.clipboard.writeText(sharelink);
-  messageBox("Link copied to the clipboard:", sharelink);
+  dialogBtns=messageBox("Link copied to the clipboard:", sharelink);
 }
 
 /////////////////////////
