@@ -94,6 +94,8 @@
       <button id="jumpToA" style="width:1.5em;height:1.5em;margin-right:0.15em;vertical-align:middle;background-size:contain;background-image:url('svg/jump.svg');"
         onmousedown="if(touchStartHandled) touchStartHandled=false; else onJumpToA();" onmouseup="if(touchEndHandled) touchEndHandled=false; else playVideo();"
         ontouchstart="touchStartHandled=true;onJumpToA();" ontouchend="touchEndHandled=true;playVideo();"
+        onkeydown="if(event.which==13) onJumpToA();"
+        onkeyup="if(event.which==13) playVideo();"
       ></button><!--
       --><span style="vertical-align:middle;"><!--
         --><label for="myTimeA">A:</label> <input id="myTimeA" onchange="onInputTime(this,0)" size="8"/>
@@ -101,10 +103,10 @@
       --></span>
       <button id="bmkAddButton" style="width:1.5em;height:1.5em;vertical-align:middle;background-size:80%;background-image:url('svg/star.svg');"></button>
       <input type="checkbox" onchange="toggleQuant(this, help)" disabled id="quant"/><label for="quant">quantise</label>&emsp;&emsp;
-      <button id="loopBackwardsButton" style="width:1.5em;height:1.5em;vertical-align:middle;font-size:110%;" onmouseup="onLoopBackwards()">&laquo;</button><!--
-      --><button id="loopHalveButton" style="width:2.4em;height:1.5em;vertical-align:middle;font-size:110%;" onmouseup="onLoopHalve()">&times;&frac12;</button><!--
-      --><button id="loopDoubleButton" style="width:2.4em;height:1.5em;vertical-align:middle;font-size:110%;" onmouseup="onLoopDouble()">&times;2</button><!--
-      --><button id="loopForwardsButton" style="width:1.5em;height:1.5em;vertical-align:middle;font-size:110%;" onmouseup="onLoopForwards()">&raquo;</button>
+      <button id="loopBackwardsButton" style="width:1.5em;height:1.5em;vertical-align:middle;font-size:110%;" onclick="onLoopBackwards()">&laquo;</button><!--
+      --><button id="loopHalveButton" style="width:2.4em;height:1.5em;vertical-align:middle;font-size:110%;" onclick="onLoopHalve()">&times;&frac12;</button><!--
+      --><button id="loopDoubleButton" style="width:2.4em;height:1.5em;vertical-align:middle;font-size:110%;" onclick="onLoopDouble()">&times;2</button><!--
+      --><button id="loopForwardsButton" style="width:1.5em;height:1.5em;vertical-align:middle;font-size:110%;" onclick="onLoopForwards()">&raquo;</button>
       </div>
     </div>
 
@@ -112,8 +114,9 @@
       <span style="vertical-align:middle"><!--
         --><label for="loopButton">A-B Loop:</label>
         <button id="loopButton"
-          onmousedown="if(touchStartHandled) touchStartHandled=false; else onLoopDown();" onmouseup="this.blur()"
+          onmousedown="if(touchStartHandled) touchStartHandled=false; else onLoopDown();"
           ontouchstart="touchStartHandled=true;onLoopDown();"
+          onkeydown="if(event.which==13) onLoopDown();"
         style="width:1.6em;height:1.6em;padding:0px;margin:0px;background-size:80%;">A</button><!--
       --></span>
       <span id="myBmkSpan" hidden>
@@ -128,11 +131,12 @@
              onclick="onClickTrash(myBookmarks.selectedIndex)">&ensp;</button>
       </span>
       <input type="checkbox" onchange="toggleIntro(this, help)" id="intro"/><label for="intro">play intro</label><br/>
-      Speed:<div id="speed"><div id="speed-handle" class="ui-slider-handle"></div></div>&emsp;&emsp;
+      Speed:<div id="speed"><div class="ui-slider-handle"></div></div>&emsp;&emsp;
       <label for="tapButton">Tempo:</label>
       <button id="tapButton"
         onmousedown="if(touchStartHandled) touchStartHandled=false; else onTap(this,event.button);" onmouseup="this.blur()" oncontextmenu="onContextTap(event)"
         ontouchstart="touchStartHandled=true; onTap(this,event.button);"
+        onkeydown="if(event.which==13) onTap(this);"
       >tap</button><label for="tapButton"> BPM</label>
       <span style="position:absolute;bottom:3px;right:5px;">
         <button id="shareButton" style="width:1.6em;height:1.6em;background-size:contain;background-image:url('svg/share.svg');" onclick="onClickShare()"></button><!--

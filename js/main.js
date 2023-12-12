@@ -157,8 +157,14 @@ $(document).ready(function(){
   quant=document.getElementById("quant");
   bmkAddButton=document.getElementById("bmkAddButton");
   inputVT.addEventListener("change", function(e){
-    blur();
+    $("#inputVT").blur(); //chromium
     playSelectedFile(e.target.files[0]);
+  });
+  inputVT.addEventListener("input", function(e){
+    //allows us to start video by hitting the spacebar, after a file
+    //has been selected via file input dialog
+    $("#myVideo").focus(); //firefox
+    $("#inputVT").blur(); //chromium
   });
   inputYT.disabled=searchButtonYT.disabled=true;
   //initialise storage or convert it from previous versions
@@ -227,7 +233,7 @@ $(document).ready(function(){
     slide: function(e,ui) {speedHandle.text(ui.value);},
     stop: function(e,ui){setPlaybackRate(ui.value);},
   });
-  bmkAddButton.addEventListener("mouseup", function(e){bmkAdd();});
+  bmkAddButton.addEventListener("click", function(e){bmkAdd();});
   $("#myBookmarks").selectmenu({
     width: null, //allow sizing via css
     position: { my: "left top", at: "left bottom", collision: "flip" },
@@ -235,8 +241,7 @@ $(document).ready(function(){
       myBmkSpanInner.title=myBmkSpanInnerTitleBak;
       if($("#myBmkSpanInner").tooltip("instance")) $("#myBmkSpanInner").tooltip("destroy");
       onBmkSelect(ui.item.index);
-    },
-    close: ()=>{blur();}
+    }
   }).selectmenu("menuWidget")
     .addClass("bookmarklist")
     .tooltip(tooltipOpts);
@@ -261,7 +266,6 @@ document.addEventListener("visibilitychange", () => {loopMeas.splice(0);});
 
 //add some hotkeys
 window.addEventListener("keydown", function(e){
-  e.stopPropagation();
   if($("input").is(":focus")) return;
   else if ($(event.target).closest('.ui-dialog').length>0){
     if(e.which==13||e.which==27) { // [Esc] and [Enter] handling in dialog
@@ -271,71 +275,97 @@ window.addEventListener("keydown", function(e){
     }
     return;
   }
-  else e.preventDefault();
-  if (e.which==27 || e.which==76 //"Esc" or "L"
+
+  if (e.which==27 || e.which==76 //[Esc] or [L]
     && !loopButton.disabled
-  ) onLoopDown();
-  else if (e.which==36
+  ){
+    e.preventDefault();
+    onLoopDown();
+  }
+  else if (e.which==36 // [Home]
     && !$("#slider .ui-slider-handle").is(":focus")
     && !$("#speed .ui-slider-handle").is(":focus")
     && !$("select").is(":focus")
-  ){try{
-    setCurrentTime(0);
-    loopMeas.splice(0);
-  }catch(err){}}
-  else if (e.which==35
-    && !$("#slider .ui-slider-handle").is(":focus")
-    && !$("#speed .ui-slider-handle").is(":focus")
-    && !$("select").is(":focus")
-  ){try{
-    if(isPlaying() && isTimeBSet){
-      pauseVideo();
-      setCurrentTime(timeA);
-      doAfterSeek(playVideo, timeA);
-    }
-    else{
-      setCurrentTime(getDuration());
+  ){
+    e.preventDefault();
+    try{
+      setCurrentTime(0);
       loopMeas.splice(0);
-    }
-  }catch(err){}}
-  else if (e.which==37
+    }catch(err){}
+  }
+  else if (e.which==35 // [End]
     && !$("#slider .ui-slider-handle").is(":focus")
     && !$("#speed .ui-slider-handle").is(":focus")
     && !$("select").is(":focus")
-  ){try{
-    setCurrentTime(getCurrentTime()-5);
-    loopMeas.splice(0);
-  }catch(err){}}
-  else if (e.which==39
+  ){
+    e.preventDefault();
+    try{
+      if(isPlaying() && isTimeBSet){
+        pauseVideo();
+        setCurrentTime(timeA);
+        doAfterSeek(playVideo, timeA);
+      }
+      else{
+        setCurrentTime(getDuration());
+        loopMeas.splice(0);
+      }
+    }catch(err){}
+  }
+  else if (e.which==37 // [<--]
     && !$("#slider .ui-slider-handle").is(":focus")
     && !$("#speed .ui-slider-handle").is(":focus")
     && !$("select").is(":focus")
-  ){try{
-    let t=getCurrentTime()+5;
-    if(isPlaying() && isTimeBSet && t>=timeB){
-      pauseVideo();
-      setCurrentTime(timeA);
-      doAfterSeek(playVideo, timeA);
-    }
-    else{
-      setCurrentTime(t);
+  ){
+    e.preventDefault();
+    try{
+      setCurrentTime(getCurrentTime()-5);
       loopMeas.splice(0);
-    }
-  }catch(err){}}
-  else if (e.which==32) {try{playPause();}catch(err){}}
-  else if (e.which==84 && !tapButton.disabled) onTap(tapButton); // "t"
-  else if (e.which==81 && !quant.disabled) { // "q"
+    }catch(err){}
+  }
+  else if (e.which==39 // [-->]
+    && !$("#slider .ui-slider-handle").is(":focus")
+    && !$("#speed .ui-slider-handle").is(":focus")
+    && !$("select").is(":focus")
+  ){
+    e.preventDefault();
+    try{
+      let t=getCurrentTime()+5;
+      if(isPlaying() && isTimeBSet && t>=timeB){
+        pauseVideo();
+        setCurrentTime(timeA);
+        doAfterSeek(playVideo, timeA);
+      }
+      else{
+        setCurrentTime(t);
+        loopMeas.splice(0);
+      }
+    }catch(err){}
+  }
+  else if (e.which==32) { // [Space]
+    e.preventDefault();
+    try{playPause();}catch(err){}
+  }
+  else if (e.which==84 && !tapButton.disabled) { // [T]
+    e.preventDefault();
+    onTap(tapButton);
+  }
+  else if (e.which==81 && !quant.disabled) { // [Q]
+    e.preventDefault();
     quant.checked = !quant.checked;
     toggleQuant(quant, help);
   }
-  else if (e.which==65 && isTimeASet && isTimeBSet) onJumpToA(); //"a"
+  else if (e.which==65 && isTimeASet && isTimeBSet) { // [A]
+    e.preventDefault();
+    onJumpToA();
+  }
 });
 
 window.addEventListener("keyup", function(e){
-  e.stopPropagation();
   if($("input").is(":focus")) return;
-  else e.preventDefault();
-  if (e.which==65 && isTimeASet && isTimeBSet) playVideo(); //"a"
+  if (e.which==65 && isTimeASet && isTimeBSet){ //"A"
+    e.preventDefault();
+    playVideo(); //"a"
+  }
 });
 
 // a modal prompt dialog based on jQuery; returns array of "cancel" and "ok" button instances
@@ -625,6 +655,7 @@ var onLoopBackwards=function(){
 
 var onLoopHalve=function(){
   let dt=timeB-timeA;
+  if((dt-tLavg)/2<0.005) return;
   timeB=timeA+(dt-tLavg)/2;
   loopMeas.splice(0);
   updateLoopUI();
@@ -809,7 +840,6 @@ var bmkDelete=function(idx){
 }
 
 var onClickTrash=function(idx){
-  blur();
   if(idx==0){ //all items
     dialogBtns=confirmDialog(
       "Really delete <b>ALL</b> bookmarked loops?",
@@ -828,7 +858,6 @@ var onClickTrash=function(idx){
 }
 
 var onClickAddNote=function(idx){
-  blur();
   let currentNote=myBookmarks.options[idx].title;
   dialogBtns=promptDialog(
     note => bmkAdd(note,idx-1),
@@ -838,7 +867,6 @@ var onClickAddNote=function(idx){
 
 var textFile=null;
 var onClickExport=function(){
-  blur();
   let appData={};
   Object.entries(JSON.parse(JSON.stringify(storage))).forEach(([k,v])=>{
     if(k.match(/^ab\./)) appData[k]=v;
@@ -853,7 +881,6 @@ var onClickExport=function(){
 }
 
 var onClickImport=function(){
-  blur();
   let input = document.createElement("input");
   input.type = "file";
   input.accept="application/json";
@@ -893,7 +920,6 @@ var quantTitleUnChecked="Start loop quantisation (auto-adjustment). Hotkey: [Q]\
       + "Tempo (BPM) needs to be tapped or entered via the tap button's context menu beforehand.";
 
 var contextHelp=function(t){
-  blur();
   if(t.checked){
     storageWriteKeyVal("ab.help", "checked");
     t.title="Uncheck to disable context-sensitive help.";
@@ -975,8 +1001,9 @@ var resetUI=function(){
   while(scrubTimer.length) clearInterval(scrubTimer.pop());
   $("#scrub").slider("option", "value", 0).hide();
   loopButton.disabled=true;
-  $("#speed").slider("option", "disabled", true);
   $("#speed").slider("option", "step", 0.05);
+  $("#speed").slider("option", "disabled", true);
+  $("#speed .ui-slider-handle").prop("tabindex", -1); //make handle un-tabbable
   shareButton.disabled=true;
   bookmarksUpdate([],-1);
   tapButton.innerHTML="tap";
@@ -997,8 +1024,6 @@ var onRateChange=function(e){
     tapButton.innerHTML=Math.round(60/beatNormal*rate).toString();
   }
 }
-
-var blur=function(){document.activeElement.blur();}
 
 //loop & app data conversion to current format
 var convertData=function(data){
@@ -1125,7 +1150,6 @@ var onBmkSelect=function(idx){
 }
 
 var toggleIntro=function(t,h){
-  blur();
   if(t.checked){
     storageWriteKeyVal("ab.intro", "checked");
     if(h.checked) t.title=introTitleChecked;
@@ -1136,7 +1160,6 @@ var toggleIntro=function(t,h){
 }
 
 var toggleQuant=function(t,h){
-  blur();
   if(t.checked){
     if(h.checked) t.title=quantTitleChecked;
   }else{
@@ -1225,7 +1248,6 @@ var loadYT=function(vid,plist,lid,ta,tb,r,lType="playlist"){
       }
     }
   });
-  blur();
 }
 
 var onYouTubeIframeAPIReady=function(){
@@ -1245,13 +1267,13 @@ var onPlayerStateChange=function(e, id, ta, tb, s){ //event object, video id loo
       let rates=e.target.getAvailablePlaybackRates();
       let min=rates[0];
       let max=rates[rates.length-1];
-      $("#speed").slider("option", "disabled", true);
       $("#speed").slider("option", "min", min);
       $("#speed").slider("option", "max", max);
       $("#speed").slider("option", "step", 0.05);
       $("#speed").slider("option", "value", s);
       setPlaybackRate(s); //custom rate via url parameter
       $("#speed").slider("option", "disabled", false);
+      $("#speed .ui-slider-handle").prop("tabindex", ""); //restore handle tabbability
       shareButton.disabled=false;
       //populate bookmark list with saved items for the current video ID
       //and set bpm, if known
@@ -1407,7 +1429,6 @@ var initResizableYT=function(){
 }
 
 var onClickShare=function(){
-  blur();
   let sharelink=document.URL;
   let idx=sharelink.indexOf("?");
   if(idx>-1) sharelink=sharelink.substring(0,idx);
@@ -1458,6 +1479,7 @@ var playSelectedFile=function(f){
       $("#speed").slider("option", "value", 1);
       $("#speed").slider("option", "step", 0.01);
       $("#speed").slider("option", "disabled", false);
+      $("#speed .ui-slider-handle").prop("tabindex", "");
       tapButton.disabled=false;
     }else{
       //repeat setting media source until duration property is properly set;
@@ -1485,6 +1507,7 @@ var playSelectedFile=function(f){
   myResizable.appendChild(myVideo);
   if(f){ //a media file was selected
     $("#speed").slider("option", "disabled", true);
+    $("#speed .ui-slider-handle").prop("tabindex", -1);
     tapButton.disabled=true;
     //set video source
     vidId=f.name+"-"+f.size; //some checksum would be better
@@ -1558,7 +1581,6 @@ var initResizableVT=function(){
 };
 
 var toggleAudio=function(t,h){
-  blur();
   playSelectedFile(inputVT.files[0]);
   if(h.checked){
     t.title=t.checked ? aonlyTitleChecked : aonlyTitleUnChecked;

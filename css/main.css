@@ -38,6 +38,7 @@ hr.double {
 }
 
 #slider .ui-slider-handle {
+  outline: none; /* suppress focus rect */
   text-align: center;
   height: 15px; width: 0em; top: 0px;
   border: 0px;
@@ -47,9 +48,9 @@ hr.double {
   margin-right: 0;
 }
 
-.ui-slider-handle:focus {
-  outline: none; /* suppress focus rect */
-}
+/* .ui-slider-handle:focus {
+  outline: none;
+} */
 
 .abhandle {
   display: flex;
