@@ -90,27 +90,28 @@ hr.double {
 }
 
 #speed .ui-slider-handle {
-  width: 2.2em;
-  height: 1.2em;
-  top: 50%;
-  margin-top: -0.8em;
-  margin-left: -1.1em;
+  width: 32px;
+  margin-left: -18px; /* -(0.5*width+borderWidth) */
+  height: 18px;
+  top: 50%; /* top edge of handle aligns with horiz. centre of track, initially */
+  /* then, top margin is set to centre handle vertically -(0.5*height+borderWidth) = -(9+2) = -11 */
+  margin-top: -11px;
   text-align: center;
   line-height: 1.2em;
   border-left-color: #e0e0e0;
   border-top-color: #e0e0e0;
   border-right-color: #959595;
   border-bottom-color: #959595;
-  border-width: 2px;
+  border-width:2px;
   color: #000000;
 }
 
 /* remove rounded corners */
 .ui-corner-all {border-radius: 0px;}
 
-button {
+button, input[type="file"]::file-selector-button {
   border-width: 2px;
-  border-radius: 0;
+  border-radius: 0px;
   color: #000000;
   border-left-color: #e0e0e0;
   border-top-color: #e0e0e0;

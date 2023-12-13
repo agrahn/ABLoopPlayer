@@ -231,7 +231,7 @@ $(document).ready(function(){
     create: function() {speedHandle.text($(this).slider("value"));},
     change: function(e,ui) {speedHandle.text(getPlaybackRate());},
     slide: function(e,ui) {speedHandle.text(ui.value);},
-    stop: function(e,ui){setPlaybackRate(ui.value);},
+    stop: function(e,ui){setPlaybackRate(ui.value);}
   });
   bmkAddButton.addEventListener("click", function(e){bmkAdd();});
   $("#myBookmarks").selectmenu({
