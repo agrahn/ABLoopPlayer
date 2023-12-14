@@ -2,7 +2,7 @@ pages:
   stage: deploy
   script:
   - mkdir .public
-  - cp -r * .public/
+  - cp -r [A-Za-sz]* .public/
   - mv .public/ABLoopPlayer.html .public/index.html
   - mv .public public
   artifacts:
