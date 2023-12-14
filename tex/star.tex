@@ -1,0 +1,21 @@
+\documentclass{standalone}
+\usepackage{tikz}
+
+\def\inner{4.7}
+\def\outer{9.4}
+
+\begin{document}
+\begin{tikzpicture}[x=1bp,y=1bp,line join=round,line width=2.4bp]
+\draw (0,0)
+     +(18:\outer)
+  -- +(54:\inner)
+  -- +(90:\outer)
+  -- +(126:\inner)
+  -- +(162:\outer)
+  -- +(198:\inner)
+  -- +(234:\outer)
+  -- +(270:\inner)
+  -- +(306:\outer)
+  -- +(342:\inner) -- cycle;
+\end{tikzpicture}
+\end{document}

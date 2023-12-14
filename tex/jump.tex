@@ -1,0 +1,16 @@
+\documentclass{standalone}
+\usepackage{tikz}
+
+\def\lw{1}
+\edef\lwoff{\fpeval{0.5*\lw*sqrt(2)}}
+
+\begin{document}
+\begin{tikzpicture}[x=1bp,y=1bp]
+\clip (\fpeval{-5-0.6*\lw},\fpeval{-4-1.5*sqrt(2)-0.5*\lw}) rectangle (\fpeval{3+\lwoff+0.1*\lw},0.5*\lw); 
+\draw[line width=\lw bp,line cap=round, line join=miter] (0,0) -- (-3,0) arc [
+    start angle=90,
+    end angle=270,
+    radius=2,
+] -- ++(6,0) coordinate (tip) ++(135:3) -- (tip) -- ++(-135:3);
+\end{tikzpicture}
+\end{document}
