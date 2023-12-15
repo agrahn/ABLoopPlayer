@@ -130,8 +130,20 @@ button, input[type="file"]::file-selector-button {
 
 button:disabled{opacity:0.5;}
 
-#searchButtonYT {background-color:transparent;background-size:contain;}
-#searchButtonYT:active {background-color:#fff;border-radius:0.4em;background-size:90%;}
+#searchButtonYT {
+  width:2.2em;height:1.6em;
+  vertical-align:baseline;
+  background-color:transparent;
+  background-size:contain;
+  background-image:url('../svg/yt-play.svg');
+  border-radius:0.4em;
+  border:none;
+}
+
+#searchButtonYT:active {
+  background-color:#fff;
+  background-size:90%;
+}
 
 input[type=checkbox] {vertical-align:middle;}
 
