@@ -489,11 +489,8 @@ var secToTimeString=function(t){ // H:MM:SS.sss or M:SS.sss
   let m=Math.floor((t-h*3600)/60).toString();
   let s=Math.floor(t%60).toString();
   let ms=(t-Math.floor(t)).toFixed(3).substring(1);
-  return (h>0 ? h.toString()+":"+strPadLeft(m,"0",2) : m)
-    + ":" + strPadLeft(s,"0",2) + ms;
-}
-var strPadLeft=function strPadLeft(string,pad,length){
-  return (new Array(length+1).join(pad)+string).slice(-length);
+  return (h>0 ? h.toString()+":"+m.padStart(2,'0') : m)
+    + ":" + s.padStart(2,'0') + ms;
 }
 
 // time string to seconds
@@ -1600,7 +1597,7 @@ var pauseVideo;
 var playVideo;
 var isPlaying;
 
-//initialization functions
+//initialisation functions
 var initYT=function(){ // YT
   getCurrentTime=function(){return ytPlayer.getCurrentTime();};
   setCurrentTime=function(t){ytPlayer.seekTo(t,true);};
