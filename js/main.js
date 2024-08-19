@@ -1357,7 +1357,7 @@ var queryYT=function(qu){
   }
   else if(qu.match(/youtu\.be\/|youtube(?:-nocookie)?\..*/)){
     //regular YT url with video id and/or list id or playlist
-    vid=qu.match(/(?<=youtu\.be\/|\/embed\/|\/v\/|[?&]v=)[0-9a-zA-Z_-]{11}/);
+    vid=qu.match(/(?<=youtu\.be\/|\/embed\/|\/live\/|\/v\/|[?&]v=)[0-9a-zA-Z_-]{11}/);
     if(vid) vid="vid:"+vid[0];
     else{//try with index into list
       vid=qu.match(/(?<=[?&]index=)[0-9]+/);
