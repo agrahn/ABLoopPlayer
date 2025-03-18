@@ -5,7 +5,7 @@
   Player for YouTube and local video and audio files with A-B loop,
   slow motion and bookmarking functionality.
 
-  Copyright (C) 2016--2024  Alexander Grahn
+  Copyright (C) 2016--2025  Alexander Grahn
 
   This file is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -22,20 +22,21 @@
 -->
 
 <html lang="en">
+
 <head>
   <title>AB Loop Player</title>
-  <meta charset="utf-8"/>
-  <meta name="application-name" content="ABLoopPlayer"/>
+  <meta charset="utf-8" />
+  <meta name="application-name" content="ABLoopPlayer" />
   <meta name="description" content="AB Loop Player: online looper for YouTube and local video
     and audio files with A-B repeat, loop bookmarking and slow/fast motion.
-    (ab looper, ab repeater, lecteur boucle ab)"/>
+    (ab looper, ab repeater, lecteur boucle ab)" />
   <meta name="keywords" content="AB, loop, looper, A-B, repeat, repeater, online,
-    bookmark, YouTube, video, audio, file"/>
-  <meta name="author" content="Alexander Grahn"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    bookmark, YouTube, video, audio, file" />
+  <meta name="author" content="Alexander Grahn" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- jQuery framework -->
-  <link href="jquery-ui/jquery-ui.min.css" rel="stylesheet"/>
+  <link href="jquery-ui/jquery-ui.min.css" rel="stylesheet" />
   <script src="jquery-ui/external/jquery/jquery.js"></script>
   <script src="jquery-ui/jquery-ui.min.js"></script>
 
@@ -43,126 +44,111 @@
   <script src="js/jquery.ui.touch-punch.js"></script>
 
   <!-- styles used in this document -->
-  <link href="css/main.css" rel="stylesheet"/>
+  <link href="css/main.css" rel="stylesheet" />
 
   <!-- main code that implements the video player -->
   <script src="js/main.js"></script>
 
-  <link rel="shortcut icon" type="image/x-icon" href="png/favicon.ico"/>
-  <link rel="preload" type="image/svg+xml" href="svg/star.svg" as="image"/>
-  <link rel="preload" type="image/svg+xml" href="svg/jump.svg" as="image"/>
-  <link rel="preload" type="image/svg+xml" href="svg/trash.svg" as="image"/>
-  <link rel="preload" type="image/svg+xml" href="svg/comment.svg" as="image"/>
-  <link rel="preload" type="image/svg+xml" href="svg/grip.svg" as="image"/>
+  <link rel="shortcut icon" type="image/x-icon" href="png/favicon.ico" />
+  <link rel="preload" type="image/svg+xml" href="svg/star.svg" as="image" />
+  <link rel="preload" type="image/svg+xml" href="svg/jump.svg" as="image" />
+  <link rel="preload" type="image/svg+xml" href="svg/trash.svg" as="image" />
+  <link rel="preload" type="image/svg+xml" href="svg/comment.svg" as="image" />
+  <link rel="preload" type="image/svg+xml" href="svg/grip.svg" as="image" />
 </head>
 
 <body style="margin-left:16px;margin-right:16px;min-width:max-content;display:inline-block;font-family:serif;">
 
-<h1 style="font-size:150%;margin-top:0;margin-bottom:0.5em;">AB Loop Player</h1>
-<div id="mainDiv" hidden>
-  <div id="introText">
-    Player for <em><b>YouTube</b></em> and <em><b>video and audio files</b></em> in various formats (MP4, WebM, Ogg, MP3, AAC, FLAC, WAV) with
-    A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playlists</b></em>.
-    <br id="introTextBr" style="display:block;content:'';margin-top:0.5em;"/>
-    Firefox or Chrome/Chromium on PC or Laptop recommended.
-  </div>
-
-  <div style="font-size:87.5%;font-family:sans-serif;">
-    <hr class="double" style="margin-bottom:0px;"/>
-    <div style="margin-bottom:3px;padding:5px;background-color:#ddd;">
-      <div style="display:flex;">
-        <label for="inputYT" style="padding-top:3px;vertical-align:baseline;">YT URL | video IDs | list ID | @handle:</label>
-        <input id="inputYT" list="YTids" autocomplete="on" onfocus="this.select()"
-          onkeypress="if(event && event.keyCode == 13) queryYT(this.value)" onchange="queryYT(this.value)"
-          style="margin-left:5px;margin-right:3px;flex:1 1 auto;vertical-align:baseline;" disabled/><datalist id="YTids"></datalist>
-        <span style="float:right;">
-          <button id="searchButtonYT" onclick="queryYT(inputYT.value)" disabled>&ensp;</button>
-          <input type="checkbox" onchange="contextHelp(this)" id="help"/><label for="help">?</label>
-        </span>
-      </div>
-      <label for="inputVT">Media file:</label> <input id="inputVT" accept="video/*,audio/*" type="file"/>
-      <input type="checkbox" onchange="toggleAudio(this, help)" id="aonly"/><label for="aonly">audio only</label>
+  <h1 style="font-size:150%;margin-top:0;margin-bottom:0.5em;">AB Loop Player</h1>
+  <div id="mainDiv" hidden>
+    <div id="introText">
+      Player for <em><b>YouTube</b></em> and <em><b>video and audio files</b></em> in various formats (MP4, WebM, Ogg, MP3, AAC, FLAC, WAV) with
+      A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playlists</b></em>.
+      <br id="introTextBr" style="display:block;content:'';margin-top:0.5em;" />
+      Firefox or Chrome/Chromium on PC or Laptop recommended.
     </div>
 
-    <div id="myResizable" style="background:#ddd;"></div><!-- takes one of the players -->
-    <div id="scrub" style="margin-top:4px;"></div>
+    <div style="font-size:87.5%;font-family:sans-serif;">
+      <hr class="double" style="margin-bottom:0px;" />
+      <div style="margin-bottom:3px;padding:5px;background-color:#ddd;">
+        <div style="display:flex;">
+          <label for="inputYT" style="padding-top:3px;vertical-align:baseline;">YT URL | video IDs | list ID | @handle:</label>
+          <input id="inputYT" list="YTids" autocomplete="on" onfocus="this.select()" onkeypress="if(event && event.keyCode == 13) queryYT(this.value)" onchange="queryYT(this.value)" style="margin-left:5px;margin-right:3px;flex:1 1 auto;vertical-align:baseline;" disabled /><datalist id="YTids"></datalist>
+          <span style="float:right;">
+            <button id="searchButtonYT" onclick="queryYT(inputYT.value)" disabled>&ensp;</button>
+            <input type="checkbox" onchange="contextHelp(this)" id="help" /><label for="help">?</label>
+          </span>
+        </div>
+        <label for="inputVT">Media file:</label> <input id="inputVT" accept="video/*,audio/*" type="file" />
+        <input type="checkbox" onchange="toggleAudio(this, help)" id="aonly" /><label for="aonly">audio only</label>
+      </div>
 
-    <div id="timeInputs" style="margin:3px 0px 0px 0px;">
-      <!-- placeholder for jQuery range slider -->
-      <div id="slider" style="margin-top:0px;margin-bottom:2px;"></div>
-      <div style="margin:3px 0px 0px 0px;padding:5px;background-color:#eee;">
-      <button id="jumpToA" style="width:1.5em;height:1.5em;margin-right:0.15em;vertical-align:middle;background-size:contain;background-image:url('svg/jump.svg');"
-        onmousedown="if(touchStartHandled) touchStartHandled=false; else onJumpToA();" onmouseup="if(touchEndHandled) touchEndHandled=false; else playVideo();"
-        ontouchstart="touchStartHandled=true;onJumpToA();" ontouchend="touchEndHandled=true;playVideo();"
-        onkeydown="if(event.which==13) onJumpToA();"
-        onkeyup="if(event.which==13) playVideo();"
-      ></button><!--
+      <div id="myResizable" style="background:#ddd;"></div><!-- takes one of the players -->
+      <div id="scrub" style="margin-top:4px;"></div>
+
+      <div id="timeInputs" style="margin:3px 0px 0px 0px;">
+        <!-- placeholder for jQuery range slider -->
+        <div id="slider" style="margin-top:0px;margin-bottom:2px;"></div>
+        <div style="margin:3px 0px 0px 0px;padding:5px;background-color:#eee;">
+          <button id="jumpToA" style="width:1.5em;height:1.5em;margin-right:0.15em;vertical-align:middle;background-size:contain;background-image:url('svg/jump.svg');" onmousedown="if(touchStartHandled) touchStartHandled=false; else onJumpToA();" onmouseup="if(touchEndHandled) touchEndHandled=false; else playVideo();" ontouchstart="touchStartHandled=true;onJumpToA();" ontouchend="touchEndHandled=true;playVideo();" onkeydown="if(event.which==13) onJumpToA();" onkeyup="if(event.which==13) playVideo();"></button><!--
       --><span style="vertical-align:middle;"><!--
-        --><label for="myTimeA">A:</label> <input id="myTimeA" onchange="onInputTime(this,0)" size="8"/>
-        <label for="myTimeB">B:</label> <input id="myTimeB" onchange="onInputTime(this,1)" size="8"/><!--
+        --><label for="myTimeA">A:</label> <input id="myTimeA" onchange="onInputTime(this,0)" size="8" />
+            <label for="myTimeB">B:</label> <input id="myTimeB" onchange="onInputTime(this,1)" size="8" /><!--
       --></span>
-      <button id="bmkAddButton" style="width:1.5em;height:1.5em;vertical-align:middle;background-size:80%;background-image:url('svg/star.svg');"></button>
-      <input type="checkbox" onchange="toggleQuant(this, help)" disabled id="quant"/><label for="quant">quantise</label>&emsp;&emsp;
-      <button id="loopBackwardsButton" style="width:1.5em;height:1.5em;vertical-align:middle;font-size:110%;" onclick="onLoopBackwards()">&laquo;</button><!--
+          <button id="bmkAddButton" style="width:1.5em;height:1.5em;vertical-align:middle;background-size:80%;background-image:url('svg/star.svg');"></button>
+          <input type="checkbox" onchange="toggleQuant(this, help)" disabled id="quant" /><label for="quant">quantise</label>&emsp;&emsp;
+          <button id="loopBackwardsButton" style="width:1.5em;height:1.5em;vertical-align:middle;font-size:110%;" onclick="onLoopBackwards()">&laquo;</button><!--
       --><button id="loopHalveButton" style="width:2.4em;height:1.5em;vertical-align:middle;font-size:110%;" onclick="onLoopHalve()">&times;&frac12;</button><!--
       --><button id="loopDoubleButton" style="width:2.4em;height:1.5em;vertical-align:middle;font-size:110%;" onclick="onLoopDouble()">&times;2</button><!--
       --><button id="loopForwardsButton" style="width:1.5em;height:1.5em;vertical-align:middle;font-size:110%;" onclick="onLoopForwards()">&raquo;</button>
+        </div>
       </div>
-    </div>
 
-    <div id="bottom" style="margin:3px 0px 0px 0px;padding:5px;background-color:#ddd;position:relative;">
-      <span style="vertical-align:middle"><!--
+      <div id="bottom" style="margin:3px 0px 0px 0px;padding:5px;background-color:#ddd;position:relative;">
+        <span style="vertical-align:middle"><!--
         --><label for="loopButton">A-B Loop:</label>
-        <button id="loopButton"
-          onmousedown="if(touchStartHandled) touchStartHandled=false; else onLoopDown();"
-          ontouchstart="touchStartHandled=true;onLoopDown();"
-          onkeydown="if(event.which==13) onLoopDown();"
-        style="width:1.6em;height:1.6em;padding:0px;margin:0px;background-size:80%;">A</button><!--
+          <button id="loopButton" onmousedown="if(touchStartHandled) touchStartHandled=false; else onLoopDown();" ontouchstart="touchStartHandled=true;onLoopDown();" onkeydown="if(event.which==13) onLoopDown();" style="width:1.6em;height:1.6em;padding:0px;margin:0px;background-size:80%;">A</button><!--
       --></span>
-      <span id="myBmkSpan" hidden>
-        <span id="myBmkSpanInner" onkeydown='event.stopPropagation()' onkeyup='event.stopPropagation()'><!--
+        <span id="myBmkSpan" hidden>
+          <span id="myBmkSpanInner" onkeydown='event.stopPropagation()' onkeyup='event.stopPropagation()'><!--
           --><select id="myBookmarks">
-            <option value="" selected disabled>Bookmarked</option>
-          </select><!--
+              <option value="" selected disabled>Bookmarked</option>
+            </select><!--
         --></span><!--
-        --><button id="annotButton" style="width:1.5em;height:1.5em;padding:0px;vertical-align:middle;background-size:80%;background-image:url('svg/comment.svg');"
-             onclick="onClickAddNote(myBookmarks.selectedIndex)" disabled>&ensp;</button><!--
-        --><button id="trashButton" style="width:1.5em;height:1.5em;padding:0px;vertical-align:middle;background-size:70%;background-image:url('svg/trash.svg');"
-             onclick="onClickTrash(myBookmarks.selectedIndex)">&ensp;</button>
-      </span>
-      <input type="checkbox" onchange="toggleIntro(this, help)" id="intro"/><label for="intro">play intro</label><br/>
-      Speed:<div id="speed"><div class="ui-slider-handle"></div></div>&emsp;&emsp;
-      <label for="tapButton">Tempo:</label>
-      <button id="tapButton"
-        onmousedown="if(touchStartHandled) touchStartHandled=false; else onTap(this,event.button);"
-        onmouseup="this.blur()" oncontextmenu="onContextTap(event)"
-        ontouchstart="touchStartHandled=true; onTap(this,event.button);"
-        onkeydown="if(event.which==13) onTap(this);"
-      >tap</button><label for="tapButton"> BPM</label>
-      <span style="position:absolute;bottom:3px;right:5px;">
-        <button id="shareButton" style="width:1.6em;height:1.6em;background-size:contain;background-image:url('svg/share.svg');" onclick="onClickShare()"></button><!--
+        --><button id="annotButton" style="width:1.5em;height:1.5em;padding:0px;vertical-align:middle;background-size:80%;background-image:url('svg/comment.svg');" onclick="onClickAddNote(myBookmarks.selectedIndex)" disabled>&ensp;</button><!--
+        --><button id="trashButton" style="width:1.5em;height:1.5em;padding:0px;vertical-align:middle;background-size:70%;background-image:url('svg/trash.svg');" onclick="onClickTrash(myBookmarks.selectedIndex)">&ensp;</button>
+        </span>
+        <input type="checkbox" onchange="toggleIntro(this, help)" id="intro" /><label for="intro">play intro</label><br />
+        Speed:<div id="speed">
+          <div class="ui-slider-handle"></div>
+        </div>&emsp;&emsp;
+        <label for="tapButton">Tempo:</label>
+        <button id="tapButton" onmousedown="if(touchStartHandled) touchStartHandled=false; else onTap(this,event.button);" onmouseup="this.blur()" oncontextmenu="onContextTap(event)" ontouchstart="touchStartHandled=true; onTap(this,event.button);" onkeydown="if(event.which==13) onTap(this);">tap</button><label for="tapButton"> BPM</label>
+        <span style="position:absolute;bottom:3px;right:5px;">
+          <button id="shareButton" style="width:1.6em;height:1.6em;background-size:contain;background-image:url('svg/share.svg');" onclick="onClickShare()"></button><!--
         --><button id="exportButton" style="width:1.6em;height:1.6em;background-size:90%;background-image:url('svg/export.svg');" onclick="onClickExport()"></button><!--
         --><button id="importButton" style="width:1.6em;height:1.6em;background-size:90%;background-image:url('svg/import.svg');" onclick="onClickImport()"></button>
-      </span>
+        </span>
+      </div>
+      <hr class="double" style="margin-top:0px;" />
     </div>
-    <hr class="double" style="margin-top:0px;"/>
-  </div>
 
-  <div style="float:left;">© 2016–2024 Alexander Grahn</div>
-  <div style="float:right;">
-    Visit project on
-    <a href="https://gitlab.com/agrahn/ABLoopPlayer" style="margin-left:3px;">
-      <img src="svg/glfox2.svg" alt="GitLab logo" style="height:1.2em;margin-bottom:-0.3em;" title="GitLab"/></a>
-    <a href="https://github.com/agrahn/ABLoopPlayer" style="margin-left:3px;">
-      <img src="svg/octocat.svg" alt="GitHub logo" style="height:1.2em;margin-bottom:-0.3em;" title="GitHub"/></a>
-  </div>
-</div><!-- mainDiv -->
+    <div style="float:left;">© 2016–2025 Alexander Grahn</div>
+    <div style="float:right;">
+      Visit project on
+      <a href="https://gitlab.com/agrahn/ABLoopPlayer" style="margin-left:3px;">
+        <img src="svg/glfox2.svg" alt="GitLab logo" style="height:1.2em;margin-bottom:-0.3em;" title="GitLab" /></a>
+      <a href="https://github.com/agrahn/ABLoopPlayer" style="margin-left:3px;">
+        <img src="svg/octocat.svg" alt="GitHub logo" style="height:1.2em;margin-bottom:-0.3em;" title="GitHub" /></a>
+    </div>
+  </div><!-- mainDiv -->
 
-<div id="widthA" style="visibility:hidden;white-space:nowrap;width:auto;position:absolute;">
-FLAC, WAV) with A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playlists</b></em>.</div>
-<div id="widthB" style="visibility:hidden;white-space:nowrap;width:auto;position:absolute;">
-Player for <em><b>YouTube</b></em> and <em><b>video and audio files</b></em> in various formats (MP4, WebM, Ogg, MP3, AAC, FLAC, WAV) with
-A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playlists</b></em>. Firefox</div>
+  <div id="widthA" style="visibility:hidden;white-space:nowrap;width:auto;position:absolute;">
+    FLAC, WAV) with A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playlists</b></em>.</div>
+  <div id="widthB" style="visibility:hidden;white-space:nowrap;width:auto;position:absolute;">
+    Player for <em><b>YouTube</b></em> and <em><b>video and audio files</b></em> in various formats (MP4, WebM, Ogg, MP3, AAC, FLAC, WAV) with
+    A-B repeat, loop bookmarking and slow/fast motion. Supports <em><b>YouTube playlists</b></em>. Firefox</div>
 
 </body>
+
 </html>

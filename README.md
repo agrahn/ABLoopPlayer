@@ -1,6 +1,6 @@
 # [AB Loop Player](https://agrahn.gitlab.io/ABLoopPlayer/)
 
-© 2016–2024 Alexander Grahn
+© 2016–2025 Alexander Grahn
 
 A media player based on HTML5, jQuery UI and JavaScript, with **A-B repeat**, **fast/slow motion** and **bookmarking** functionality for online video (YouTube) and local video and audio files in various formats: MP4/H.264, WebM, Ogg, MP3, AAC, FLAC, WAV.
 

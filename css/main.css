@@ -1,7 +1,7 @@
 /*
   main.css
 
-  Copyright (C) 2016  Alexander Grahn
+  Copyright (C) 2016--2025  Alexander Grahn
 
   This file is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -24,18 +24,20 @@
 
 .ui-resizable-se {
   bottom: 0px;
-  right: -9.75px;/* move handle out of the video display */
+  right: -9.75px;
+  /* move handle out of the video display */
   width: 9.75px !important;
   height: 10px !important;
   background-color: #ddd;
   background-position: center;
   background-repeat: no-repeat;
-  background-size:contain;
-  background-image:url('../svg/grip.svg');
+  background-size: contain;
+  background-image: url('../svg/grip.svg');
 }
 
 hr.double {
-  height: 3px; border: 1px solid #888;
+  height: 3px;
+  border: 1px solid #888;
 }
 
 #slider {
@@ -44,9 +46,12 @@ hr.double {
 }
 
 #slider .ui-slider-handle {
-  outline: none; /* suppress focus rect */
+  outline: none;
+  /* suppress focus rect */
   text-align: center;
-  height: 15px; width: 0em; top: 0px;
+  height: 15px;
+  width: 0em;
+  top: 0px;
   border: 0px;
   padding: 0;
   color: #000000;
@@ -61,8 +66,8 @@ hr.double {
 .abhandle {
   display: flex;
   justify-content: center;
-  width:16px;
-  height:15px;
+  width: 16px;
+  height: 15px;
 }
 
 #slider .ui-state-default {
@@ -90,16 +95,18 @@ hr.double {
   height: 6px;
   display: inline-block;
   width: 20ex;
-  margin-left:1.1em;
-  margin-top:0.7em;
+  margin-left: 1.1em;
+  margin-top: 0.7em;
   background: #aaaaaa;
 }
 
 #speed .ui-slider-handle {
   width: 32px;
-  margin-left: -18px; /* -(0.5*width+borderWidth) */
+  margin-left: -18px;
+  /* -(0.5*width+borderWidth) */
   height: 18px;
-  top: 50%; /* top edge of handle aligns with horiz. centre of track, initially */
+  top: 50%;
+  /* top edge of handle aligns with horiz. centre of track, initially */
   /* then, top margin is set to centre handle vertically -(0.5*height+borderWidth) = -(9+2) = -11 */
   margin-top: -11px;
   text-align: center;
@@ -108,14 +115,17 @@ hr.double {
   border-top-color: #e0e0e0;
   border-right-color: #959595;
   border-bottom-color: #959595;
-  border-width:2px;
+  border-width: 2px;
   color: #000000;
 }
 
 /* remove rounded corners */
-.ui-corner-all {border-radius: 0px;}
+.ui-corner-all {
+  border-radius: 0px;
+}
 
-button, input[type="file"]::file-selector-button {
+button,
+input[type="file"]::file-selector-button {
   border-width: 2px;
   border-radius: 0px;
   color: #000000;
@@ -128,24 +138,29 @@ button, input[type="file"]::file-selector-button {
   background-repeat: no-repeat;
 }
 
-button:disabled{opacity:0.5;}
+button:disabled {
+  opacity: 0.5;
+}
 
 #searchButtonYT {
-  width:2.2em;height:1.6em;
-  vertical-align:baseline;
-  background-color:transparent;
-  background-size:contain;
-  background-image:url('../svg/yt-play.svg');
-  border-radius:0.4em;
-  border:none;
+  width: 2.2em;
+  height: 1.6em;
+  vertical-align: baseline;
+  background-color: transparent;
+  background-size: contain;
+  background-image: url('../svg/yt-play.svg');
+  border-radius: 0.4em;
+  border: none;
 }
 
 #searchButtonYT:active {
-  background-color:#fff;
-  background-size:90%;
+  background-color: #fff;
+  background-size: 90%;
 }
 
-input[type=checkbox] {vertical-align:middle;}
+input[type=checkbox] {
+  vertical-align: middle;
+}
 
 .bookmarklist {
   max-height: 8em;
@@ -161,7 +176,8 @@ input[type=checkbox] {vertical-align:middle;}
 }
 
 .ui-tooltip {
-  width: max-content; /* needed for wrapping tooltip lines at max-width */
+  width: max-content;
+  /* needed for wrapping tooltip lines at max-width */
   max-width: 320px;
 }
 
@@ -170,5 +186,5 @@ input[type=checkbox] {vertical-align:middle;}
 }
 
 .ui-menu {
-  font-size:87.5%
+  font-size: 87.5%
 }
