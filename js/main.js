@@ -19,7 +19,8 @@
 
 var appversion = 1.02;
 
-var vidId; //current YT video ID or file name + size
+var vidId; //current YT video ID or local file name + size or file URL
+var vidObj; //current media File object or URL String
 var lstId; //current YT playlist ID
 var searchStr; //url parameters
 var timeA, timeB, dtAB; // s
@@ -157,7 +158,7 @@ $(document).ready(function() {
   bmkAddButton = document.getElementById("bmkAddButton");
   inputVT.addEventListener("change", function(e) {
     $("#inputVT").blur(); //chromium
-    playSelectedFile(e.target.files[0]);
+    playSelectedFile(e.target.files[0], null, null, null, null);
   });
   inputVT.addEventListener("input", function(e) {
     //allows us to start video by hitting the spacebar, after a file
@@ -295,7 +296,7 @@ $(document).ready(function() {
     }
   );
   $("#mainDiv").show();
-  playSelectedFile("");
+  playSelectedFile(null, null, null, null, null);
 });
 
 //reset rewind latency measurement when tab visibility has changed (from and to
@@ -1043,6 +1044,7 @@ var cancelABLoop = function() {
 }
 
 var resetUI = function() {
+  vidObj = undefined;
   vidId = undefined;
   lstId = undefined;
   cancelABLoop();
@@ -1403,7 +1405,9 @@ var saveId = function(id) {
 }
 
 var queryYT = function(qu) {
-  let vid, plist, lid, lType = "playlist";
+  let vid, plist, lid, lType = "playlist",
+    audioOnly = null;
+  let q = "?" + qu;
   if (
     !qu.match(/videoid|listid|playlist|index/) &&
     !qu.match(/youtu\.be\/|youtube(?:-nocookie)?\..*/)
@@ -1430,8 +1434,7 @@ var queryYT = function(qu) {
       if (lid) lType = "user_uploads";
     }
     plist = qu.match(/(?<=[?&]playlist=)[0-9a-zA-Z_-]{11}(?:,[0-9a-zA-Z_-]{11})*/);
-  } else { //ABLoopPlayer share link
-    let q = "?" + qu;
+  } else { //ABLoopPlayer YT share link
     vid = q.match(/(?<=[?&]videoid=)[0-9a-zA-Z_-]{11}/);
     if (vid) vid = "vid:" + vid[0];
     else {
@@ -1445,19 +1448,38 @@ var queryYT = function(qu) {
     }
     plist = q.match(/(?<=[?&]playlist=)[0-9a-zA-Z_-]{11}(?:,[0-9a-zA-Z_-]{11})*/);
   }
-  if (!(vid || lid || plist)) return;
-  let ta = qu.match(/(?<=[?&](?:star)?t=)[0-9]+(?:\.[0-9]*)?/);
-  let tb = qu.match(/(?<=[?&]end=)[0-9]+(?:\.[0-9]*)?/);
-  let r = qu.match(/(?<=[?&]rate=)[0-9]+(?:\.[0-9]*)?/);
+  if (!(vid || lid || plist)) { // last option: file URL
+    vid = qu.match(/^https?:\/\/[^&]+/);
+    if (vid) {
+      vid = "url:" + vid[0];
+      let value = q.match(/(?<=[?&]aonly=)(?:true|false)/);
+      if (value !== null) {
+        if (value[0].toLowerCase() === "true") audioOnly = true;
+        else if (value[0].toLowerCase() === "false") audioOnly = false;
+      }
+    } else return;
+  }
+  let ta = q.match(/(?<=[?&](?:star)?t=)[0-9]+(?:\.[0-9]*)?/);
+  let tb = q.match(/(?<=[?&]end=)[0-9]+(?:\.[0-9]*)?/);
+  let r = q.match(/(?<=[?&]rate=)[0-9]+(?:\.[0-9]*)?/);
   r = r ? Math.min(Math.max(r[0], 0.25), 2.0) : 1;
-  loadYT(
-    vid ? vid : null,
-    plist ? plist[0] : null,
-    lid ? lid[0] : null,
-    ta ? ta[0] : null,
-    tb ? tb[0] : null,
-    r, lType
-  );
+  if (vid && vid.substring(0, 4) === "url:") {
+    playSelectedFile(
+      vid.substring(4),
+      ta ? ta[0] : null,
+      tb ? tb[0] : null,
+      r, audioOnly
+    );
+  } else {
+    loadYT(
+      vid ? vid : null,
+      plist ? plist[0] : null,
+      lid ? lid[0] : null,
+      ta ? ta[0] : null,
+      tb ? tb[0] : null,
+      r, lType
+    );
+  }
 }
 
 var initResizableYT = function() {
@@ -1489,13 +1511,17 @@ var onClickShare = function() {
   let sharelink = document.URL;
   let idx = sharelink.indexOf("?");
   if (idx > -1) sharelink = sharelink.substring(0, idx);
-  let playlist = ytPlayer.getPlaylist();
-  if (playlist) {
-    if (lstId) sharelink += "?listid=" + lstId;
-    else sharelink += "?playlist=" + playlist.join();
-    sharelink += "&videoid=" + ytPlayer.getPlaylist()[ytPlayer.getPlaylistIndex()];
+  if (vidObj && !(vidObj instanceof File) && vidId.length > 0) {
+    sharelink += "?" + vidId + "&aonly=" + aonly.checked.toString();
   } else {
-    sharelink += "?videoid=" + vidId;
+    let playlist = ytPlayer.getPlaylist();
+    if (playlist) {
+      if (lstId) sharelink += "?listid=" + lstId;
+      else sharelink += "?playlist=" + playlist.join();
+      sharelink += "&videoid=" + ytPlayer.getPlaylist()[ytPlayer.getPlaylistIndex()];
+    } else {
+      sharelink += "?videoid=" + vidId;
+    }
   }
   if (isTimeASet) sharelink += "&start=" + timeA.toString();
   if (isTimeBSet) sharelink += "&end=" + timeB.toString();
@@ -1509,7 +1535,7 @@ var onClickShare = function() {
 /////////////////////////
 var myVideo;
 
-var playSelectedFile = function(f) {
+var playSelectedFile = function(f, ta, tb, s, audioOnly) {
   initVT(); //initialize player-specific functions
   resetUI();
   //replace #myResizable container and its #myVideo child
@@ -1519,9 +1545,11 @@ var playSelectedFile = function(f) {
   myResizable = document.createElement("div");
   myResizable.id = "myResizable";
   parent.replaceChild(myResizable, myResizableOld);
+  if (audioOnly !== null) aonly.checked = audioOnly;
   myVideo = document.createElement(aonly.checked ? "audio" : "video");
   myVideo.id = "myVideo";
-  myVideo.autoplay = false;
+  if (f instanceof File) myVideo.autoplay = false;
+  else myVideo.autoplay = true; // play when loaded via red YT button
   myVideo.controls = true;
   myVideo.width = $("#myResizable").width();
   myVideo.addEventListener("durationchange", function(e) {
@@ -1532,18 +1560,33 @@ var playSelectedFile = function(f) {
       $("#scrub").slider("option", "max", getDuration()).show();
       $("#speed").slider("option", "min", 0.25);
       $("#speed").slider("option", "max", 2);
-      $("#speed").slider("option", "value", 1);
+      $("#speed").slider("option", "value", s ? s : 1.0);
       $("#speed").slider("option", "step", 0.01);
       $("#speed").slider("option", "disabled", false);
       $("#speed .ui-slider-handle").prop("tabindex", "");
       tapButton.disabled = false;
     } else {
       //repeat setting media source until duration property is properly set;
-      //this is a workaround of a bug in FFox on Windows
+      //this is to work around a bug in FFox on Windows
       e.target.src = e.target.currentSrc;
     }
   });
-  myVideo.addEventListener("loadeddata", onLoadedDataVT);
+  myVideo.addEventListener("loadeddata", (e) => {
+    if (searchStr) {
+      inputYT.value = searchStr;
+      searchStr = undefined;
+    }
+    vidObj = f;
+    if (f instanceof File) {
+      vidId = f.name + "-" + f.size; //some checksum would be better
+      saveMediaId(vidId);
+    } else {
+      vidId = f;
+      saveId(vidId);
+      shareButton.disabled = false;
+    }
+    onLoadedDataVT(e, ta, tb, s);
+  });
   myVideo.addEventListener("play", function() {
     loopMeas.splice(0);
     setPlaybackRate(Number($("#speed").slider("value")));
@@ -1556,7 +1599,7 @@ var playSelectedFile = function(f) {
     loopMeas.splice(0);
   });
   myVideo.addEventListener("error", function(e) {
-    console.log("Error: " + e.target);
+    console.log("Error: " + e.target + " " + e.message);
     resetUI();
   });
   myVideo.addEventListener("ratechange", onRateChange);
@@ -1566,14 +1609,17 @@ var playSelectedFile = function(f) {
     $("#speed .ui-slider-handle").prop("tabindex", -1);
     tapButton.disabled = true;
     //set video source
-    vidId = f.name + "-" + f.size; //some checksum would be better
-    try {
-      //Modern browsers should support File object as value for HTMLMediaElement.srcObject, see
-      //https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/srcObject#value,
-      //but currently, only Safari does.
-      myVideo.srcObject = f;
-    } catch (e) {
-      myVideo.src = URL.createObjectURL(f);
+    if (f instanceof File) { // local file
+      try {
+        //Modern browsers should support File object as value for HTMLMediaElement.srcObject, see
+        //https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/srcObject#value,
+        //but currently, only Safari does.
+        myVideo.srcObject = f;
+      } catch (e) {
+        myVideo.src = URL.createObjectURL(f);
+      }
+    } else { // f is a string (URL)
+      myVideo.src = f;
     }
   }
 }
@@ -1582,7 +1628,7 @@ var onTimeUpdateVT = function(e) {
   $("#scrub").slider("option", "value", e.target.currentTime);
 };
 
-var onLoadedDataVT = function(e) {
+var onLoadedDataVT = function(e, ta, tb, s) {
   if (!aonly.checked) {
     e.target.addEventListener("mouseover", function(e) {
       e.target.controls = true;
@@ -1603,7 +1649,27 @@ var onLoadedDataVT = function(e) {
     beatNormal = bn;
     tapButton.innerHTML = Math.round(60 / beatNormal * rate).toString();
   }
-  saveMediaId(vidId);
+  //set ab loop from ta, tb args
+  if (ta || tb) {
+    $("#slider").slider("option", "max", getDuration());
+    let a = 0,
+      b = getDuration();
+    if (ta != null && tb != null) {
+      a = Math.max(0, Math.min(ta, tb));
+      b = Math.min(b, Math.max(ta, tb));
+    } else if (ta != null) {
+      a = Math.max(0, Math.min(ta, b));
+    } else {
+      b = Math.min(b, Math.max(0, tb));
+    }
+    setCurrentTime(a);
+    $("#slider").slider("option", "values", [a, b]);
+    isTimeASet = isTimeBSet = true;
+    quant.disabled = beatNormal ? false : true;
+    $("#timeInputs").show();
+    loopButton.innerHTML = "&emsp;";
+    loopButton.style.backgroundImage = crossMarkUrl;
+  }
 }
 
 var saveMediaId = function(id) {
@@ -1643,12 +1709,12 @@ var initResizableVT = function() {
 };
 
 var toggleAudio = function(t, h) {
-  playSelectedFile(inputVT.files[0]);
   if (h.checked) {
     t.title = t.checked ? aonlyTitleChecked : aonlyTitleUnChecked;
   }
   if (t.checked) storageWriteKeyVal("ab.aonly", "checked");
   else storageWriteKeyVal("ab.aonly", "unchecked");
+  playSelectedFile(vidObj, null, null, null, t.checked);
 }
 
 //functions with player specific implementation
