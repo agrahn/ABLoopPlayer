@@ -940,6 +940,15 @@ var onClickImport = function() {
     reader.onload = e => {
       try {
         mergeData(convertData(JSON.parse(e.target.result)));
+        // update YT input field
+        while (YTids.childNodes.length)
+          YTids.removeChild(YTids.lastChild);
+        for (let i = 0; i < knownIDs.length && i < 100; i++) {
+          let z = document.createElement("OPTION");
+          z.setAttribute("value", knownIDs[i]);
+          YTids.appendChild(z);
+        }
+        inputYT.value = knownIDs.length ? knownIDs[0] : "https://youtu.be/2kotK9FNEYU";
         dialogBtns = messageBox("Import", "Loop data and app settings successfully imported.");
         let bmks, bn;
         [bmks, bn] = queryBmksAndBn(vidId);
