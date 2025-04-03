@@ -75,7 +75,7 @@ window.onstorage = () => {
   if (bn) {
     beatNormal = bn;
     tapButton.innerHTML = Math.round(60 / beatNormal * rate).toString();
-  }
+  } else tapButton.innerHTML = "tap";
 };
 
 var storageWriteKeyVal = function(k, v) {
@@ -956,7 +956,7 @@ var onClickImport = function() {
         if (bn) {
           beatNormal = bn;
           tapButton.innerHTML = Math.round(60 / beatNormal * rate).toString();
-        }
+        } else tapButton.innerHTML = "tap";
       } catch (err) {
         dialogBtns = messageBox("Error",
           "<p>Loop data and app settings could not be imported.</p>" +
@@ -1356,7 +1356,7 @@ var onPlayerStateChange = function(e, id, ta, tb, s) { //event object, video id 
       if (bn) {
         beatNormal = bn;
         tapButton.innerHTML = Math.round(60 / beatNormal * rate).toString();
-      }
+      } else tapButton.innerHTML = "tap";
       saveId(id);
       //set ab loop from ta, tb args only upon new player instantiation
       if ((ta || tb) && !vidId) {
@@ -1657,7 +1657,7 @@ var onLoadedDataVT = function(e, ta, tb, s) {
   if (bn) {
     beatNormal = bn;
     tapButton.innerHTML = Math.round(60 / beatNormal * rate).toString();
-  }
+  } else tapButton.innerHTML = "tap";
   //set ab loop from ta, tb args
   if (ta || tb) {
     $("#slider").slider("option", "max", getDuration());
