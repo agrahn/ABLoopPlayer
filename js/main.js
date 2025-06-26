@@ -1248,7 +1248,7 @@ var toggleQuant = function(t, h) {
 //arg 3: list id,
 //arg 4: loop start, arg 4: loop end time
 //arg 5: playback speed
-var loadYT = function(vid, plist, lid, ta, tb, r, lType = "playlist") {
+var loadYT = function(vid, plist, lid, ta, tb, r, lType) {
   initYT(); //initialize player-specific functions
   resetUI();
   //remove previous player, if there is one
@@ -1270,23 +1270,20 @@ var loadYT = function(vid, plist, lid, ta, tb, r, lType = "playlist") {
   let ytDiv = document.createElement("div");
   ytDiv.id = "ytDiv";
   myResizable.appendChild(ytDiv);
-  //create new YT player iframe, replacing ytDiv
-  ytPlayer = new YT.Player("ytDiv", {
-    videoId: vid && vid.substring(0, 4) === "vid:" ? vid.substring(4) : vid,
+  let playerVars = {
+    "autoplay": 1,
+    "modestbranding": 1,
+    "fs": 0,
+    "rel": 0
+  }
+  if (vid && vid.substring(0, 4) === "idx:") playerVars["index"] = vid.substring(4);
+  if (lid) playerVars["list"] = lid;
+  if (lType) playerVars["listType"] = lType;
+  if (plist) playerVars["playlist"] = plist;
+  let playerParams = {
     width: playerWidth,
     height: $("#myResizable").height(),
-    playerVars: {
-      index: vid && vid.substring(0, 4) === "idx:" ? vid.substring(4) : null,
-      list: lid,
-      listType: lType,
-      playlist: plist,
-      //loop: 1, //loop over playlist
-      //playlist: vid && !plist && !lid ? vid.substring(4) : plist, //loop single video
-      autoplay: 1,
-      modestbranding: 1,
-      fs: 0, //no fullscreen button
-      rel: 0, //no related videos at the end
-    },
+    playerVars: playerVars,
     events: {
       "onReady": function(e) {
         if (searchStr) {
@@ -1316,11 +1313,15 @@ var loadYT = function(vid, plist, lid, ta, tb, r, lType = "playlist") {
       "onError": function(e) {
         console.log("Error: " + e.data);
         resetUI();
-        if (lid && lType === "playlist") loadYT(vid, null, lid, ta, tb, r, "user_uploads");
-        else loadYT(null, null, null, null, null, null);
+        if (lid && lType === "playlist") { // instead, try with "user_uploads" as list type
+          loadYT(vid, null, lid, ta, tb, r, "user_uploads");
+        }
       }
     }
-  });
+  }
+  if (vid && vid.substring(0, 4) === "vid:") playerParams["videoId"] = vid.substring(4);
+  //create new YT player iframe, replacing ytDiv
+  ytPlayer = new YT.Player("ytDiv", playerParams);
 }
 
 var onYouTubeIframeAPIReady = function() {
@@ -1414,8 +1415,7 @@ var saveId = function(id) {
 }
 
 var queryYT = function(qu) {
-  let vid, plist, lid, lType = "playlist",
-    audioOnly = null;
+  let vid, plist, lid, lType, audioOnly = null;
   let q = "?" + qu;
   if (
     !qu.match(/videoid|listid|playlist|index/) &&
@@ -1424,6 +1424,7 @@ var queryYT = function(qu) {
     vid = qu.trim().match(/^[0-9a-zA-Z_-]{11}$/);
     if (vid) vid = "vid:" + vid[0];
     lid = qu.trim().match(/^[0-9A-Za-z_-]{12,}$/);
+    if (lid) lType = "playlist";
     if (!lid) {
       lid = qu.trim().match(/(?<=^@)[0-9A-Za-z_.-]{3,30}$/); //handle?
       if (lid) lType = "user_uploads";
@@ -1438,6 +1439,7 @@ var queryYT = function(qu) {
       if (vid) vid = "idx:" + vid[0];
     }
     lid = qu.match(/(?<=[?&]list=)[0-9A-Za-z_.-]{3,}/);
+    if (lid) lType = "playlist";
     if (!lid) {
       lid = qu.match(/(?<=\/@)[0-9A-Za-z_.-]{3,30}/);
       if (lid) lType = "user_uploads";
@@ -1451,6 +1453,7 @@ var queryYT = function(qu) {
       if (vid) vid = "idx:" + vid[0];
     }
     lid = q.match(/(?<=[?&]listid=)[0-9A-Za-z_-]{12,}/);
+    if (lid) lType = "playlist";
     if (!lid) {
       lid = q.match(/(?<=[?&]listid=@)[0-9A-Za-z_.-]{3,30}/);
       if (lid) lType = "user_uploads";
@@ -1486,7 +1489,8 @@ var queryYT = function(qu) {
       lid ? lid[0] : null,
       ta ? ta[0] : null,
       tb ? tb[0] : null,
-      r, lType
+      r,
+      lType ? lType : null
     );
   }
 }
