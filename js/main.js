@@ -1564,6 +1564,8 @@ var playSelectedFile = function(f, ta, tb, s, audioOnly) {
   if (f instanceof File) myVideo.autoplay = false;
   else myVideo.autoplay = true; // play when loaded via red YT button
   myVideo.controls = true;
+  let vol = storage.getItem("ab.mediaVolume");
+  myVideo.volume = vol ? Number(vol) : 0.5;
   myVideo.width = $("#myResizable").width();
   myVideo.addEventListener("durationchange", function(e) {
     while (scrubTimer.length) clearInterval(scrubTimer.pop());
@@ -1616,6 +1618,9 @@ var playSelectedFile = function(f, ta, tb, s, audioOnly) {
     resetUI();
   });
   myVideo.addEventListener("ratechange", onRateChange);
+  myVideo.addEventListener("volumechange", function(e) {
+    storageWriteKeyVal("ab.mediaVolume", e.target.volume);
+  });
   myResizable.appendChild(myVideo);
   if (f) { //a media file was selected
     $("#speed").slider("option", "disabled", true);
